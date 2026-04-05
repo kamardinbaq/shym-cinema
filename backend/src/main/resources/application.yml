@@ -1,0 +1,52 @@
+spring:
+  application:
+    name: horror-cinema
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/horror_cinema}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    open-in-view: false
+
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:db/schema.sql
+      data-locations: classpath:db/data.sql
+
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+app:
+  jwt:
+    secret: ${JWT_SECRET}
+    expiration: ${JWT_EXPIRATION:86400000}  # 24 hours in ms
+
+  cors:
+    allowed-origins: http://localhost:3000
+
+  rate-limit:
+    requests-per-minute: 30
+
+  kaspi:
+    mock-enabled: true
+    success-rate: 0.95  # 95% mock success rate
+
+logging:
+  level:
+    com.cinema: DEBUG
+    org.springframework.security: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

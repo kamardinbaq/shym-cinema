@@ -98,10 +98,10 @@ public class RoomService {
                                 if (reservation != null) {
                                     if (reservation.getStatus() == ReservationStatus.PENDING) {
                                         status = "PENDING";
-                                        // Expiry = createdAt + 5 minutes (matches ReservationExpiryScheduler)
+                                        // Expiry = createdAt + 10 minutes (matches ReservationExpiryScheduler)
                                         // Append "Z" so the browser parses it as UTC, not local time
                                         pendingExpiresAt = reservation.getCreatedAt()
-                                                .plusMinutes(5)
+                                                .plusMinutes(10)
                                                 .toString() + "Z";
                                     } else {
                                         status = "RESERVED";

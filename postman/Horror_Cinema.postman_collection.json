@@ -1,0 +1,462 @@
+{
+  "info": {
+    "name": "Horror Cinema API",
+    "description": "Full test suite for the Horror Cinema booking backend. Run the Auth folder first so tokens are set automatically.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl",    "value": "http://localhost:8080" },
+    { "key": "userToken",  "value": "" },
+    { "key": "adminToken", "value": "" },
+    { "key": "reservationId", "value": "" },
+    { "key": "testDate",   "value": "2026-04-07" }
+  ],
+  "item": [
+
+    {
+      "name": "Auth",
+      "item": [
+
+        {
+          "name": "Register – success",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 201', () => pm.response.to.have.status(201));",
+            "const body = pm.response.json();",
+            "pm.test('success flag true', () => pm.expect(body.success).to.be.true);",
+            "pm.test('token present', () => pm.expect(body.data.token).to.be.a('string').and.not.empty);",
+            "pm.test('role is USER', () => pm.expect(body.data.role).to.eql('USER'));",
+            "pm.collectionVariables.set('userToken', body.data.token);"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api","auth","register"] },
+            "body": { "mode": "raw", "raw": "{\n  \"username\": \"testuser_{{$randomInt}}\",\n  \"password\": \"Test1234\",\n  \"phone\": \"+77001234567\"\n}" }
+          }
+        },
+
+        {
+          "name": "Register – duplicate username (409)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 409 or 400', () => pm.expect([400,409]).to.include(pm.response.code));",
+            "const body = pm.response.json();",
+            "pm.test('success flag false', () => pm.expect(body.success).to.be.false);"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api","auth","register"] },
+            "body": { "mode": "raw", "raw": "{\n  \"username\": \"baqadmin\",\n  \"password\": \"12341234\",\n  \"phone\": \"+77000000000\"\n}" }
+          }
+        },
+
+        {
+          "name": "Register – short password (400)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 400', () => pm.response.to.have.status(400));",
+            "pm.test('success false', () => pm.expect(pm.response.json().success).to.be.false);"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api","auth","register"] },
+            "body": { "mode": "raw", "raw": "{\n  \"username\": \"newuser99\",\n  \"password\": \"123\",\n  \"phone\": \"+77001234567\"\n}" }
+          }
+        },
+
+        {
+          "name": "Login – admin success",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "const body = pm.response.json();",
+            "pm.test('success true', () => pm.expect(body.success).to.be.true);",
+            "pm.test('role is ADMIN', () => pm.expect(body.data.role).to.eql('ADMIN'));",
+            "pm.test('token is string', () => pm.expect(body.data.token).to.be.a('string').and.not.empty);",
+            "pm.collectionVariables.set('adminToken', body.data.token);"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api","auth","login"] },
+            "body": { "mode": "raw", "raw": "{\n  \"username\": \"baqadmin\",\n  \"password\": \"12341234\"\n}" }
+          }
+        },
+
+        {
+          "name": "Login – wrong password (401)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 401', () => pm.response.to.have.status(401));",
+            "pm.test('success false', () => pm.expect(pm.response.json().success).to.be.false);"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api","auth","login"] },
+            "body": { "mode": "raw", "raw": "{\n  \"username\": \"baqadmin\",\n  \"password\": \"wrongpassword\"\n}" }
+          }
+        },
+
+        {
+          "name": "Login – missing fields (400)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 400', () => pm.response.to.have.status(400));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api","auth","login"] },
+            "body": { "mode": "raw", "raw": "{\n  \"username\": \"baqadmin\"\n}" }
+          }
+        }
+
+      ]
+    },
+
+    {
+      "name": "Rooms & Availability",
+      "item": [
+
+        {
+          "name": "Get all rooms",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "const body = pm.response.json();",
+            "pm.test('success true', () => pm.expect(body.success).to.be.true);",
+            "pm.test('returns array', () => pm.expect(body.data).to.be.an('array'));",
+            "pm.test('at least one room', () => pm.expect(body.data.length).to.be.above(0));",
+            "const room = body.data[0];",
+            "pm.test('room has required fields', () => {",
+            "  pm.expect(room).to.have.all.keys('id','name','description','capacity','minPeople','themeCode','timeSlots');",
+            "});",
+            "pm.test('timeSlots is array', () => pm.expect(room.timeSlots).to.be.an('array'));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/rooms", "host": ["{{baseUrl}}"], "path": ["api","rooms"] }
+          }
+        },
+
+        {
+          "name": "Get room by ID – exists (1)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "const body = pm.response.json();",
+            "pm.test('success true', () => pm.expect(body.success).to.be.true);",
+            "pm.test('correct id', () => pm.expect(body.data.id).to.eql(1));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/rooms/1", "host": ["{{baseUrl}}"], "path": ["api","rooms","1"] }
+          }
+        },
+
+        {
+          "name": "Get room by ID – not found (404)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 404', () => pm.response.to.have.status(404));",
+            "pm.test('success false', () => pm.expect(pm.response.json().success).to.be.false);"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/rooms/99999", "host": ["{{baseUrl}}"], "path": ["api","rooms","99999"] }
+          }
+        },
+
+        {
+          "name": "Get availability – today (no param)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "const body = pm.response.json();",
+            "pm.test('success true', () => pm.expect(body.success).to.be.true);",
+            "pm.test('has date', () => pm.expect(body.data.date).to.be.a('string'));",
+            "pm.test('has sessionPrice', () => pm.expect(body.data.sessionPrice).to.be.a('number').and.above(0));",
+            "pm.test('rooms is array', () => pm.expect(body.data.rooms).to.be.an('array'));",
+            "const slot = body.data.rooms[0].slots[0];",
+            "pm.test('slot has status', () => pm.expect(['AVAILABLE','PENDING','RESERVED','PASSED']).to.include(slot.status));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/availability", "host": ["{{baseUrl}}"], "path": ["api","availability"] }
+          }
+        },
+
+        {
+          "name": "Get availability – specific date",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "const body = pm.response.json();",
+            "pm.test('date matches param', () => pm.expect(body.data.date).to.eql(pm.collectionVariables.get('testDate')));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/availability?date={{testDate}}",
+              "host": ["{{baseUrl}}"], "path": ["api","availability"],
+              "query": [{ "key": "date", "value": "{{testDate}}" }]
+            }
+          }
+        }
+
+      ]
+    },
+
+    {
+      "name": "Reservations (User)",
+      "item": [
+
+        {
+          "name": "Create reservation – success",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 201', () => pm.response.to.have.status(201));",
+            "const body = pm.response.json();",
+            "pm.test('success true', () => pm.expect(body.success).to.be.true);",
+            "pm.test('status is PENDING', () => pm.expect(body.data.status).to.eql('PENDING'));",
+            "pm.test('has id', () => pm.expect(body.data.id).to.be.a('number'));",
+            "pm.collectionVariables.set('reservationId', body.data.id);"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/reservations", "host": ["{{baseUrl}}"], "path": ["api","reservations"] },
+            "body": { "mode": "raw", "raw": "{\n  \"roomId\": 1,\n  \"timeSlotId\": 1,\n  \"reservationDate\": \"{{testDate}}\",\n  \"peopleCount\": 3,\n  \"notes\": \"Postman test reservation\"\n}" }
+          }
+        },
+
+        {
+          "name": "Create reservation – no auth (401)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 401', () => pm.response.to.have.status(401));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/reservations", "host": ["{{baseUrl}}"], "path": ["api","reservations"] },
+            "body": { "mode": "raw", "raw": "{\n  \"roomId\": 1,\n  \"timeSlotId\": 1,\n  \"reservationDate\": \"{{testDate}}\",\n  \"peopleCount\": 3\n}" }
+          }
+        },
+
+        {
+          "name": "Create reservation – past date (400)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 400', () => pm.response.to.have.status(400));",
+            "pm.test('success false', () => pm.expect(pm.response.json().success).to.be.false);"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/reservations", "host": ["{{baseUrl}}"], "path": ["api","reservations"] },
+            "body": { "mode": "raw", "raw": "{\n  \"roomId\": 1,\n  \"timeSlotId\": 1,\n  \"reservationDate\": \"2020-01-01\",\n  \"peopleCount\": 3\n}" }
+          }
+        },
+
+        {
+          "name": "Create reservation – invalid peopleCount (400)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 400', () => pm.response.to.have.status(400));",
+            "pm.test('success false', () => pm.expect(pm.response.json().success).to.be.false);"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{userToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/reservations", "host": ["{{baseUrl}}"], "path": ["api","reservations"] },
+            "body": { "mode": "raw", "raw": "{\n  \"roomId\": 1,\n  \"timeSlotId\": 1,\n  \"reservationDate\": \"{{testDate}}\",\n  \"peopleCount\": 0\n}" }
+          }
+        },
+
+        {
+          "name": "Get my reservations",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "const body = pm.response.json();",
+            "pm.test('success true', () => pm.expect(body.success).to.be.true);",
+            "pm.test('returns array', () => pm.expect(body.data).to.be.an('array'));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{userToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/reservations", "host": ["{{baseUrl}}"], "path": ["api","reservations"] }
+          }
+        },
+
+        {
+          "name": "Get reservation by ID",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "const body = pm.response.json();",
+            "pm.test('success true', () => pm.expect(body.success).to.be.true);",
+            "pm.test('correct id', () => pm.expect(body.data.id).to.eql(Number(pm.collectionVariables.get('reservationId'))));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{userToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/reservations/{{reservationId}}", "host": ["{{baseUrl}}"], "path": ["api","reservations","{{reservationId}}"] }
+          }
+        },
+
+        {
+          "name": "Cancel reservation",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('success true', () => pm.expect(pm.response.json().success).to.be.true);"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{userToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/reservations/{{reservationId}}", "host": ["{{baseUrl}}"], "path": ["api","reservations","{{reservationId}}"] }
+          }
+        },
+
+        {
+          "name": "Cancel reservation – not found (404)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 404', () => pm.response.to.have.status(404));",
+            "pm.test('success false', () => pm.expect(pm.response.json().success).to.be.false);"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{userToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/reservations/99999", "host": ["{{baseUrl}}"], "path": ["api","reservations","99999"] }
+          }
+        }
+
+      ]
+    },
+
+    {
+      "name": "Admin",
+      "item": [
+
+        {
+          "name": "Get all reservations",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "const body = pm.response.json();",
+            "pm.test('success true', () => pm.expect(body.success).to.be.true);",
+            "pm.test('returns array', () => pm.expect(body.data).to.be.an('array'));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/admin/reservations", "host": ["{{baseUrl}}"], "path": ["api","admin","reservations"] }
+          }
+        },
+
+        {
+          "name": "Get reservations by date",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('success true', () => pm.expect(pm.response.json().success).to.be.true);"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/reservations?date={{testDate}}",
+              "host": ["{{baseUrl}}"], "path": ["api","admin","reservations"],
+              "query": [{ "key": "date", "value": "{{testDate}}" }]
+            }
+          }
+        },
+
+        {
+          "name": "Get reservations by date + room",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('success true', () => pm.expect(pm.response.json().success).to.be.true);"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/reservations?date={{testDate}}&roomId=1",
+              "host": ["{{baseUrl}}"], "path": ["api","admin","reservations"],
+              "query": [{ "key": "date", "value": "{{testDate}}" }, { "key": "roomId", "value": "1" }]
+            }
+          }
+        },
+
+        {
+          "name": "Admin create reservation (skipPayment)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 201', () => pm.response.to.have.status(201));",
+            "const body = pm.response.json();",
+            "pm.test('success true', () => pm.expect(body.success).to.be.true);",
+            "pm.test('has id', () => pm.expect(body.data.id).to.be.a('number'));",
+            "pm.collectionVariables.set('reservationId', body.data.id);"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/admin/reservations", "host": ["{{baseUrl}}"], "path": ["api","admin","reservations"] },
+            "body": { "mode": "raw", "raw": "{\n  \"userId\": 1,\n  \"roomId\": 2,\n  \"timeSlotId\": 9,\n  \"reservationDate\": \"{{testDate}}\",\n  \"peopleCount\": 5,\n  \"notes\": \"Admin test booking\",\n  \"skipPayment\": true\n}" }
+          }
+        },
+
+        {
+          "name": "Confirm reservation",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "const body = pm.response.json();",
+            "pm.test('success true', () => pm.expect(body.success).to.be.true);",
+            "pm.test('status is CONFIRMED', () => pm.expect(body.data.status).to.eql('CONFIRMED'));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/admin/reservations/{{reservationId}}/confirm", "host": ["{{baseUrl}}"], "path": ["api","admin","reservations","{{reservationId}}","confirm"] }
+          }
+        },
+
+        {
+          "name": "Admin delete reservation",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('success true', () => pm.expect(pm.response.json().success).to.be.true);"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/admin/reservations/{{reservationId}}", "host": ["{{baseUrl}}"], "path": ["api","admin","reservations","{{reservationId}}"] }
+          }
+        },
+
+        {
+          "name": "Admin endpoint – user token forbidden (403)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 403', () => pm.response.to.have.status(403));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{userToken}}" }],
+            "url": { "raw": "{{baseUrl}}/api/admin/reservations", "host": ["{{baseUrl}}"], "path": ["api","admin","reservations"] }
+          }
+        },
+
+        {
+          "name": "Admin endpoint – no token (401)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 401', () => pm.response.to.have.status(401));"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/admin/reservations", "host": ["{{baseUrl}}"], "path": ["api","admin","reservations"] }
+          }
+        }
+
+      ]
+    }
+
+  ]
+}

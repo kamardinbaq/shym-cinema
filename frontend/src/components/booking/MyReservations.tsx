@@ -214,6 +214,7 @@ export default function MyReservations({ inline = false, sessionPrice = 3500, on
       {payingReservation && (
         <PaymentModal
           reservation={payingReservation}
+          sessionPrice={sessionPrice}
           onClose={() => setPayingReservation(null)}
           onBack={() => setPayingReservation(null)}
           onComplete={() => { setPayingReservation(null); load() }}

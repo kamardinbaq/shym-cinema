@@ -3,15 +3,15 @@
 --  Run once at startup (idempotent via ON CONFLICT DO NOTHING)
 -- ============================================================
 
--- ── Admin user (password: Admin@1234) ──────────────────────
+-- ── Admin user (password: 12341234) ──────────────────────
 INSERT INTO users (username, password, phone, role, active)
 VALUES (
     'baqadmin',
-    '$2b$12$Oj8bGRutY//kdk6A2.Ae8OltUKXmoE/oubsrTzvBzyrWDJjl3bbgC',
+    '$2y$12$ptrVNmv261VvqSEPJgCZxuyGFXotSM/X5kZmwnGlXIwLCL/ZRbwmu',
     '+70000000000',
     'ADMIN',
     TRUE
-) ON CONFLICT (username) DO NOTHING;
+) ON CONFLICT (username) DO UPDATE SET password = EXCLUDED.password;
 
 -- ── Demo user (password: User@1234) ────────────────────────
 INSERT INTO users (username, password, phone, role, active)

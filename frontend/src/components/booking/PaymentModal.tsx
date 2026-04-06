@@ -5,19 +5,19 @@ import { X, CheckCircle, ExternalLink, MessageCircle } from 'lucide-react'
 
 interface Props {
   reservation: Reservation
+  sessionPrice: number
   onClose: () => void
   onBack: () => void
   onComplete: () => void
 }
 
 const WHATSAPP_NUMBER = '77066302270'
-const FIXED_PRICE     = 3500
 
-export default function PaymentModal({ reservation, onClose, onBack, onComplete }: Props) {
+export default function PaymentModal({ reservation, sessionPrice, onClose, onBack, onComplete }: Props) {
   const [paid, setPaid] = useState(false)
 
   const whatsappText = encodeURIComponent(
-    `Оплата брони #${reservation.id}\n${reservation.roomName}\n${reservation.reservationDate} ${reservation.startTime}–${reservation.endTime}\n${FIXED_PRICE} ₸`
+    `Оплата брони #${reservation.id}\n${reservation.roomName}\n${reservation.reservationDate} ${reservation.startTime}–${reservation.endTime}\n${sessionPrice} ₸`
   )
   const whatsappLink = `https://wa.me/${WHATSAPP_NUMBER}?text=${whatsappText}`
 
@@ -81,7 +81,7 @@ export default function PaymentModal({ reservation, onClose, onBack, onComplete 
           <div className="border-t border-red-900/20 pt-2 mt-2 flex justify-between items-center">
             <span className="font-mono text-xs text-red-800 tracking-widest">ИТОГО</span>
             <span className="font-display text-base text-blood-light text-glow-subtle">
-              {FIXED_PRICE.toLocaleString()} ₸
+              {sessionPrice.toLocaleString()} ₸
             </span>
           </div>
         </div>
@@ -90,7 +90,7 @@ export default function PaymentModal({ reservation, onClose, onBack, onComplete 
         <div className="border border-red-900/20 bg-void-surface px-4 py-3 mb-6 space-y-3 font-mono text-xs">
           <p className="text-bone-dark">
             <span className="text-red-700 mr-2">1.</span>
-            Нажмите кнопку ниже и оплатите <strong className="text-bone">{FIXED_PRICE} ₸</strong> через Kaspi.
+            Нажмите кнопку ниже и оплатите <strong className="text-bone">{sessionPrice} ₸</strong> через Kaspi.
           </p>
           <p className="text-bone-dark">
             <span className="text-red-700 mr-2">2.</span>

@@ -9,13 +9,14 @@ import { X, Users, Clock, Calendar, ChevronRight } from 'lucide-react'
 
 interface Props {
   booking: BookingState
+  sessionPrice: number
   onClose: () => void
   onComplete: () => void
 }
 
 const THEME_ICONS: Record<string, string> = { LIVING: '🩸', PASSENGER: '🚂', DEAD: '💀' }
 
-export default function BookingModal({ booking, onClose, onComplete }: Props) {
+export default function BookingModal({ booking, sessionPrice, onClose, onComplete }: Props) {
   const { isAdmin } = useAuthStore()
   const [step, setStep]             = useState<'details' | 'payment'>('details')
   const [people, setPeople]         = useState(booking.minPeople)
@@ -52,6 +53,7 @@ export default function BookingModal({ booking, onClose, onComplete }: Props) {
     return (
       <PaymentModal
         reservation={reservation}
+        sessionPrice={sessionPrice}
         onClose={onClose}
         onBack={() => setStep('details')}
         onComplete={onComplete}
@@ -132,7 +134,7 @@ export default function BookingModal({ booking, onClose, onComplete }: Props) {
           </div>
         ) : (
           <div className="border border-red-900/20 bg-red-950/10 px-3 py-2 mb-6 font-mono text-xs text-red-800/80">
-            <p>После подтверждения потребуется оплата через Kaspi — 3 500 ₸.</p>
+            <p>После подтверждения потребуется оплата через Kaspi — {sessionPrice.toLocaleString()} ₸.</p>
           </div>
         )}
 

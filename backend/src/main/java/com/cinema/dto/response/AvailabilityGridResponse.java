@@ -5,6 +5,7 @@ import java.util.List;
 @Data @Builder @NoArgsConstructor @AllArgsConstructor
 public class AvailabilityGridResponse {
     private String date;
+    private int sessionPrice;
     private List<RoomGridRow> rooms;
 
     @Data @Builder @NoArgsConstructor @AllArgsConstructor

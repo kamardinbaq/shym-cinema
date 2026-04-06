@@ -11,7 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -143,15 +142,6 @@ public class ReservationService {
         reservation.setStatus(ReservationStatus.CANCELLED);
         reservationRepository.save(reservation);
         log.info("Reservation cancelled: id={} by user={}", id, username);
-    }
-
-    // Called by PaymentService after successful payment
-    @Transactional
-    public void confirmReservation(Long reservationId) {
-        Reservation reservation = reservationRepository.findById(reservationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Reservation", reservationId));
-        reservation.setStatus(ReservationStatus.CONFIRMED);
-        reservationRepository.save(reservation);
     }
 
     public ReservationResponse toResponse(Reservation r) {

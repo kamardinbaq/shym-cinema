@@ -162,7 +162,7 @@ export default function HomePage() {
       </header>
 
       {/* ── My Reservations (inline, authenticated only) ─── */}
-      {isAuthenticated && <MyReservations inline />}
+      {isAuthenticated && <MyReservations inline sessionPrice={grid?.sessionPrice ?? 3500} />}
 
       {/* ── Hero ───────────────────────────────────────────── */}
       <section className="relative py-6 sm:py-8 px-4 text-center">
@@ -282,6 +282,7 @@ export default function HomePage() {
       {booking && (
         <BookingModal
           booking={booking}
+          sessionPrice={grid?.sessionPrice ?? 3500}
           onClose={() => setBooking(null)}
           onComplete={handleBookingComplete}
         />

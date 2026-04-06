@@ -12,6 +12,7 @@ import com.cinema.repository.ReservationRepository;
 import com.cinema.repository.RoomRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +31,9 @@ public class RoomService {
 
     private final RoomRepository roomRepository;
     private final ReservationRepository reservationRepository;
+
+    @Value("${app.session-price:3500}")
+    private int sessionPrice;
 
     @Transactional(readOnly = true)
     public List<RoomResponse> getAllRooms() {
@@ -133,6 +137,7 @@ public class RoomService {
 
         return AvailabilityGridResponse.builder()
                 .date(date.format(DateTimeFormatter.ISO_LOCAL_DATE))
+                .sessionPrice(sessionPrice)
                 .rooms(rows)
                 .build();
     }

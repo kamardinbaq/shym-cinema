@@ -40,9 +40,8 @@ app:
   rate-limit:
     requests-per-minute: 30
 
-  kaspi:
-    mock-enabled: true
-    success-rate: 0.95  # 95% mock success rate
+  session-price: ${SESSION_PRICE:3500}  # flat price in KZT for all rooms
+
 
 logging:
   level:

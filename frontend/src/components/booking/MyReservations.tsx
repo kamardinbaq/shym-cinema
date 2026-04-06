@@ -24,10 +24,11 @@ const STATUS_ICONS: Record<string, React.ReactNode> = {
 interface Props {
   /** When true, renders inline (no modal overlay). When false/absent, renders as modal. */
   inline?: boolean
+  sessionPrice?: number
   onClose?: () => void
 }
 
-export default function MyReservations({ inline = false, onClose }: Props) {
+export default function MyReservations({ inline = false, sessionPrice = 3500, onClose }: Props) {
   const [reservations, setReservations] = useState<Reservation[]>([])
   const [loading, setLoading]           = useState(true)
   const [cancelling, setCancelling]     = useState<number | null>(null)
@@ -189,6 +190,7 @@ export default function MyReservations({ inline = false, onClose }: Props) {
         {payingReservation && (
           <PaymentModal
             reservation={payingReservation}
+            sessionPrice={sessionPrice}
             onClose={() => setPayingReservation(null)}
             onBack={() => setPayingReservation(null)}
             onComplete={() => { setPayingReservation(null); load() }}

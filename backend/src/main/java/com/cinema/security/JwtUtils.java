@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import jakarta.annotation.PostConstruct;
+
 import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
@@ -19,6 +21,15 @@ public class JwtUtils {
 
     @Value("${app.jwt.secret}")
     private String jwtSecret;
+
+    @PostConstruct
+    void validateSecret() {
+        if (jwtSecret == null || jwtSecret.getBytes().length < 32) {
+            throw new IllegalStateException(
+                "JWT secret must be at least 32 bytes (256 bits) for HS256. " +
+                "Current length: " + (jwtSecret == null ? 0 : jwtSecret.getBytes().length) + " bytes.");
+        }
+    }
 
     @Value("${app.jwt.expiration}")
     private long jwtExpiration;

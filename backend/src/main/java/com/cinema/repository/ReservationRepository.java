@@ -23,7 +23,11 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
         @Param("date") LocalDate date
     );
 
-    List<Reservation> findAllByUserIdOrderByCreatedAtDesc(Long userId);
+    @Query("SELECT r FROM Reservation r " +
+           "JOIN FETCH r.room JOIN FETCH r.timeSlot JOIN FETCH r.user " +
+           "LEFT JOIN FETCH r.payment " +
+           "WHERE r.user.id = :userId ORDER BY r.createdAt DESC")
+    List<Reservation> findAllByUserIdOrderByCreatedAtDesc(@Param("userId") Long userId);
 
     @Query("SELECT r FROM Reservation r " +
            "JOIN FETCH r.room JOIN FETCH r.timeSlot JOIN FETCH r.user " +
@@ -42,21 +46,6 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
            "JOIN FETCH r.room JOIN FETCH r.timeSlot JOIN FETCH r.user " +
            "ORDER BY r.createdAt DESC")
     List<Reservation> findAllWithDetails();
-
-    @Query("SELECT r FROM Reservation r " +
-           "JOIN FETCH r.room JOIN FETCH r.timeSlot " +
-           "WHERE r.room.id = :roomId AND r.timeSlot.id = :slotId " +
-           "AND r.reservationDate = :date AND r.status IN ('PENDING','CONFIRMED')")
-    Optional<Reservation> findBookedSlot(
-        @Param("roomId") Long roomId,
-        @Param("slotId") Long slotId,
-        @Param("date") LocalDate date
-    );
-
-    // Availability check for grid (single date)
-    @Query("SELECT r FROM Reservation r " +
-           "WHERE r.reservationDate = :date AND r.status IN ('PENDING','CONFIRMED')")
-    List<Reservation> findAllActiveByDate(@Param("date") LocalDate date);
 
     // Availability check for business day spanning two calendar dates
     @Query("SELECT r FROM Reservation r " +

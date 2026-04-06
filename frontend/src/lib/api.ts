@@ -1,6 +1,6 @@
 // src/lib/api.ts
 import axios from 'axios'
-import type { ApiResponse, AuthResponse, AvailabilityGrid, Reservation, Payment } from '@/types'
+import type { ApiResponse, AuthResponse, AvailabilityGrid, Reservation } from '@/types'
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
 
@@ -57,9 +57,6 @@ export const reservationApi = {
   getMyReservations: () =>
     api.get<ApiResponse<Reservation[]>>('/api/reservations'),
 
-  getById: (id: number) =>
-    api.get<ApiResponse<Reservation>>(`/api/reservations/${id}`),
-
   create: (data: {
     roomId: number
     timeSlotId: number
@@ -70,15 +67,6 @@ export const reservationApi = {
 
   cancel: (id: number) =>
     api.delete<ApiResponse<void>>(`/api/reservations/${id}`),
-}
-
-// ── Payments ────────────────────────────────────────────────
-export const paymentApi = {
-  processKaspi: (data: {
-    reservationId: number
-    phoneNumber: string
-    paymentMethod: string
-  }) => api.post<ApiResponse<Payment>>('/api/payments/kaspi', data),
 }
 
 // ── Admin ───────────────────────────────────────────────────

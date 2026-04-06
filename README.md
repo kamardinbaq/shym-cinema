@@ -106,7 +106,7 @@ docker-compose up --build
 
 | Role  | Username  | Password    |
 |-------|-----------|-------------|
-| Admin | `admin`   | `Admin@1234`|
+| Admin | `bagadmin`   | `12341234`|
 | User  | `demouser`| `User@1234` |
 
 ---

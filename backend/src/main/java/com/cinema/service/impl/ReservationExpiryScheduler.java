@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 @Component
@@ -18,13 +19,14 @@ import java.util.List;
 public class ReservationExpiryScheduler {
 
     private static final int PENDING_EXPIRY_MINUTES = 10;
+    private static final ZoneId ALMATY_ZONE = ZoneId.of("Asia/Almaty");
 
     private final ReservationRepository reservationRepository;
 
     @Scheduled(fixedRate = 60_000) // runs every 60 seconds
     @Transactional
     public void expireStaleReservations() {
-        LocalDateTime expiryTime = LocalDateTime.now().minusMinutes(PENDING_EXPIRY_MINUTES);
+        LocalDateTime expiryTime = LocalDateTime.now(ALMATY_ZONE).minusMinutes(PENDING_EXPIRY_MINUTES);
 
         List<Reservation> stale = reservationRepository.findExpiredPendingReservations(expiryTime);
 

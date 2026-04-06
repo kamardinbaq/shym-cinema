@@ -39,6 +39,7 @@ export interface RoomGridRow {
 
 export interface AvailabilityGrid {
   date: string
+  sessionPrice: number
   rooms: RoomGridRow[]
 }
 

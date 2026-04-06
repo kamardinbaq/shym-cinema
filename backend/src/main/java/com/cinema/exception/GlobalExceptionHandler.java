@@ -37,13 +37,6 @@ public class GlobalExceptionHandler {
         return ApiResponse.error(ex.getMessage());
     }
 
-    @ExceptionHandler(PaymentException.class)
-    @ResponseStatus(HttpStatus.PAYMENT_REQUIRED)
-    public ApiResponse<Void> handlePayment(PaymentException ex) {
-        log.warn("Payment error: {}", ex.getMessage());
-        return ApiResponse.error(ex.getMessage());
-    }
-
     @ExceptionHandler(BadCredentialsException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public ApiResponse<Void> handleBadCredentials(BadCredentialsException ex) {

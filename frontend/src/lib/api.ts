@@ -42,7 +42,7 @@ export const authApi = {
   login: (username: string, password: string) =>
     api.post<ApiResponse<AuthResponse>>('/api/auth/login', { username, password }),
 
-  register: (data: { username: string; email: string; password: string; fullName?: string; phone?: string }) =>
+  register: (data: { username: string; password: string; phone: string }) =>
     api.post<ApiResponse<AuthResponse>>('/api/auth/register', data),
 }
 
@@ -88,6 +88,9 @@ export const adminApi = {
 
   cancelReservation: (id: number) =>
     api.delete<ApiResponse<void>>(`/api/admin/reservations/${id}`),
+
+  confirmReservation: (id: number) =>
+    api.patch<ApiResponse<Reservation>>(`/api/admin/reservations/${id}/confirm`),
 
   createReservation: (data: {
     userId: number

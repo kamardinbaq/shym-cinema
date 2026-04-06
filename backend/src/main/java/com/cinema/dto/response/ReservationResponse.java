@@ -7,6 +7,7 @@ public class ReservationResponse {
     private Long id;
     private Long userId;
     private String username;
+    private String userPhone;
     private Long roomId;
     private String roomName;
     private Long timeSlotId;

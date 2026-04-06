@@ -178,6 +178,7 @@ public class ReservationService {
                 .id(r.getId())
                 .userId(r.getUser().getId())
                 .username(r.getUser().getUsername())
+                .userPhone(r.getUser().getPhone())
                 .roomId(r.getRoom().getId())
                 .roomName(r.getRoom().getName())
                 .timeSlotId(r.getTimeSlot().getId())

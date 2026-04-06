@@ -43,6 +43,11 @@ public class AdminController {
                 adminService.createReservation(request));
     }
 
+    @PatchMapping("/reservations/{id}/confirm")
+    public ApiResponse<ReservationResponse> confirmReservation(@PathVariable Long id) {
+        return ApiResponse.ok("Reservation confirmed", adminService.confirmReservation(id));
+    }
+
     @DeleteMapping("/reservations/{id}")
     public ApiResponse<Void> cancelReservation(@PathVariable Long id) {
         adminService.cancelReservation(id);

@@ -19,7 +19,6 @@ public class PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final ReservationRepository reservationRepository;
-    private final ReservationService reservationService;
     private final KaspiPaymentService kaspiPaymentService;
 
     @Transactional
@@ -79,10 +78,9 @@ public class PaymentService {
             payment.setPaidAt(LocalDateTime.now());
             paymentRepository.save(payment);
 
-            // Confirm the reservation
-            reservationService.confirmReservation(reservation.getId());
-
-            log.info("Payment SUCCESS: reservationId={}, txId={}", reservation.getId(), result.transactionId());
+            // Reservation stays PENDING — admin must confirm after verifying the Kaspi check
+            log.info("Payment recorded: reservationId={}, txId={} — awaiting admin confirmation",
+                    reservation.getId(), result.transactionId());
         } else {
             payment.setStatus(PaymentStatus.FAILED);
             paymentRepository.save(payment);

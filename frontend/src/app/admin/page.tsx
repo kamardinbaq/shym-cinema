@@ -5,7 +5,7 @@ import toast from 'react-hot-toast'
 import { adminApi, authApi } from '@/lib/api'
 import { useAuthStore } from '@/lib/store'
 import type { Reservation } from '@/types'
-import { Skull, Trash2, RefreshCw, Shield, LogOut } from 'lucide-react'
+import { Skull, Trash2, RefreshCw, Shield, LogOut, CheckCheck } from 'lucide-react'
 import clsx from 'clsx'
 
 const STATUS_COLOR: Record<string, string> = {
@@ -21,6 +21,7 @@ export default function AdminPage() {
   const [loading, setLoading]           = useState(true)
   const [dateFilter, setDateFilter]     = useState('')
   const [cancelling, setCancelling]     = useState<number | null>(null)
+  const [confirming, setConfirming]     = useState<number | null>(null)
   const [hydrated, setHydrated]         = useState(false)
 
   // Login form state
@@ -58,6 +59,19 @@ export default function AdminPage() {
       toast.error(err.response?.data?.message || 'Failed')
     } finally {
       setCancelling(null)
+    }
+  }
+
+  const handleConfirm = async (id: number) => {
+    setConfirming(id)
+    try {
+      await adminApi.confirmReservation(id)
+      toast.success('Reservation #' + id + ' confirmed')
+      await load()
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed')
+    } finally {
+      setConfirming(null)
     }
   }
 
@@ -198,7 +212,7 @@ export default function AdminPage() {
             <table className="w-full border-collapse text-sm">
               <thead>
                 <tr className="border-b border-red-900/30">
-                  {['ID', 'USER', 'ROOM', 'DATE', 'TIME', 'PEOPLE', 'STATUS', 'PAYMENT', 'ACTIONS'].map(h => (
+                  {['ID', 'USER', 'PHONE', 'ROOM', 'DATE', 'TIME', 'PEOPLE', 'STATUS', 'NOTES', 'PAYMENT', 'ACTIONS'].map(h => (
                     <th key={h} className="text-left px-3 py-3 font-mono text-[10px] text-red-900 tracking-widest">
                       {h}
                     </th>
@@ -207,7 +221,7 @@ export default function AdminPage() {
               </thead>
               <tbody>
                 {reservations.length === 0 ? (
-                  <tr><td colSpan={9} className="text-center py-16 font-mono text-xs text-red-900/40 tracking-widest">
+                  <tr><td colSpan={11} className="text-center py-16 font-mono text-xs text-red-900/40 tracking-widest">
                     NO RESERVATIONS FOUND
                   </td></tr>
                 ) : reservations.map((r, i) => (
@@ -216,6 +230,7 @@ export default function AdminPage() {
                       i % 2 === 0 ? 'bg-white/[0.005]' : '')}>
                     <td className="px-3 py-3 font-mono text-xs text-red-800">#{r.id}</td>
                     <td className="px-3 py-3 font-body text-bone-dark text-xs">{r.username}</td>
+                    <td className="px-3 py-3 font-mono text-xs text-bone-dark">{r.userPhone || '—'}</td>
                     <td className="px-3 py-3 font-body text-bone text-xs max-w-[120px] truncate">{r.roomName}</td>
                     <td className="px-3 py-3 font-mono text-xs text-bone-dark">{r.reservationDate}</td>
                     <td className="px-3 py-3 font-mono text-xs text-red-800">{r.startTime}–{r.endTime}</td>
@@ -224,6 +239,9 @@ export default function AdminPage() {
                       <span className={clsx('font-mono text-[10px] tracking-widest', STATUS_COLOR[r.status])}>
                         {r.status}
                       </span>
+                    </td>
+                    <td className="px-3 py-3 font-body text-xs text-bone-dark/70 max-w-[140px] truncate" title={r.notes}>
+                      {r.notes || <span className="text-red-900/30">—</span>}
                     </td>
                     <td className="px-3 py-3 font-mono text-[10px]">
                       {r.payment ? (
@@ -236,16 +254,28 @@ export default function AdminPage() {
                       )}
                     </td>
                     <td className="px-3 py-3">
-                      {(r.status === 'PENDING' || r.status === 'CONFIRMED') && (
-                        <button
-                          onClick={() => handleCancel(r.id)}
-                          disabled={cancelling === r.id}
-                          className="text-red-800 hover:text-red-500 transition-colors"
-                          title="Cancel"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {r.status === 'PENDING' && (
+                          <button
+                            onClick={() => handleConfirm(r.id)}
+                            disabled={confirming === r.id}
+                            className="text-green-700 hover:text-green-400 transition-colors"
+                            title="Confirm"
+                          >
+                            <CheckCheck className="w-4 h-4" />
+                          </button>
+                        )}
+                        {(r.status === 'PENDING' || r.status === 'CONFIRMED') && (
+                          <button
+                            onClick={() => handleCancel(r.id)}
+                            disabled={cancelling === r.id}
+                            className="text-red-800 hover:text-red-500 transition-colors"
+                            title="Cancel"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}

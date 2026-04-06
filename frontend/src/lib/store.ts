@@ -23,13 +23,12 @@ export const useAuthStore = create<AuthState>((set) => ({
       localStorage.setItem('token', auth.token)
       localStorage.setItem('user', JSON.stringify({
         username: auth.username,
-        email: auth.email,
         role: auth.role,
       }))
     }
     set({
       token: auth.token,
-      user: { username: auth.username, email: auth.email, role: auth.role },
+      user: { username: auth.username, role: auth.role },
       isAuthenticated: true,
       isAdmin: auth.role === 'ADMIN',
     })

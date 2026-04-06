@@ -5,15 +5,20 @@
 CREATE TABLE IF NOT EXISTS users (
     id          BIGSERIAL PRIMARY KEY,
     username    VARCHAR(50)  NOT NULL UNIQUE,
-    email       VARCHAR(100) NOT NULL UNIQUE,
     password    VARCHAR(255) NOT NULL,
-    full_name   VARCHAR(100),
-    phone       VARCHAR(20),
+    phone       VARCHAR(20)  NOT NULL,
     role        VARCHAR(20)  NOT NULL DEFAULT 'USER',
     active      BOOLEAN      NOT NULL DEFAULT TRUE,
     created_at  TIMESTAMP    NOT NULL DEFAULT NOW(),
     updated_at  TIMESTAMP    NOT NULL DEFAULT NOW()
 );
+
+-- Migration: remove email/full_name columns if they exist (idempotent)
+ALTER TABLE users DROP COLUMN IF EXISTS email;
+ALTER TABLE users DROP COLUMN IF EXISTS full_name;
+-- Make phone NOT NULL for existing rows that may have null (set placeholder)
+UPDATE users SET phone = '+70000000000' WHERE phone IS NULL;
+ALTER TABLE users ALTER COLUMN phone SET NOT NULL;
 
 CREATE TABLE IF NOT EXISTS rooms (
     id           BIGSERIAL PRIMARY KEY,

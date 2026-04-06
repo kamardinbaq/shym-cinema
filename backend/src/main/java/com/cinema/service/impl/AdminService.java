@@ -104,4 +104,22 @@ public class AdminService {
         reservationRepository.save(reservation);
         log.info("[ADMIN] Reservation cancelled: id={}", id);
     }
+
+    @Transactional
+    public ReservationResponse confirmReservation(Long id) {
+        Reservation reservation = reservationRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Reservation", id));
+
+        if (reservation.getStatus() == ReservationStatus.CANCELLED) {
+            throw new BusinessException("Cannot confirm a cancelled reservation");
+        }
+        if (reservation.getStatus() == ReservationStatus.CONFIRMED) {
+            throw new BusinessException("Reservation is already confirmed");
+        }
+
+        reservation.setStatus(ReservationStatus.CONFIRMED);
+        reservationRepository.save(reservation);
+        log.info("[ADMIN] Reservation confirmed: id={}", id);
+        return reservationService.toResponse(reservation);
+    }
 }

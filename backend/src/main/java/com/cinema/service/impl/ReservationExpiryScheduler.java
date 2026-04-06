@@ -17,7 +17,7 @@ import java.util.List;
 @Slf4j
 public class ReservationExpiryScheduler {
 
-    private static final int PENDING_EXPIRY_MINUTES = 5;
+    private static final int PENDING_EXPIRY_MINUTES = 10;
 
     private final ReservationRepository reservationRepository;
 

@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState, useCallback } from 'react'
 import { format, addDays, subDays } from 'date-fns'
+import { ru } from 'date-fns/locale'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
 import { availabilityApi } from '@/lib/api'
@@ -72,7 +73,7 @@ export default function HomePage() {
     setRefreshKey(k => k + 1)
   }
 
-  const dateLabel = format(selectedDate, 'EEEE, d MMMM yyyy')
+  const dateLabel = format(selectedDate, 'EEEE, d MMMM yyyy', { locale: ru })
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: '#000' }}>
@@ -258,7 +259,7 @@ export default function HomePage() {
           >
             Instagram
           </a>
-          <a href="https://wa.me/your_number" target="_blank" rel="noopener noreferrer"
+          <a href="https://wa.me/77066302270" target="_blank" rel="noopener noreferrer"
             className="font-mono text-xs tracking-wider px-3 py-1.5 rounded border transition-all duration-200"
             style={{ color: '#c4b49a', borderColor: 'rgba(139,0,0,0.3)' }}
             onMouseEnter={e => { (e.target as HTMLElement).style.borderColor = '#cc0000'; (e.target as HTMLElement).style.color = '#fff' }}

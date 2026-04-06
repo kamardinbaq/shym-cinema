@@ -20,10 +20,8 @@ export default function AuthModal({ onClose, onSuccess }: Props) {
   const [password, setPassword] = useState('')
 
   // Register fields
-  const [email, setEmail]       = useState('')
-  const [fullName, setFullName] = useState('')
-  const [phone, setPhone]       = useState('+7 ')
-  const [regPass, setRegPass]   = useState('')
+  const [phone, setPhone]   = useState('+7 ')
+  const [regPass, setRegPass] = useState('')
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value
@@ -52,10 +50,15 @@ export default function AuthModal({ onClose, onSuccess }: Props) {
   }
 
   const handleRegister = async () => {
-    if (!username || !email || !regPass) { toast.error('Fill in required fields'); return }
+    const rawPhone = phone.replace(/\s/g, '')
+    if (!username || !regPass || !rawPhone || rawPhone.length < 10) {
+      toast.error('Fill in all required fields')
+      return
+    }
+    if (regPass.length < 8) { toast.error('Password must be at least 8 characters'); return }
     setLoading(true)
     try {
-      const res = await authApi.register({ username, email, password: regPass, fullName, phone: phone.replace(/\s/g, '') || undefined })
+      const res = await authApi.register({ username, password: regPass, phone: rawPhone })
       setAuth(res.data.data)
       toast.success('Account created!')
       onSuccess()
@@ -125,19 +128,7 @@ export default function AuthModal({ onClose, onSuccess }: Props) {
               <input className="horror-input" placeholder="survivor_name" value={username}
                 onChange={e => setUsername(e.target.value)} />
             </Field>
-            <Field label="EMAIL *">
-              <input type="email" className="horror-input" placeholder="you@example.com" value={email}
-                onChange={e => setEmail(e.target.value)} />
-            </Field>
-            <Field label="PASSWORD *">
-              <input type="password" className="horror-input" placeholder="Min 8 chars, upper+lower+digit"
-                value={regPass} onChange={e => setRegPass(e.target.value)} />
-            </Field>
-            <Field label="FULL NAME">
-              <input className="horror-input" placeholder="Optional" value={fullName}
-                onChange={e => setFullName(e.target.value)} />
-            </Field>
-            <Field label="PHONE">
+            <Field label="PHONE *">
               <input
                 className="horror-input"
                 placeholder="+7 771 644 3144"
@@ -146,6 +137,10 @@ export default function AuthModal({ onClose, onSuccess }: Props) {
                 inputMode="tel"
                 maxLength={15}
               />
+            </Field>
+            <Field label="PASSWORD *">
+              <input type="password" className="horror-input" placeholder="Min 8 characters"
+                value={regPass} onChange={e => setRegPass(e.target.value)} />
             </Field>
             <button onClick={handleRegister} disabled={loading} className="btn-blood w-full mt-2">
               {loading ? <span className="animate-pulse">CREATING...</span> : 'CREATE ACCOUNT'}

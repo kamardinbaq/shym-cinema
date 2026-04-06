@@ -53,6 +53,7 @@ export default function BookingModal({ booking, onClose, onComplete }: Props) {
       <PaymentModal
         reservation={reservation}
         onClose={onClose}
+        onBack={() => setStep('details')}
         onComplete={onComplete}
       />
     )
@@ -71,7 +72,7 @@ export default function BookingModal({ booking, onClose, onComplete }: Props) {
                 {booking.roomName}
               </h2>
             </div>
-            <p className="font-mono text-xs text-red-800 tracking-widest">RESERVE YOUR SLOT</p>
+            <p className="font-mono text-xs text-red-800 tracking-widest">ЗАБРОНИРОВАТЬ СЕАНС</p>
           </div>
           <button onClick={onClose} className="text-red-900 hover:text-red-500 transition-colors mt-0.5">
             <X className="w-5 h-5" />
@@ -80,15 +81,15 @@ export default function BookingModal({ booking, onClose, onComplete }: Props) {
 
         {/* Slot info — stacks on very small screens */}
         <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-6">
-          <InfoChip icon={<Calendar className="w-3.5 h-3.5" />} label="DATE" value={booking.date} />
-          <InfoChip icon={<Clock className="w-3.5 h-3.5" />} label="TIME" value={`${booking.startTime}–${booking.endTime}`} />
-          <InfoChip icon={<Users className="w-3.5 h-3.5" />} label="PLACES" value={`max ${booking.capacity}`} />
+          <InfoChip icon={<Calendar className="w-3.5 h-3.5" />} label="ДАТА" value={booking.date} />
+          <InfoChip icon={<Clock className="w-3.5 h-3.5" />} label="ВРЕМЯ" value={`${booking.startTime}–${booking.endTime}`} />
+          <InfoChip icon={<Users className="w-3.5 h-3.5" />} label="МЕСТ" value={`макс ${booking.capacity}`} />
         </div>
 
         {/* People count */}
         <div className="mb-5">
           <label className="font-mono text-xs text-red-800 tracking-widest block mb-2">
-            NUMBER OF SURVIVORS
+            КОЛИЧЕСТВО УЧАСТНИКОВ
           </label>
           <div className="flex items-center gap-3">
             <button
@@ -106,18 +107,18 @@ export default function BookingModal({ booking, onClose, onComplete }: Props) {
             >+</button>
           </div>
           <p className="font-mono text-xs text-red-900/60 text-center mt-2">
-            Min {booking.minPeople} · Max {booking.capacity}
+            Мин {booking.minPeople} · Макс {booking.capacity}
           </p>
         </div>
 
         {/* Notes */}
         <div className="mb-6">
           <label className="font-mono text-xs text-red-800 tracking-widest block mb-2">
-            SPECIAL NOTES (OPTIONAL)
+            ОСОБЫЕ ПОЖЕЛАНИЯ (НЕОБЯЗАТЕЛЬНО)
           </label>
           <textarea
             className="horror-input resize-none h-16 text-sm"
-            placeholder="Any special requirements..."
+            placeholder="Пожелания, особые требования..."
             value={notes}
             onChange={e => setNotes(e.target.value)}
             maxLength={500}
@@ -127,26 +128,26 @@ export default function BookingModal({ booking, onClose, onComplete }: Props) {
         {/* Pricing hint */}
         {isAdmin ? (
           <div className="border border-green-900/20 bg-green-950/10 px-3 py-2 mb-6 font-mono text-xs text-green-700/80">
-            <p>Admin booking — no payment required.</p>
+            <p>Бронирование от администратора — оплата не требуется.</p>
           </div>
         ) : (
           <div className="border border-red-900/20 bg-red-950/10 px-3 py-2 mb-6 font-mono text-xs text-red-800/80">
-            <p>Payment via Kaspi Pay will be required after confirmation.</p>
+            <p>После подтверждения потребуется оплата через Kaspi — 3 500 ₸.</p>
           </div>
         )}
 
         {/* Actions */}
         <div className="flex gap-3">
-          <button onClick={onClose} className="btn-ghost flex-1">Cancel</button>
+          <button onClick={onClose} className="btn-ghost flex-1">Отмена</button>
           <button
             onClick={handleReserve}
             disabled={loading}
             className="btn-blood flex-1 flex items-center justify-center gap-2"
           >
             {loading ? (
-              <span className="animate-pulse">Processing...</span>
+              <span className="animate-pulse">Обработка...</span>
             ) : (
-              <>Continue <ChevronRight className="w-4 h-4" /></>
+              <>Далее <ChevronRight className="w-4 h-4" /></>
             )}
           </button>
         </div>

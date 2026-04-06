@@ -4,23 +4,21 @@
 -- ============================================================
 
 -- ── Admin user (password: Admin@1234) ──────────────────────
-INSERT INTO users (username, email, password, full_name, role, active)
+INSERT INTO users (username, password, phone, role, active)
 VALUES (
-    'admin',
-    'admin@horrorcine.kz',
-    '$2b$12$7M7Y5tM0VTQVGZheoEMXduny2MxWK0/mx12OfAfEjoKlKlkfkVN/G',
-    'System Admin',
+    'baqadmin',
+    '$2b$12$Oj8bGRutY//kdk6A2.Ae8OltUKXmoE/oubsrTzvBzyrWDJjl3bbgC',
+    '+70000000000',
     'ADMIN',
     TRUE
 ) ON CONFLICT (username) DO NOTHING;
 
 -- ── Demo user (password: User@1234) ────────────────────────
-INSERT INTO users (username, email, password, full_name, role, active)
+INSERT INTO users (username, password, phone, role, active)
 VALUES (
     'demouser',
-    'demo@horrorcine.kz',
     '$2a$12$K0sCCGqHGIEoXFJW5TwIzuM8qG0kx1KJN2dY8Mn6R5mFp4IrHZdHe',
-    'Demo User',
+    '+70000000001',
     'USER',
     TRUE
 ) ON CONFLICT (username) DO NOTHING;

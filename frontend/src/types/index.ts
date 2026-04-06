@@ -46,6 +46,7 @@ export interface Reservation {
   id: number
   userId: number
   username: string
+  userPhone?: string
   roomId: number
   roomName: string
   timeSlotId: number
@@ -76,7 +77,6 @@ export interface AuthResponse {
   token: string
   tokenType: string
   username: string
-  email: string
   role: 'USER' | 'ADMIN'
   expiresIn: number
 }

@@ -63,18 +63,8 @@ public class KaspiPaymentService {
         }
     }
 
-    /**
-     * Calculates the price per session based on room capacity and people count.
-     * Adjust pricing logic to match your actual pricing model.
-     */
+    /** Fixed session price regardless of people count or room. */
     public BigDecimal calculateAmount(int peopleCount, String themeCode) {
-        // Base prices per person in KZT
-        BigDecimal pricePerPerson = switch (themeCode) {
-            case "DEAD"      -> new BigDecimal("4500");
-            case "LIVING"    -> new BigDecimal("5000");
-            case "PASSENGER" -> new BigDecimal("4000");
-            default          -> new BigDecimal("4500");
-        };
-        return pricePerPerson.multiply(BigDecimal.valueOf(peopleCount));
+        return new BigDecimal("3500");
     }
 }

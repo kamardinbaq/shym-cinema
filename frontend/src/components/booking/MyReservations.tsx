@@ -190,6 +190,7 @@ export default function MyReservations({ inline = false, onClose }: Props) {
           <PaymentModal
             reservation={payingReservation}
             onClose={() => setPayingReservation(null)}
+            onBack={() => setPayingReservation(null)}
             onComplete={() => { setPayingReservation(null); load() }}
           />
         )}
@@ -212,6 +213,7 @@ export default function MyReservations({ inline = false, onClose }: Props) {
         <PaymentModal
           reservation={payingReservation}
           onClose={() => setPayingReservation(null)}
+          onBack={() => setPayingReservation(null)}
           onComplete={() => { setPayingReservation(null); load() }}
         />
       )}

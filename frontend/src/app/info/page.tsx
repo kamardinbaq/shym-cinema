@@ -245,7 +245,7 @@ export default function InfoPage() {
 
             {/* WhatsApp */}
             <a
-              href="https://wa.me/your_number"
+              href="https://wa.me/77066302270"
               target="_blank"
               rel="noopener noreferrer"
               style={{

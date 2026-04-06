@@ -104,7 +104,7 @@ export default function PaymentModal({ reservation, sessionPrice, onClose, onBac
 
         {/* Kaspi pay link */}
         <a
-          href={`https://kaspi.kz/pay`}
+          href="https://pay.kaspi.kz/pay/xyv7zqeg"
           target="_blank"
           rel="noopener noreferrer"
           className="btn-blood w-full mb-3 flex items-center justify-center gap-2"

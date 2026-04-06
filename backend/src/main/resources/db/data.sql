@@ -7,7 +7,7 @@
 INSERT INTO users (username, password, phone, role, active)
 VALUES (
     'baqadmin',
-    '$2y$12$ptrVNmv261VvqSEPJgCZxuyGFXotSM/X5kZmwnGlXIwLCL/ZRbwmu',
+    '$2a$12$ptrVNmv261VvqSEPJgCZxuyGFXotSM/X5kZmwnGlXIwLCL/ZRbwmu',
     '+70000000000',
     'ADMIN',
     TRUE

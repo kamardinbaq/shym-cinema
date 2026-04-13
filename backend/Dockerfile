@@ -14,5 +14,5 @@ COPY --from=build /app/target/*.jar app.jar
 RUN chown cinema:cinema app.jar
 USER cinema
 EXPOSE 8080
-ENV JAVA_OPTS="-XX:MaxRAMPercentage=75 -XX:+UseSerialGC -Xss512k"
+ENV JAVA_OPTS="-XX:+UseSerialGC -Xss256k -Xmx220m -XX:MaxMetaspaceSize=128m -XX:CompressedClassSpaceSize=32m -XX:ReservedCodeCacheSize=32m"
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]

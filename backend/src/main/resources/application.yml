@@ -8,8 +8,8 @@ spring:
     password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
     hikari:
-      maximum-pool-size: 1
-      minimum-idle: 1
+      maximum-pool-size: 10
+      minimum-idle: 2
       connection-timeout: 30000
       idle-timeout: 600000
       max-lifetime: 1800000
@@ -47,6 +47,23 @@ app:
     requests-per-minute: 30
 
   session-price: ${SESSION_PRICE:3500}  # flat price in KZT for all rooms
+
+  kaspi-seller-iin: ${KASPI_SELLER_IIN:990811301225}  # IIN/BIN of the Kaspi merchant
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+
+telegram:
+  bot:
+    token: ${TELEGRAM_BOT_TOKEN:}        # set this env var to enable the bot
+    username: ${TELEGRAM_BOT_USERNAME:DarkCinemaChequeBot}
+
 
 
 logging:

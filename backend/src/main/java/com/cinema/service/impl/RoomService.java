@@ -56,7 +56,7 @@ public class RoomService {
     private static final int       BOOKING_CUTOFF_MINUTES = 30;
 
     @Transactional(readOnly = true)
-    public AvailabilityGridResponse getAvailabilityGrid(LocalDate date) {
+    public AvailabilityGridResponse getAvailabilityGrid(LocalDate date, Long currentUserId) {
         LocalDate nextDay = date.plusDays(1);
         List<Room> rooms = roomRepository.findAllActiveWithSlots();
 
@@ -98,10 +98,10 @@ public class RoomService {
                                 if (reservation != null) {
                                     if (reservation.getStatus() == ReservationStatus.PENDING) {
                                         status = "PENDING";
-                                        // Expiry = createdAt + 10 minutes (matches ReservationExpiryScheduler)
+                                        // Expiry = createdAt + 15 minutes (matches ReservationExpiryScheduler)
                                         // Append "Z" so the browser parses it as UTC, not local time
                                         pendingExpiresAt = reservation.getCreatedAt()
-                                                .plusMinutes(10)
+                                                .plusMinutes(15)
                                                 .toString() + "Z";
                                     } else {
                                         status = "RESERVED";
@@ -117,7 +117,7 @@ public class RoomService {
                                         .startTime(slot.getStartTime().toString())
                                         .endTime(slot.getEndTime().toString())
                                         .status(status)
-                                        .reservationId(reservation != null ? reservation.getId() : null)
+                                        .reservationId(reservation != null && currentUserId != null && reservation.getUser().getId().equals(currentUserId) ? reservation.getId() : null)
                                         .slotDate(slotDate.format(DateTimeFormatter.ISO_LOCAL_DATE))
                                         .pendingExpiresAt(pendingExpiresAt)
                                         .build();

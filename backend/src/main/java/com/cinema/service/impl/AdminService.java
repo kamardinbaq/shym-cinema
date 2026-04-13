@@ -7,11 +7,13 @@ import com.cinema.exception.*;
 import com.cinema.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,6 +26,7 @@ public class AdminService {
     private final TimeSlotRepository timeSlotRepository;
     private final UserRepository userRepository;
     private final ReservationService reservationService;
+    private final UsedReceiptRepository usedReceiptRepository;
 
     @Transactional(readOnly = true)
     public List<ReservationResponse> getAllReservations() {
@@ -120,6 +123,57 @@ public class AdminService {
         reservation.setStatus(ReservationStatus.CONFIRMED);
         reservationRepository.save(reservation);
         log.info("[ADMIN] Reservation confirmed: id={}", id);
+        return reservationService.toResponse(reservation);
+    }
+
+    /**
+     * Looks up a PENDING reservation by its confirmation code. Used by the Telegram bot
+     * to validate the code before asking for the receipt PDF.
+     */
+    @Transactional(readOnly = true)
+    public Optional<Reservation> findPendingReservationByCode(String code) {
+        return reservationRepository.findByConfirmationCodeAndStatus(
+                code.toUpperCase(), ReservationStatus.PENDING);
+    }
+
+    /**
+     * Confirms a reservation ONLY after verifying the Kaspi receipt.
+     * Atomically saves the receipt number so it cannot be reused.
+     *
+     * Race-condition safety:
+     *  - Receipt is saved FIRST so the DB unique constraint fires before the reservation
+     *    is mutated. If two concurrent requests arrive with the same receipt number the
+     *    second one gets a DataIntegrityViolationException from the DB, not a silent pass.
+     *  - The @Transactional boundary ensures both writes either commit together or roll back.
+     */
+    @Transactional
+    public ReservationResponse confirmReservationWithReceipt(Long reservationId, String receiptNumber) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Reservation", reservationId));
+
+        if (reservation.getStatus() == ReservationStatus.CANCELLED) {
+            throw new BusinessException("Cannot confirm a cancelled reservation");
+        }
+        if (reservation.getStatus() == ReservationStatus.CONFIRMED) {
+            throw new BusinessException("Reservation is already confirmed");
+        }
+
+        // Save receipt FIRST — the DB unique constraint on receipt_number is the real
+        // guard against double-use, catching concurrent requests that pass the status
+        // check simultaneously.
+        try {
+            UsedReceipt usedReceipt = new UsedReceipt();
+            usedReceipt.setReceiptNumber(receiptNumber);
+            usedReceipt.setReservationId(reservationId);
+            usedReceiptRepository.saveAndFlush(usedReceipt);
+        } catch (DataIntegrityViolationException e) {
+            throw new BusinessException("Receipt already used");
+        }
+
+        reservation.setStatus(ReservationStatus.CONFIRMED);
+        reservationRepository.save(reservation);
+
+        log.info("[ADMIN] Reservation confirmed with receipt: id={}, receipt={}", reservationId, receiptNumber);
         return reservationService.toResponse(reservation);
     }
 }

@@ -17,6 +17,7 @@ public class ReservationResponse {
     private int peopleCount;
     private String status;
     private String notes;
+    private String confirmationCode;
     private PaymentResponse payment;
     private LocalDateTime createdAt;
 }

@@ -1,160 +1,170 @@
-# 🎭 Horror Cinema Reservation System
+# Horror Cinema Reservation System
 
 > *"Book your nightmare. Three rooms. No escape."*
 
-A production-ready cinema reservation platform built with **Spring Boot 3** + **Next.js 14** featuring JWT authentication, pessimistic locking to prevent double-booking, and a mock Kaspi Pay integration.
+A production-ready cinema reservation platform built with **Spring Boot 3** + **Next.js 14** featuring JWT authentication, pessimistic locking to prevent double-booking, and automated Kaspi payment verification via a Telegram bot.
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 cinema/
 ├── backend/                    Spring Boot 3 / Java 17
 │   ├── src/main/java/com/cinema/
-│   │   ├── config/             SecurityConfig, CORS
-│   │   ├── controller/         REST controllers
+│   │   ├── config/             SecurityConfig, RateLimitFilter, CORS
+│   │   ├── controller/         REST controllers (Auth, Reservation, Admin, Availability)
 │   │   ├── dto/                Request / Response DTOs
-│   │   ├── entity/             JPA entities
-│   │   ├── exception/          Global exception handler
-│   │   ├── repository/         Spring Data JPA
-│   │   ├── security/           JWT utils + filter
-│   │   └── service/impl/       Business logic
+│   │   ├── entity/             JPA entities (User, Room, TimeSlot, Reservation, Payment, UsedReceipt)
+│   │   ├── exception/          GlobalExceptionHandler + custom exceptions
+│   │   ├── repository/         Spring Data JPA repositories
+│   │   ├── security/           JwtUtils, JwtAuthFilter, UserDetailsServiceImpl
+│   │   ├── service/impl/       Business logic (ReservationService, AdminService, AuthService, ...)
+│   │   └── telegram/           TelegramBotService, TelegramBotProperties
 │   └── src/main/resources/
 │       ├── application.yml
 │       └── db/
-│           ├── schema.sql      DDL
-│           └── data.sql        Seed: rooms, slots, admin user
+│           ├── schema.sql      DDL (tables + indexes)
+│           └── data.sql        Seed: rooms, time slots, admin user
 ├── frontend/                   Next.js 14 / TypeScript
 │   └── src/
 │       ├── app/
 │       │   ├── page.tsx        Main booking page
+│       │   ├── info/page.tsx   Levels, rules, contacts
 │       │   └── admin/page.tsx  Admin dashboard
-│       ├── components/booking/ Grid, Modals
-│       ├── lib/                API client, Zustand store
+│       ├── components/booking/ ReservationGrid, BookingModal, PaymentModal,
+│       │                       MyReservations (with countdown timer), AuthModal
+│       ├── lib/                axios API client, Zustand auth store
 │       └── types/              TypeScript interfaces
 └── docker-compose.yml
 ```
 
 ---
 
-## 🚀 Quick Start (Local)
+## Quick Start
 
-### Prerequisites
-- Java 17+
-- Maven 3.9+
-- Node.js 20+
-- PostgreSQL 15+
-
----
-
-### 1. Database Setup
-
-```sql
--- Connect as superuser and run:
-CREATE DATABASE horror_cinema;
-```
-
-The schema and seed data are applied automatically on first boot via `spring.sql.init`.
-
----
-
-### 2. Backend
+### Option 1 — Docker Compose (recommended)
 
 ```bash
-cd backend
-
-# Optional: override DB credentials
-export SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/horror_cinema
-export SPRING_DATASOURCE_USERNAME=postgres
-export SPRING_DATASOURCE_PASSWORD=postgres
-
-mvn spring-boot:run
+# From project root:
+TELEGRAM_BOT_TOKEN=<your_token> docker-compose up --build
 ```
 
-Server starts at **http://localhost:8080**
+Or create a `.env` file next to `docker-compose.yml`:
+```
+TELEGRAM_BOT_TOKEN=<your_token>
+```
+Then run:
+```bash
+docker-compose up --build
+```
+
+| Service  | URL                   |
+|----------|-----------------------|
+| Frontend | http://localhost:3000 |
+| Backend  | http://localhost:8080 |
+| Database | localhost:5432        |
 
 ---
 
-### 3. Frontend
+### Option 2 — Manual (no Docker)
 
+**Terminal 1 — Database only:**
+```bash
+docker-compose up postgres
+```
+
+**Terminal 2 — Backend:**
+```bash
+cd backend
+TELEGRAM_BOT_TOKEN=<your_token> \
+JWT_SECRET=horrifyingSecretKeyThatMustBeAtLeast256BitsLongForHMACSHA256Security \
+./mvnw spring-boot:run
+```
+
+**Terminal 3 — Frontend:**
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-App starts at **http://localhost:3000**
+---
+
+## Default Credentials
+
+| Role  | Username   | Password    |
+|-------|------------|-------------|
+| Admin | `baqadmin` | `12341234`  |
+| User  | `demouser` | `User@1234` |
 
 ---
 
-### 4. Docker Compose (all-in-one)
+## Rooms & Schedule
 
-```bash
-docker-compose up --build
+| Room                 | Capacity | Min People | Time Slots                              |
+|----------------------|----------|------------|-----------------------------------------|
+| Живая комната        | 8        | 2          | 13:00 15:00 17:00 19:00 21:00 23:00 01:00 03:00 |
+| Пассажирская комната | 14       | 4          | 13:00 15:00 17:00 19:00 21:00 23:00 01:00 03:00 |
+| Мертвая комната      | 6        | 2          | 14:00 16:00 18:00 20:00 22:00 00:00 02:00 04:00 |
+
+All sessions are **2 hours**. Price: **3 500 ₸** flat.
+
+---
+
+## Payment Flow
+
+Payments go through **Kaspi Pay** and are verified automatically by the Telegram bot — no admin action needed.
+
+```
+1. User books a slot → status: PENDING
+2. User pays 3 500 ₸ via the Kaspi QR link on the site
+3. User opens @DarkCinemaChequeBot in Telegram
+4. User sends their reservation ID (e.g. "42")
+5. Bot replies: "ID saved. Now share the receipt from Kaspi."
+6. User opens Kaspi app → finds the Dark Cinema payment → taps Share → selects the bot
+7. Bot downloads the PDF receipt and verifies:
+   - Seller IIN matches Dark Cinema (990811301225)
+   - Amount == 3 500 ₸
+   - Receipt number has never been used before
+8. Bot confirms the reservation → status: CONFIRMED
+9. Frontend updates automatically within 8 seconds (background poll)
 ```
 
-| Service   | URL                       |
-|-----------|---------------------------|
-| Frontend  | http://localhost:3000      |
-| Backend   | http://localhost:8080      |
-| Database  | localhost:5432             |
+If the user does not confirm payment within **15 minutes**, the reservation expires automatically and the slot is freed.
 
 ---
 
-## 🔑 Default Credentials
+## Telegram Bot Setup
 
-| Role  | Username  | Password    |
-|-------|-----------|-------------|
-| Admin | `bagadmin`   | `12341234`|
-| User  | `demouser`| `User@1234` |
+1. Create a bot via [@BotFather](https://t.me/BotFather): `/newbot`
+2. Copy the token
+3. Set the `TELEGRAM_BOT_TOKEN` environment variable (see Quick Start above)
 
----
-
-## 🏠 Rooms & Schedule
-
-| Room                    | Theme Code | Capacity | Min People | Schedule                              |
-|-------------------------|------------|----------|------------|---------------------------------------|
-| Живая комната           | LIVING     | 8        | 2          | 13:00 15:00 17:00 19:00 21:00 23:00 01:00 03:00 |
-| Пассажирская комната    | PASSENGER  | 14        | 4          | 13:00 15:00 17:00 19:00 21:00 23:00 01:00 03:00 |
-| Мертвая комната         | DEAD       | 6        | 2          | 14:00 16:00 18:00 20:00 22:00 00:00 02:00 04:00 |
+The bot uses **long-polling** — no webhook setup required. It starts automatically with the Spring Boot application.
 
 ---
 
-## 📡 API Reference
+## API Reference
 
 ### Authentication
 
 #### POST /api/auth/register
 ```json
 // Request
-{
-  "username": "survivor01",
-  "email":    "survivor@example.com",
-  "password": "Horror@2024",
-  "fullName": "John Doe",
-  "phone":    "+77001234567"
-}
+{ "username": "john", "password": "Horror@2024", "phone": "+77001234567" }
 
 // Response 201
 {
   "success": true,
-  "message": "Registration successful",
-  "data": {
-    "token":    "eyJhbGciOiJIUzI1NiJ9...",
-    "tokenType":"Bearer",
-    "username": "survivor01",
-    "email":    "survivor@example.com",
-    "role":     "USER",
-    "expiresIn":86400000
-  }
+  "data": { "token": "eyJ...", "username": "john", "role": "USER", "expiresIn": 86400000 }
 }
 ```
 
 #### POST /api/auth/login
 ```json
 // Request
-{ "username": "survivor01", "password": "Horror@2024" }
+{ "username": "john", "password": "Horror@2024" }
 
 // Response 200
 { "success": true, "data": { "token": "eyJ...", "role": "USER" } }
@@ -162,25 +172,21 @@ docker-compose up --build
 
 ---
 
-### Availability Grid
+### Availability
 
-#### GET /api/availability?date=2024-10-31
+#### GET /api/availability?date=2026-04-10
 ```json
-// Response 200
 {
   "success": true,
   "data": {
-    "date": "2024-10-31",
+    "date": "2026-04-10",
+    "sessionPrice": 3500,
     "rooms": [
       {
-        "roomId":    1,
-        "roomName":  "Живая комната",
-        "themeCode": "LIVING",
-        "capacity":  6,
-        "minPeople": 2,
+        "roomId": 1, "roomName": "Живая комната",
         "slots": [
-          { "timeSlotId": 1, "startTime": "13:00", "endTime": "15:00", "status": "AVAILABLE", "reservationId": null },
-          { "timeSlotId": 2, "startTime": "15:00", "endTime": "17:00", "status": "RESERVED",  "reservationId": 42 }
+          { "timeSlotId": 1, "startTime": "13:00", "endTime": "15:00", "status": "AVAILABLE" },
+          { "timeSlotId": 2, "startTime": "15:00", "endTime": "17:00", "status": "RESERVED" }
         ]
       }
     ]
@@ -190,157 +196,138 @@ docker-compose up --build
 
 ---
 
-### Reservations (requires JWT Bearer token)
+### Reservations (JWT required)
 
 #### POST /api/reservations
 ```json
 // Request
-{
-  "roomId":          1,
-  "timeSlotId":      3,
-  "reservationDate": "2024-10-31",
-  "peopleCount":     4,
-  "notes":           "Birthday group"
-}
+{ "roomId": 1, "timeSlotId": 3, "reservationDate": "2026-04-15", "peopleCount": 4, "notes": "" }
 
 // Response 201
-{
-  "success": true,
-  "message": "Reservation created. Please proceed to payment.",
-  "data": {
-    "id":              101,
-    "roomName":        "Живая комната",
-    "startTime":       "17:00",
-    "endTime":         "19:00",
-    "reservationDate": "2024-10-31",
-    "peopleCount":     4,
-    "status":          "PENDING",
-    "payment":         null
-  }
-}
+{ "success": true, "data": { "id": 42, "status": "PENDING", ... } }
 ```
+
+A user can only have **one PENDING reservation at a time**. Attempting to create a second one while a previous is unpaid returns a 400 error.
 
 #### GET /api/reservations
 Returns all reservations for the authenticated user.
 
 #### DELETE /api/reservations/{id}
-Cancels a reservation (owner or admin only).
+Cancels a reservation (owner or admin). Frees the slot immediately.
 
 ---
 
-### Payments
-
-#### POST /api/payments/kaspi
-```json
-// Request
-{
-  "reservationId": 101,
-  "phoneNumber":   "+77001234567",
-  "paymentMethod": "KASPI_PAY"
-}
-
-// Response 200 (success)
-{
-  "success": true,
-  "message": "Payment processed successfully",
-  "data": {
-    "id":            55,
-    "status":        "SUCCESS",
-    "amount":        20000.00,
-    "currency":      "KZT",
-    "transactionId": "TXN_A1B2C3D4E5F60000",
-    "kaspiOrderId":  "KSP_1698746400000",
-    "paidAt":        "2024-10-31T17:00:00"
-  }
-}
-
-// Response 402 (failure)
-{
-  "success": false,
-  "message": "Payment declined by Kaspi. Please try again."
-}
-```
-
----
-
-### Admin (requires ADMIN role)
+### Admin (ADMIN role required)
 
 #### GET /api/admin/reservations
-#### GET /api/admin/reservations?date=2024-10-31
-#### GET /api/admin/reservations?roomId=1&date=2024-10-31
+#### GET /api/admin/reservations?date=2026-04-15
+#### GET /api/admin/reservations?roomId=1&date=2026-04-15
+#### PATCH /api/admin/reservations/{id}/confirm
 #### DELETE /api/admin/reservations/{id}
+
 #### POST /api/admin/reservations
 ```json
 {
-  "userId":          2,
-  "roomId":          3,
-  "timeSlotId":      12,
-  "reservationDate": "2024-11-01",
-  "peopleCount":     2,
-  "skipPayment":     true
+  "userId": 2, "roomId": 1, "timeSlotId": 3,
+  "reservationDate": "2026-04-15", "peopleCount": 2,
+  "skipPayment": true
 }
 ```
+When `skipPayment: true` the reservation is created directly as CONFIRMED (for admin walk-ins).
 
 ---
 
-## 🔒 Security Notes
+## Security
 
-- Passwords hashed with **BCrypt** (strength 12)
-- JWT tokens expire in **24 hours**
-- Reservation creation uses **PESSIMISTIC_WRITE** lock on the slot row — concurrent requests for the same slot will serialize, preventing double-booking
-- CORS restricted to `http://localhost:3000` by default
-- Role-based access: `ROLE_USER` vs `ROLE_ADMIN`
-
----
-
-## 💳 Kaspi Pay Integration
-
-The current implementation is a **mock** with a configurable 95% success rate.
-
-To integrate the real Kaspi Pay API:
-
-1. Obtain credentials from [Kaspi Business](https://business.kaspi.kz)
-2. Set `app.kaspi.mock-enabled=false` in `application.yml`
-3. Implement the real REST call inside `KaspiPaymentService.initiatePayment()`
+| Threat | Protection |
+|--------|------------|
+| Double-booking race condition | `PESSIMISTIC_WRITE` DB lock on slot row |
+| Holding multiple slots without paying | Only 1 PENDING reservation allowed per user |
+| Fake/reused Kaspi receipts | Seller IIN + amount check + unique receipt number in `used_receipts` table |
+| Receipt from another business | Seller IIN must match `990811301225` (Dark Cinema) |
+| Wrong payment amount | Amount in PDF must equal session price exactly |
+| Stale PENDING reservations | Auto-expire after 15 minutes (scheduler runs every 60s) |
+| API abuse / DDoS | Rate limiter: 30 requests/min per IP |
+| Token theft | JWT signed with HS256, expires in 24 hours |
+| Unauthorized admin access | `@PreAuthorize("hasRole('ADMIN')")` on all admin endpoints |
+| Password leaks | BCrypt with strength 12 |
 
 ---
 
-## 🎨 Frontend Flow
+## Environment Variables
+
+### Backend
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `DB_URL` | `jdbc:postgresql://localhost:5432/horror_cinema` | PostgreSQL URL |
+| `DB_USERNAME` | `postgres` | DB username |
+| `DB_PASSWORD` | `postgres` | DB password |
+| `JWT_SECRET` | — | Min 256-bit HMAC secret (required) |
+| `JWT_EXPIRATION` | `86400000` | Token TTL in ms (24 hours) |
+| `TELEGRAM_BOT_TOKEN` | — | Bot token from @BotFather (optional — disables bot if not set) |
+| `SESSION_PRICE` | `3500` | Flat session price in KZT |
+| `CORS_ALLOWED_ORIGINS` | `https://cinema-phi-gilt.vercel.app` | Allowed frontend origins |
+| `PORT` | `8080` | HTTP server port |
+
+### Frontend
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `NEXT_PUBLIC_API_URL` | `http://localhost:8080` | Backend base URL |
+
+---
+
+## Architecture Overview
 
 ```
-HomePage (/)
-  │
-  ├── ReservationGrid      — room × timeslot matrix
-  │     └── SlotButton     — green=available / red=taken
-  │
-  ├── AuthModal            — login / register
-  │
-  ├── BookingModal         — select people count + notes
-  │     └── PaymentModal   — Kaspi phone + method
-  │           ├── Success screen
-  │           └── Failure screen
-  │
-  └── MyReservations       — list with cancel option
+Browser (Next.js)
+      │  HTTP + JWT Bearer token
+      ▼
+RateLimitFilter (30 req/min per IP)
+      │
+      ▼
+JwtAuthFilter → JwtUtils (validate token) → UserDetailsServiceImpl (load user)
+      │
+      ▼
+SecurityConfig (route-level authorization)
+      │
+      ├─ AuthController      → AuthService
+      ├─ ReservationController → ReservationService → ReservationRepository
+      ├─ AdminController     → AdminService → ReservationRepository, UsedReceiptRepository
+      └─ AvailabilityController → AvailabilityService
+
+Spring Boot (background threads)
+      ├─ ReservationExpiryScheduler  runs every 60s → expires PENDING > 15 min
+      └─ TelegramBotService          daemon thread → long-polls api.telegram.org
+              │ downloads PDF
+              ▼
+           PDFBox (local) → extract receipt number, seller IIN, amount
+              │ if valid
+              ▼
+           AdminService.confirmReservationWithReceipt()
+              │ @Transactional
+              ▼
+           PostgreSQL: UPDATE reservations + INSERT used_receipts
+```
+
+---
+
+## Frontend Flow
+
+```
+/ (HomePage)
+  ├── ReservationGrid      room × timeslot matrix (polls every 8s)
+  ├── AuthModal            login / register
+  ├── BookingModal         select people count + notes
+  │     └── PaymentModal   Kaspi QR link + Telegram bot instructions
+  │           └── Success screen: shows reservation ID + bot steps
+  ├── MyReservations       list with countdown timer (PENDING: MM:SS)
+  │                        cancel button, re-open payment button
+  └── Header               login/logout, admin link
+
+/info
+  └── Levels, rules, social links (WhatsApp, Instagram, TikTok)
 
 /admin
-  └── AdminPage            — full table, filters, cancel
+  └── AdminPage            all reservations table, filters by date/room,
+                           confirm / cancel buttons, stats dashboard
 ```
-
----
-
-## ⚙️ Environment Variables
-
-### Backend (`application.yml`)
-| Key | Default | Description |
-|-----|---------|-------------|
-| `spring.datasource.url` | `jdbc:postgresql://localhost:5432/horror_cinema` | DB URL |
-| `app.jwt.secret` | (set in yml) | Min 256-bit HMAC secret |
-| `app.jwt.expiration` | `86400000` | Token TTL in ms (24h) |
-| `app.cors.allowed-origins` | `http://localhost:3000` | CORS origins |
-| `app.kaspi.mock-enabled` | `true` | Use mock Kaspi |
-| `app.kaspi.success-rate` | `0.95` | Mock success probability |
-
-### Frontend (`.env.local`)
-| Key | Default |
-|-----|---------|
-| `NEXT_PUBLIC_API_URL` | `http://localhost:8080` |

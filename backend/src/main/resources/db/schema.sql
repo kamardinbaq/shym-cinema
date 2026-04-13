@@ -78,6 +78,19 @@ CREATE TABLE IF NOT EXISTS payments (
     updated_at          TIMESTAMP     NOT NULL DEFAULT NOW()
 );
 
+-- Tracks used Kaspi receipt numbers so each receipt can only confirm one reservation.
+CREATE TABLE IF NOT EXISTS used_receipts (
+    id              BIGSERIAL PRIMARY KEY,
+    receipt_number  VARCHAR(100) NOT NULL UNIQUE,
+    reservation_id  BIGINT       NOT NULL REFERENCES reservations(id),
+    used_at         TIMESTAMP    NOT NULL DEFAULT NOW()
+);
+
+-- Migration: add confirmation_code for telegram bot verification (unique random 8-char code per reservation)
+ALTER TABLE reservations ADD COLUMN IF NOT EXISTS confirmation_code VARCHAR(10);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_reservations_confirmation_code
+    ON reservations(confirmation_code) WHERE confirmation_code IS NOT NULL;
+
 -- Indexes for performance
 CREATE INDEX IF NOT EXISTS idx_reservations_date      ON reservations(reservation_date);
 CREATE INDEX IF NOT EXISTS idx_reservations_room      ON reservations(room_id);

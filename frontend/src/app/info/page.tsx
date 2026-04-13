@@ -27,14 +27,11 @@ const levels = [
 ]
 
 const rules = [
-  'Опоздание более 10 минут — сеанс аннулируется без возврата',
-  'Строго 18+ (несовершеннолетние не допускаются)',
+  'Опоздание более 15 минут - сеанс аннулируется без возврата',
   'Алкоголь и наркотики запрещены',
-  'Запрещено выходить из комнаты во время сеанса',
-  'Запрещена съёмка внутри залов',
-  'Бронь действительна только при наличии подтверждения',
-  'Насилие в отношении аниматоров ЗАПРЕЩЕНО',
-  'Участие по собственному желанию — отказ принимается',
+  'Запрещена включать вспышку внутри залов',
+  'Насилие в отношении аниматоров ЗАПРЕЩЕНО, штраф 15 000₸',
+  'Участие по собственному желанию — отказ принимается'
 ]
 
 function DarkCinemaLogo({ size = 'md' }: { size?: 'sm' | 'md' }) {
@@ -65,11 +62,11 @@ function DarkCinemaLogo({ size = 'md' }: { size?: 'sm' | 'md' }) {
           gap: '2px 8px',
           textAlign: 'center',
         }}>
-          {['D','A','R','K'].map(letter => (
+          {['D', 'A', 'R', 'K'].map(letter => (
             <span key={letter} style={{
               fontFamily: 'var(--font-display)',
               fontSize: letterSize,
-              color: '#fff',
+              color: '#cc0001',
               letterSpacing: '0.05em',
               lineHeight: 1.2,
             }}>{letter}</span>
@@ -95,41 +92,60 @@ export default function InfoPage() {
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#000' }}>
 
       {/* ── Header ─────────────────────────────────────────── */}
-      <header style={{
-        position: 'sticky', top: 0, zIndex: 40,
-        background: 'rgba(0,0,0,0.95)',
-        backdropFilter: 'blur(8px)',
-        borderBottom: '1px solid rgba(204,0,0,0.3)',
-        paddingTop: 'env(safe-area-inset-top)',
-      }}>
-        <div style={{
-          maxWidth: '640px', margin: '0 auto', padding: '10px 16px',
-          display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center',
-        }}>
-          {/* Left: back button */}
-          <Link href="/" style={{
-            display: 'inline-flex', alignItems: 'center', gap: '6px',
-            fontFamily: 'var(--font-mono)', fontSize: '11px', letterSpacing: '0.1em',
-            color: '#c4b49a', textDecoration: 'none', textTransform: 'uppercase',
-            border: '1px solid rgba(200,180,160,0.2)', padding: '6px 12px', borderRadius: '2px',
-            width: 'fit-content',
-          }}>
+      <header
+        className="sticky top-0 z-40 border-b border-red-900/30 pt-safe"
+        style={{
+          background: 'rgba(5,5,5,0.82)',
+          backdropFilter: 'blur(14px) saturate(140%)',
+          WebkitBackdropFilter: 'blur(14px) saturate(140%)',
+        }}
+      >
+        <div className="max-w-7xl mx-auto px-3 sm:px-5 py-3 flex items-center justify-between">
+
+          {/* Left: Logo (ТОЧНО как в main page) */}
+          <Link href="/" className="flex items-center gap-2 sm:gap-3 flex-shrink-0 group">
+            <div className="relative px-3 block">
+              <div className="absolute left-0 top-0 bottom-0 w-2 flex flex-col justify-around">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="w-1.5 h-1.5 rounded-sm bg-red-700 group-hover:bg-red-500" />
+                ))}
+              </div>
+              <div className="absolute right-0 top-0 bottom-0 w-2 flex flex-col justify-around">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="w-1.5 h-1.5 rounded-sm bg-red-700 group-hover:bg-red-500" />
+                ))}
+              </div>
+              <div className="px-3 py-1 border-2 border-red-700 bg-black mx-1 transition-colors group-hover:border-red-500">
+                <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 text-center">
+                  {['D', 'A', 'R', 'K'].map(l => (
+                    <span key={l} className="font-display text-xs tracking-widest text-[#cc0000] leading-tight">{l}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="leading-none">
+              <div className="drip-text text-xl sm:text-2xl tracking-widest">CINEMA</div>
+              <p className="font-mono text-[9px] sm:text-[10px] text-red-900 tracking-[0.3em] mt-0.5">
+                ALMATY
+              </p>
+            </div>
+          </Link>
+
+          {/* Right: Back button */}
+          <Link
+            href="/"
+            className="flex items-center gap-2 font-display text-xs tracking-widest uppercase text-bone-dark border border-white/10 px-3 rounded-md hover:border-red-600/60 hover:text-red-400 hover:bg-red-950/20 transition-all"
+            style={{ minHeight: 44 }}
+          >
             <ChevronLeft size={14} />
             Назад
           </Link>
 
-          {/* Center: logo */}
-          <DarkCinemaLogo size="sm" />
-
-          {/* Right: spacer */}
-          <div />
         </div>
       </header>
 
       {/* ── Page hero ──────────────────────────────────────── */}
-      <div style={{ padding: '36px 16px 24px', display: 'flex', justifyContent: 'center', borderBottom: '1px solid rgba(204,0,0,0.15)' }}>
-        <DarkCinemaLogo size="md" />
-      </div>
 
       <main style={{ flex: 1, maxWidth: '640px', margin: '0 auto', padding: '40px 16px', width: '100%' }}>
 
@@ -236,9 +252,9 @@ export default function InfoPage() {
             >
               {/* Instagram icon */}
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#cc0000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
-                <circle cx="12" cy="12" r="4"/>
-                <circle cx="17.5" cy="6.5" r="1" fill="#cc0000" stroke="none"/>
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+                <circle cx="12" cy="12" r="4" />
+                <circle cx="17.5" cy="6.5" r="1" fill="#cc0000" stroke="none" />
               </svg>
               <span>Instagram — @dark__cinema</span>
             </a>
@@ -277,14 +293,14 @@ export default function InfoPage() {
             >
               {/* WhatsApp icon */}
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#cc0000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
               </svg>
               <span>WhatsApp — написать нам</span>
             </a>
 
             {/* TikTok */}
             <a
-              href="https://tiktok.com/@dark__cinema"
+              href="https://tiktok.com/@dark_cinema_"
               target="_blank"
               rel="noopener noreferrer"
               style={{
@@ -316,9 +332,49 @@ export default function InfoPage() {
             >
               {/* TikTok icon */}
               <svg width="22" height="22" viewBox="0 0 24 24" fill="#cc0000">
-                <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.77a4.85 4.85 0 0 1-1.01-.08z"/>
+                <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.77a4.85 4.85 0 0 1-1.01-.08z" />
               </svg>
-              <span>TikTok — @dark__cinema</span>
+              <span>TikTok — @dark_cinema_</span>
+            </a>
+
+            {/* 2GIS */}
+            <a
+              href="https://go.2gis.com/MKR9F"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '14px',
+                background: 'rgba(204,0,0,0.08)',
+                border: '1px solid rgba(204,0,0,0.35)',
+                borderRadius: '12px',
+                padding: '16px 24px',
+                textDecoration: 'none',
+                fontFamily: 'var(--font-mono)',
+                fontSize: '13px',
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+                color: '#e8dcc8',
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={e => {
+                const el = e.currentTarget
+                el.style.background = 'rgba(204,0,0,0.2)'
+                el.style.borderColor = '#cc0000'
+                el.style.boxShadow = '0 0 20px rgba(204,0,0,0.25)'
+              }}
+              onMouseLeave={e => {
+                const el = e.currentTarget
+                el.style.background = 'rgba(204,0,0,0.08)'
+                el.style.borderColor = 'rgba(204,0,0,0.35)'
+                el.style.boxShadow = 'none'
+              }}
+            >
+              {/* 2GIS map pin icon */}
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#cc0000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
+                <circle cx="12" cy="9" r="2.5" />
+              </svg>
+              <span>2GIS — Наш адрес</span>
             </a>
           </div>
         </section>

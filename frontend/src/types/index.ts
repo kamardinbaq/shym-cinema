@@ -57,6 +57,7 @@ export interface Reservation {
   peopleCount: number
   status: 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'EXPIRED'
   notes?: string
+  confirmationCode?: string
   payment?: Payment
   createdAt: string
 }

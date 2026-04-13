@@ -70,6 +70,13 @@ public class ReservationService {
             throw new BusinessException("Cannot book a session that has already started");
         }
 
+        // Block booking if user already has a PENDING reservation (anti-abuse)
+        if (reservationRepository.existsPendingByUserId(user.getId())) {
+            throw new BusinessException(
+                "У вас уже есть активная бронь в ожидании оплаты. " +
+                "Подтвердите оплату через Telegram-бот или отмените текущую бронь.");
+        }
+
         // Check for existing booking — uses PESSIMISTIC_WRITE lock
         boolean alreadyBooked = reservationRepository
                 .findActiveByRoomSlotDate(room.getId(), slot.getId(), request.getReservationDate())
@@ -178,6 +185,7 @@ public class ReservationService {
                 .peopleCount(r.getPeopleCount())
                 .status(r.getStatus().name())
                 .notes(r.getNotes())
+                .confirmationCode(r.getConfirmationCode())
                 .payment(paymentResponse)
                 .createdAt(r.getCreatedAt())
                 .build();

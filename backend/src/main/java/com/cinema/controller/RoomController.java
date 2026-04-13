@@ -3,9 +3,11 @@ package com.cinema.controller;
 import com.cinema.dto.response.ApiResponse;
 import com.cinema.dto.response.AvailabilityGridResponse;
 import com.cinema.dto.response.RoomResponse;
+import com.cinema.entity.User;
 import com.cinema.service.impl.RoomService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -31,8 +33,10 @@ public class RoomController {
     @GetMapping("/availability")
     public ApiResponse<AvailabilityGridResponse> getAvailabilityGrid(
             @RequestParam(required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @AuthenticationPrincipal User currentUser) {
         LocalDate targetDate = (date != null) ? date : LocalDate.now();
-        return ApiResponse.ok(roomService.getAvailabilityGrid(targetDate));
+        Long currentUserId = (currentUser != null) ? currentUser.getId() : null;
+        return ApiResponse.ok(roomService.getAvailabilityGrid(targetDate, currentUserId));
     }
 }

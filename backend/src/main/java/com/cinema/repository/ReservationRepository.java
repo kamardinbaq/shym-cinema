@@ -55,4 +55,11 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     // Find stale PENDING reservations for expiry job
     @Query("SELECT r FROM Reservation r WHERE r.status = 'PENDING' AND r.createdAt < :expiryTime")
     List<Reservation> findExpiredPendingReservations(@Param("expiryTime") java.time.LocalDateTime expiryTime);
+
+    // Check if a user already has any PENDING reservation (used to block double-booking)
+    @Query("SELECT COUNT(r) > 0 FROM Reservation r WHERE r.user.id = :userId AND r.status = 'PENDING'")
+    boolean existsPendingByUserId(@Param("userId") Long userId);
+
+    // Find a reservation by its unique confirmation code and status (used by Telegram bot)
+    Optional<Reservation> findByConfirmationCodeAndStatus(String confirmationCode, ReservationStatus status);
 }

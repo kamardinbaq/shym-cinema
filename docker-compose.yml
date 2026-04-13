@@ -35,8 +35,11 @@ services:
       SPRING_DATASOURCE_URL:      jdbc:postgresql://postgres:5432/horror_cinema
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
-      APP_JWT_SECRET:             horrifyingSecretKeyThatMustBeAtLeast256BitsLongForHMACSHA256Security
-      APP_CORS_ALLOWED_ORIGINS:   http://localhost:3000
+      APP_JWT_SECRET:             ${APP_JWT_SECRET}
+      APP_CORS_ALLOWED_ORIGINS:   ${APP_CORS_ALLOWED_ORIGINS:-http://localhost:3000}
+      TELEGRAM_BOT_TOKEN:         ${TELEGRAM_BOT_TOKEN:-}
+      KASPI_SELLER_IIN:           ${KASPI_SELLER_IIN:-990811301225}
+      SESSION_PRICE:              ${SESSION_PRICE:-3500}
     ports:
       - "8080:8080"
     healthcheck:

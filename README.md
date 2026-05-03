@@ -331,3 +331,8 @@ Spring Boot (background threads)
   └── AdminPage            all reservations table, filters by date/room,
                            confirm / cancel buttons, stats dashboard
 ```
+
+
+Students:
+Kamardin Bak     230103230
+Sarsen Bakdaulet 230103018

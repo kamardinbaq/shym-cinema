@@ -1,3 +1,53 @@
+First run / after dependency changes
+
+
+docker-compose up --build
+Normal start (reuse existing containers)
+
+
+docker-compose up
+Same but in background (free up the terminal)
+
+
+docker-compose up -d
+Watch logs after starting in background
+
+
+docker-compose logs -f
+# or for a specific service:
+docker-compose logs -f backend
+docker-compose logs -f frontend
+Restart one service (e.g. after backend code change)
+
+
+docker-compose restart backend
+Rebuild and restart only one service (e.g. after adding a dependency to pom.xml)
+
+
+docker-compose up --build backend
+Stop all containers (keeps data, fast resume)
+
+
+docker-compose stop
+Full reset (removes containers, keeps DB volume)
+
+
+docker-compose down
+Full reset including database data
+
+
+docker-compose down -v
+Open a shell inside a container (useful for debugging)
+
+
+docker-compose exec backend bash
+docker-compose exec postgres psql -U postgres -d horror_cinema
+Check container status
+
+
+docker-compose ps
+
+
 # Horror Cinema Reservation System
 
 > *"Book your nightmare. Three rooms. No escape."*

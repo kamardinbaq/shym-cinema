@@ -14,6 +14,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Simple in-memory per-IP rate limiter.
@@ -24,11 +25,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 public class RateLimitFilter extends OncePerRequestFilter {
 
-    @Value("${app.rate-limit.requests-per-minute:30}")
+    @Value("${app.rate-limit.requests-per-minute:60}")
     private int maxRequestsPerMinute;
 
     private final ConcurrentHashMap<String, AtomicInteger> requestCounts = new ConcurrentHashMap<>();
-    private volatile long currentWindowStart = System.currentTimeMillis();
+    private final AtomicLong currentWindowStart = new AtomicLong(System.currentTimeMillis());
 
     @Override
     protected void doFilterInternal(
@@ -39,10 +40,10 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
         long now = System.currentTimeMillis();
 
-        // Reset window every 60 seconds
-        if (now - currentWindowStart > 60_000) {
+        // Reset window every 60 seconds — CAS ensures only one thread resets
+        long windowStart = currentWindowStart.get();
+        if (now - windowStart > 60_000 && currentWindowStart.compareAndSet(windowStart, now)) {
             requestCounts.clear();
-            currentWindowStart = now;
         }
 
         String clientIp = getClientIp(request);

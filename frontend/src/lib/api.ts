@@ -1,92 +1,44 @@
-// src/lib/api.ts
 import axios from 'axios'
-import type { ApiResponse, AuthResponse, AvailabilityGrid, Reservation } from '@/types'
+import type { ApiResponse, AvailabilityGrid, Review, AdminUser, AdminAuth, SiteSettings } from '@/types'
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
+const BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
+export const api = axios.create({ baseURL: BASE, headers: { 'Content-Type': 'application/json' }, timeout: 15000 })
 
-export const api = axios.create({
-  baseURL: BASE_URL,
-  headers: { 'Content-Type': 'application/json' },
-  timeout: 15000,
-})
-
-// Attach JWT token from localStorage
-api.interceptors.request.use(config => {
+api.interceptors.request.use(cfg => {
   if (typeof window !== 'undefined') {
-    const token = localStorage.getItem('token')
-    if (token) config.headers.Authorization = `Bearer ${token}`
+    const t = localStorage.getItem('admin_token')
+    if (t) cfg.headers.Authorization = `Bearer ${t}`
   }
-  return config
+  return cfg
+})
+api.interceptors.response.use(res => res, err => {
+  if (err.response?.status === 401 && typeof window !== 'undefined') {
+    const url = err.config?.url || ''
+    if (!url.includes('/auth/login')) { localStorage.removeItem('admin_token'); localStorage.removeItem('admin_user') }
+  }
+  return Promise.reject(err)
 })
 
-// Handle 401 globally — skip auth endpoints (login/register handle their own errors)
-api.interceptors.response.use(
-  res => res,
-  err => {
-    const requestUrl: string = err.config?.url || ''
-    if (
-      err.response?.status === 401 &&
-      typeof window !== 'undefined' &&
-      !requestUrl.includes('/api/auth/')
-    ) {
-      localStorage.removeItem('token')
-      localStorage.removeItem('user')
-      window.location.href = '/'
-    }
-    return Promise.reject(err)
-  }
-)
-
-// ── Auth ────────────────────────────────────────────────────
-export const authApi = {
-  login: (username: string, password: string) =>
-    api.post<ApiResponse<AuthResponse>>('/api/auth/login', { username, password }),
-
-  register: (data: { username: string; password: string; phone: string }) =>
-    api.post<ApiResponse<AuthResponse>>('/api/auth/register', data),
-}
-
-// ── Availability ────────────────────────────────────────────
 export const availabilityApi = {
-  getGrid: (date?: string) =>
-    api.get<ApiResponse<AvailabilityGrid>>('/api/availability', { params: { date } }),
+  getGrid: (date?: string) => api.get<ApiResponse<AvailabilityGrid>>('/api/availability', { params: { date } }),
 }
-
-// ── Reservations ────────────────────────────────────────────
-export const reservationApi = {
-  getMyReservations: () =>
-    api.get<ApiResponse<Reservation[]>>('/api/reservations'),
-
-  create: (data: {
-    roomId: number
-    timeSlotId: number
-    reservationDate: string
-    peopleCount: number
-    notes?: string
-  }) => api.post<ApiResponse<Reservation>>('/api/reservations', data),
-
-  cancel: (id: number) =>
-    api.delete<ApiResponse<void>>(`/api/reservations/${id}`),
+export const settingsApi = {
+  get: () => api.get<ApiResponse<SiteSettings>>('/api/settings'),
 }
-
-// ── Admin ───────────────────────────────────────────────────
+export const reviewApi = {
+  getAll: () => api.get<ApiResponse<Review[]>>('/api/reviews'),
+  create: (d: { name?: string; stars: number; body: string }) => api.post<ApiResponse<Review>>('/api/reviews', d),
+  delete: (id: number) => api.delete<ApiResponse<void>>(`/api/admin/reviews/${id}`),
+}
 export const adminApi = {
-  getReservations: (params?: { date?: string; roomId?: number }) =>
-    api.get<ApiResponse<Reservation[]>>('/api/admin/reservations', { params }),
-
-  cancelReservation: (id: number) =>
-    api.delete<ApiResponse<void>>(`/api/admin/reservations/${id}`),
-
-  confirmReservation: (id: number) =>
-    api.patch<ApiResponse<Reservation>>(`/api/admin/reservations/${id}/confirm`),
-
-  createReservation: (data: {
-    userId: number
-    roomId: number
-    timeSlotId: number
-    reservationDate: string
-    peopleCount: number
-    notes?: string
-    skipPayment: boolean
-  }) => api.post<ApiResponse<Reservation>>('/api/admin/reservations', data),
+  login: (username: string, password: string) =>
+    api.post<ApiResponse<AdminAuth>>('/api/admin/auth/login', { username, password }),
+  toggleSlot: (timeSlotId: number, date: string) =>
+    api.post<ApiResponse<boolean>>('/api/admin/slots/toggle', null, { params: { timeSlotId, date } }),
+  getSettings: () => api.get<ApiResponse<Record<string, string>>>('/api/admin/settings'),
+  updateSettings: (s: Record<string, string>) => api.put<ApiResponse<void>>('/api/admin/settings', s),
+  getAdmins: () => api.get<ApiResponse<AdminUser[]>>('/api/admin/users'),
+  createAdmin: (username: string, password: string) =>
+    api.post<ApiResponse<AdminUser>>('/api/admin/users', { username, password }),
+  deleteAdmin: (id: number) => api.delete<ApiResponse<void>>(`/api/admin/users/${id}`),
 }

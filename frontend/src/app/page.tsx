@@ -1,462 +1,663 @@
 'use client'
-import { useEffect, useMemo, useState, useCallback } from 'react'
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react'
 import { format, addDays, subDays, isSameDay, startOfDay } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import toast from 'react-hot-toast'
-import Link from 'next/link'
-import { availabilityApi, reservationApi } from '@/lib/api'
-import { useAuthStore } from '@/lib/store'
-import type { AvailabilityGrid, BookingState, Reservation } from '@/types'
-import PaymentModal from '@/components/booking/PaymentModal'
-import ReservationGrid from '@/components/booking/ReservationGrid'
-import BookingModal from '@/components/booking/BookingModal'
-import AuthModal from '@/components/booking/AuthModal'
-import MyReservations from '@/components/booking/MyReservations'
+import { availabilityApi, settingsApi } from '@/lib/api'
+import type { AvailabilityGrid, Language, SiteSettings } from '@/types'
+import ReservationGrid from '@/components/ReservationGrid'
+import Reviews from '@/components/Reviews'
 import {
-  ChevronLeft, ChevronRight, LogOut, User, Info,
-  Calendar, Moon, ArrowDown,
+  ChevronLeft, ChevronRight, Calendar, Moon,
+  ArrowDown,
 } from 'lucide-react'
 
+// ── Translations ─────────────────────────────────────────────
+const T = {
+  ru: {
+    langBtn: 'KZzzzz',
+    nav: ['Бронь', 'Цены', 'Уровни', 'Трейлер', 'О нас'],
+    heroText: 'Твой страх начинается здесь',
+    heroBadge: 'Первый хоррор киноквест в Шымкенте',
+    heroSub: 'Это не просто просмотр фильмов. Это территория оживших кошмаров. Выбирайте уровень страха и проверьте свои нервы на прочность.',
+    book: 'Перейти к бронированию',
+    scrollHint: 'Листайте вниз',
+    chooseDate: 'Выберите дату',
+    today: 'СЕГОДНЯ', tomorrow: 'ЗАВТРА',
+    pricesTitle: 'ЦЕНЫ НА КИНОКВЕСТ',
+    pricesSub: 'Стоимость фиксируется за всю команду в зависимости от общего количества участников.',
+    people: 'человек',
+    priceNote: '💡 Базовая стоимость бронирования временного слота — 3 000₸. Итоговый расчёт по тарифной сетке выше.',
+    levelsTitle: 'УРОВНИ СТРАХА',
+    levelsSub: 'Каждый уровень полностью меняет ваше восприятие. Выберите формат, который выдержит ваша команда.',
+    trailerTitle: 'ТРЕЙЛЕР',
+    aboutTitle: 'О НАС',
+    rulesTitle: 'ПРАВИЛА',
+    reviewsTitle: 'ОТЗЫВЫ',
+    description: 'Dark Cinema — уникальное пространство в Шымкенте, где вы можете испытать настоящий ужас. Наши хоррор-квесты сочетают живых актёров, спецэффекты и захватывающие сценарии. Мы предлагаем четыре уровня страха — от лёгкого до максимального.',
+    noTrailer: 'ТРЕЙЛЕР НЕ ЗАГРУЖЕН',
+    noSlots: 'НЕТ СЕАНСОВ',
+    noSlotsSub: 'На выбранную дату сеансы не запланированы. Попробуйте другой день.',
+    legendFree: 'СВОБОДНО', legendBusy: 'ЗАНЯТО', legendPast: 'ПРОШЁЛ',
+    immersionLevel: 'УРОВЕНЬ ПОГРУЖЕНИЯ',
+    levelBtn: 'Выбрать Level',
+    rules: [
+      'Опоздание более 15 минут — сеанс аннулируется без возврата',
+      'Алкоголь и наркотики запрещены',
+      'Запрещено включать вспышку внутри залов',
+      'Насилие в отношении аниматоров ЗАПРЕЩЕНО, штраф 15 000₸',
+      'Участие по собственному желанию — отказ принимается',
+    ],
+    levels: [
+      { level: '1',   title: 'Обычный просмотр фильма',                    desc: 'без спецэффектов и аниматоров' },
+      { level: '2',   title: 'Фильм со спецэффектами',                     desc: 'без аниматора' },
+      { level: '3',   title: 'Фильм со спецэффектами и аниматорами',       desc: '' },
+      { level: 'MAX', title: 'Фильм со спецэффектами и аниматорами',       desc: 'бьют шокером', isMax: true },
+    ],
+    prices: [
+      { count: 2, price: 7000 }, { count: 3, price: 9000 }, { count: 4, price: 12000 },
+      { count: 5, price: 15000 }, { count: 6, price: 18000 }, { count: 7, price: 21000 },
+      { count: 8, price: 24000 }, { count: 9, price: 27000 }, { count: 10, price: 30000 },
+    ],
+  },
+  kz: {
+    langBtn: 'RU',
+    nav: ['Брондау', 'Бағалар', 'Деңгейлер', 'Трейлер', 'Біз туралы'],
+    heroText: 'Сенің қорқынышың осы жерде басталады',
+    heroBadge: 'Шымкенттегі алғашқы horror киноквест',
+    heroSub: 'Бұл жай ғана фильм көру емес. Бұл тіршілікке келген қиянаттар аймағы. Қорқыныш деңгейін таңдаңыз және жүйкеңізді тексеріңіз.',
+    book: 'Брондауға өту',
+    scrollHint: 'Төмен жылжыңыз',
+    chooseDate: 'Күнді таңдаңыз',
+    today: 'БҮГІН', tomorrow: 'ЕРТЕҢ',
+    pricesTitle: 'КИНОКВЕСТ БАҒАЛАРЫ',
+    pricesSub: 'Құны қатысушылардың жалпы санына байланысты бүкіл команда үшін белгіленеді.',
+    people: 'адам',
+    priceNote: '💡 Уақытша слотты брондаудың базалық құны — 3 000₸. Қорытынды есеп жоғарыдағы тарифтік торда.',
+    levelsTitle: 'ҚОРҚЫНЫШ ДЕҢГЕЙЛЕРІ',
+    levelsSub: 'Әр деңгей сіздің қабылдауыңызды толықтай өзгертеді. Командаңыз шыдай алатын форматты таңдаңыз.',
+    trailerTitle: 'ТРЕЙЛЕР',
+    aboutTitle: 'БІЗ ТУРАЛЫ',
+    rulesTitle: 'ЕРЕЖЕЛЕР',
+    reviewsTitle: 'ПІКІРЛЕР',
+    description: 'Dark Cinema — Шымкенттегі нағыз қорқынышты бастан кешіруге болатын бірегей кеңістік. Біздің хоррор-квесттеріміз тірі актерлерді, арнайы эффекттерді және тартымды сценарийлерді біріктіреді. Төрт қорқыныш деңгейін ұсынамыз.',
+    noTrailer: 'ТРЕЙЛЕР ЖОҚ',
+    noSlots: 'СЕАНС ЖОҚ',
+    noSlotsSub: 'Таңдалған күні сеанстар жоқ. Басқа күнді тандаңыз.',
+    legendFree: 'БОС', legendBusy: 'БРОНДАЛҒАН', legendPast: 'ӨТТІ',
+    immersionLevel: 'БАТЫРУ ДЕҢГЕЙІ',
+    levelBtn: 'Level таңдау',
+    rules: [
+      '15 минуттан астам кешігу — сеанс қайтарусыз жойылады',
+      'Алкоголь және есірткі заттары тыйым салынады',
+      'Залдардың ішінде жарқылды қосуға тыйым салынады',
+      'Аниматорларға қатысты зорлық-зомбылық ТЫЙЫМ САЛЫНАДЫ, айыппұл 15 000₸',
+      'Қатысу ерікті — бас тарту қабылданады',
+    ],
+    levels: [
+      { level: '1', title: 'Қарапайым қарау',                   desc: 'Арнайы эффекттер мен тірі актерлерсіз таза фильм атмосферасы. Алғашқы танысу үшін тамаша.' },
+      { level: '2', title: 'Арнайы эффекттермен фильм',         desc: 'Кенеттен дыбыстық, жарықтық және тактильді триггерлер. Аниматорлардың тікелей қатысуынсыз.' },
+      { level: '3', title: 'Арнайы эффекттер + Аниматорлар',    desc: 'Актерлер сеанс кезінде залға кіреді. Сіз негізгі нысанаға айналатын сюжетке батыру.' },
+      { level: 'MAX', title: 'LEVEL MAX (Шокерлер)',              desc: 'Түпкілікті хоррор. Физикалық байланыс, аниматорлар шокер қолданады. Тек мықты жүйкелілер үшін.', isMax: true },
+    ],
+    prices: [
+      { count: 2, price: 7000 }, { count: 3, price: 9000 }, { count: 4, price: 12000 },
+      { count: 5, price: 15000 }, { count: 6, price: 18000 }, { count: 7, price: 21000 },
+      { count: 8, price: 24000 }, { count: 9, price: 27000 }, { count: 10, price: 30000 },
+    ],
+  },
+}
+
+
+function getYouTubeId(url: string) {
+  const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([^?&]+)/)
+  return m ? m[1] : ''
+}
+
+function resolveHeroBg(heroBg: string | undefined): string | null {
+  if (!heroBg || !heroBg.trim()) return null
+  const trimmed = heroBg.trim()
+  if (/^\d+$/.test(trimmed)) return `/backgrounds/${trimmed}.jpg`
+  const ytId = getYouTubeId(trimmed)
+  if (ytId) return `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`
+  return trimmed
+}
+
 export default function HomePage() {
-  const { isAuthenticated, isAdmin, user, clearAuth, hydrate } = useAuthStore()
-  const [grid, setGrid] = useState<AvailabilityGrid | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [selectedDate, setSelectedDate] = useState(new Date())
-  const [booking, setBooking] = useState<BookingState | null>(null)
-  const [showAuth, setShowAuth] = useState(false)
-  const [refreshKey, setRefreshKey] = useState(0)
-  const [showHint, setShowHint] = useState(true)
-  const [payingReservation, setPayingReservation] = useState<Reservation | null>(null)
+  const [lang, setLang]           = useState<Language>('ru')
+  const [grid, setGrid]           = useState<AvailabilityGrid | null>(null)
+  const [loading, setLoading]     = useState(true)
+  const [selectedDate, setSelDate] = useState(new Date())
+  const [settings, setSettings]   = useState<SiteSettings>({ whatsapp_number: '77005767848', youtube_url: '', hero_bg: '' })
+  const [showStickyNav, setShowStickyNav] = useState(false)
+  const [activeSection, setActiveSection] = useState('')
+  const heroNavRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => { hydrate() }, [hydrate])
+  const sectionRef = {
+    reservation: useRef<HTMLElement>(null),
+    prices:      useRef<HTMLElement>(null),
+    levels:      useRef<HTMLElement>(null),
+    trailer:     useRef<HTMLDivElement>(null),
+    about:       useRef<HTMLElement>(null),
+  }
 
-  // Auto-dismiss onboarding after 15s
+  const t = T[lang]
+
   useEffect(() => {
-    const t = setTimeout(() => setShowHint(false), 15000)
-    return () => clearTimeout(t)
+    settingsApi.get().then(r => setSettings(r.data.data)).catch(() => {})
   }, [])
 
   const fetchGrid = useCallback(async () => {
     setLoading(true)
     try {
-      const dateStr = format(selectedDate, 'yyyy-MM-dd')
-      const res = await availabilityApi.getGrid(dateStr)
+      const res = await availabilityApi.getGrid(format(selectedDate, 'yyyy-MM-dd'))
       setGrid(res.data.data)
-    } catch {
-      toast.error('Не удалось загрузить расписание')
-    } finally {
-      setLoading(false)
-    }
-  }, [selectedDate, refreshKey])
+    } catch { toast.error(lang === 'kz' ? 'Кесте жүктелмеді' : 'Не удалось загрузить расписание') }
+    finally { setLoading(false) }
+  }, [selectedDate, lang])
 
   useEffect(() => { fetchGrid() }, [fetchGrid])
 
-  // Silent background poll: fetch grid every 8s, update state ONLY if a slot status changed.
+  // Silent background poll every 8s
   useEffect(() => {
-    const gridSignature = (g: AvailabilityGrid) =>
+    const sig = (g: AvailabilityGrid) =>
       g.rooms.flatMap(r => r.slots.map(s => `${s.timeSlotId}:${s.status}`)).join(',')
-
     const poll = async () => {
       try {
-        const dateStr = format(selectedDate, 'yyyy-MM-dd')
-        const res = await availabilityApi.getGrid(dateStr)
-        const incoming = res.data.data
-        setGrid(current => {
-          if (!current) return incoming
-          return gridSignature(current) === gridSignature(incoming) ? current : incoming
-        })
-      } catch {
-        // silent
-      }
+        const res = await availabilityApi.getGrid(format(selectedDate, 'yyyy-MM-dd'))
+        const inc = res.data.data
+        setGrid(cur => (!cur || sig(cur) !== sig(inc)) ? inc : cur)
+      } catch {}
     }
-
-    const id = setInterval(poll, 8_000)
+    const id = setInterval(poll, 8000)
     return () => clearInterval(id)
   }, [selectedDate])
 
-  const handleSlotClick = (b: BookingState) => {
-    if (!isAuthenticated) { setShowAuth(true); return }
-    setBooking(b)
+  // Hand the nav off to the header the moment the hero copy slides under it.
+  // The top rootMargin (~header height) makes the swap happen right at the edge,
+  // so the buttons never flash or leave a gap during the transition.
+  useEffect(() => {
+    const el = heroNavRef.current
+    if (!el) return
+    const obs = new IntersectionObserver(
+      ([entry]) => setShowStickyNav(!entry.isIntersecting),
+      { rootMargin: '-72px 0px 0px 0px', threshold: 0 }
+    )
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [])
+
+  // Light up the nav item for whichever section is currently centered on screen.
+  useEffect(() => {
+    const ids = ['reservation', 'prices', 'levels', 'trailer', 'about']
+    const els = ids
+      .map(id => document.getElementById(id))
+      .filter((el): el is HTMLElement => el !== null)
+    if (!els.length) return
+    const obs = new IntersectionObserver(
+      entries => entries.forEach(e => { if (e.isIntersecting) setActiveSection(e.target.id) }),
+      { rootMargin: '-45% 0px -50% 0px', threshold: 0 }
+    )
+    els.forEach(el => obs.observe(el))
+    return () => obs.disconnect()
+  }, [])
+
+  const scrollTo = (ref: React.RefObject<HTMLElement>) => {
+    ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
+  const scrollToReservation = () => scrollTo(sectionRef.reservation)
 
-  const handlePendingSlotClick = async (reservationId: number) => {
-    if (!isAuthenticated) { setShowAuth(true); return }
-    try {
-      const res = await reservationApi.getMyReservations()
-      const found = res.data.data.find(r => r.id === reservationId && r.status === 'PENDING')
-      if (found) {
-        setPayingReservation(found)
-      } else {
-        toast.error('Этот сеанс занят другим пользователем')
-      }
-    } catch {
-      toast.error('Не удалось загрузить бронь')
-    }
-  }
-
-  const handleBookingComplete = () => {
-    setBooking(null)
-    setRefreshKey(k => k + 1)
-  }
-
-  const dateLabel = format(selectedDate, 'EEEE, d MMMM yyyy', { locale: ru })
-
-  // Quick-date chips — next 5 days
   const quickDates = useMemo(() => {
     const today = startOfDay(new Date())
     return Array.from({ length: 5 }).map((_, i) => {
       const d = addDays(today, i)
-      const isToday = i === 0
-      const isTomorrow = i === 1
-      const short = isToday
-        ? 'СЕГОДНЯ'
-        : isTomorrow
-          ? 'ЗАВТРА'
-          : format(d, 'EE', { locale: ru }).toUpperCase()
-      return { date: d, short, num: format(d, 'd') }
+      return {
+        date: d,
+        short: i === 0 ? t.today : i === 1 ? t.tomorrow : format(d, 'EE', { locale: ru }).toUpperCase(),
+        num: format(d, 'd'),
+      }
     })
-  }, [])
+  }, [t.today, t.tomorrow])
+
+  const NAV_SECTIONS = [
+    { key: 'reservation', label: t.nav[0], ref: sectionRef.reservation },
+    { key: 'prices',      label: t.nav[1], ref: sectionRef.prices },
+    { key: 'levels',      label: t.nav[2], ref: sectionRef.levels },
+    { key: 'trailer',     label: t.nav[3], ref: sectionRef.trailer },
+    { key: 'about',       label: t.nav[4], ref: sectionRef.about },
+  ]
+
+  const embedId = getYouTubeId(settings.youtube_url)
+  const heroBgUrl = resolveHeroBg(settings.hero_bg)
+
+  // Pin the hero image to the body background so it's always visible while scrolling
+  useEffect(() => {
+    if (!heroBgUrl) {
+      document.body.style.backgroundImage = ''
+      document.body.style.backgroundSize = ''
+      document.body.style.backgroundPosition = ''
+      document.body.style.backgroundRepeat = ''
+      return
+    }
+    document.body.style.backgroundImage = [
+      `url("${heroBgUrl}")`,
+      'radial-gradient(ellipse 70% 50% at 20% 10%, rgba(58,15,63,0.22) 0%, transparent 60%)',
+      'radial-gradient(ellipse 60% 45% at 85% 15%, rgba(139,0,0,0.14) 0%, transparent 55%)',
+      'radial-gradient(ellipse 90% 60% at 50% 100%, rgba(26,5,31,0.4) 0%, transparent 70%)',
+    ].join(', ')
+    document.body.style.backgroundSize = 'cover, auto, auto, auto'
+    document.body.style.backgroundPosition = 'center center, auto, auto, auto'
+    document.body.style.backgroundRepeat = 'no-repeat, no-repeat, no-repeat, no-repeat'
+    return () => {
+      document.body.style.backgroundImage = ''
+      document.body.style.backgroundSize = ''
+      document.body.style.backgroundPosition = ''
+      document.body.style.backgroundRepeat = ''
+    }
+  }, [heroBgUrl])
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col text-gray-100 antialiased selection:bg-red-900 selection:text-white">
 
-      {/* ── Header ─────────────────────────────────────────── */}
+      {/* ── Header ────────────────────────────────────────────── */}
       <header
-        className="sticky top-0 z-40 border-b border-red-900/30 pt-safe"
+        className="sticky top-0 z-40 border-b border-red-950/40 pt-safe"
         style={{
-          background: 'rgba(5,5,5,0.82)',
-          backdropFilter: 'blur(14px) saturate(140%)',
-          WebkitBackdropFilter: 'blur(14px) saturate(140%)',
+          background: 'rgba(5,5,5,0.88)',
+          backdropFilter: 'blur(20px) saturate(160%)',
+          WebkitBackdropFilter: 'blur(20px) saturate(160%)',
         }}
       >
-        <div className="max-w-7xl mx-auto px-3 sm:px-5 py-3 flex items-center justify-between gap-2">
-
+        {/* Row 1 — Logo + Lang + Admin */}
+        <div className="max-w-7xl mx-auto px-3 sm:px-5 h-16 sm:h-20 flex items-center justify-between gap-2">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 sm:gap-3 flex-shrink-0 group" aria-label="Dark Cinema — главная">
-            <div className="relative px-3 block">
-              <div className="absolute left-0 top-0 bottom-0 w-2 flex flex-col justify-around">
-                {[...Array(4)].map((_, i) => (
-                  <div key={i} className="w-1.5 h-1.5 rounded-sm bg-red-700 transition-colors group-hover:bg-red-500" />
-                ))}
-              </div>
-              <div className="absolute right-0 top-0 bottom-0 w-2 flex flex-col justify-around">
-                {[...Array(4)].map((_, i) => (
-                  <div key={i} className="w-1.5 h-1.5 rounded-sm bg-red-700 transition-colors group-hover:bg-red-500" />
-                ))}
-              </div>
-              <div className="px-3 py-1 border-2 border-red-700 bg-black mx-1 transition-colors group-hover:border-red-500">
-                <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 text-center">
-                  {['D', 'A', 'R', 'K'].map(l => (
-                    <span key={l} className="font-display text-xs tracking-widest text-[#cc0000] leading-tight">{l}</span>
-                  ))}
-                </div>
-              </div>
-            </div>
+          <div className="flex items-center gap-3 flex-shrink-0 h-full">
+            <img
+              src="/logo.png"
+              alt="SHYM CINEMA"
+              className="h-full w-auto object-contain"
+            />
             <div className="leading-none">
-              <div className="drip-text text-xl sm:text-2xl tracking-widest">CINEMA</div>
-              <p className="font-mono text-[9px] sm:text-[10px] text-red-900 tracking-[0.3em] mt-0.5">ALMATY</p>
+              <p className="font-mono text-[9px] sm:text-[10px] text-red-600 tracking-[0.4em] mt-0.5 uppercase">Shymkent</p>
             </div>
-          </Link>
+          </div>
 
-          {/* Nav */}
-          <nav className="flex items-center gap-1.5 sm:gap-2 min-w-0">
-            <Link
-              href="/info"
-              className="flex items-center justify-center gap-1.5 font-display text-xs tracking-wider text-bone-dark border border-white/10 hover:border-crimson/60 hover:text-bone hover:bg-crimson/10 transition-all rounded-md"
-              style={{ minHeight: 44, minWidth: 44, padding: '0 12px' }}
-            >
-              <Info className="w-3.5 h-3.5 flex-shrink-0" />
-              <span className="hidden sm:inline text-xs tracking-widest uppercase">Уровни</span>
-            </Link>
-            {isAuthenticated ? (
-              <>
-                {isAdmin && (
-                  <a
-                    href="/admin"
-                    className="flex items-center justify-center font-display text-xs tracking-widest uppercase border border-red-900/50 text-red-400 hover:border-red-500 hover:text-red-300 hover:bg-red-950/30 transition-all px-3 rounded-md"
-                    style={{ minHeight: 44 }}
-                  >
-                    Админ
-                  </a>
-                )}
-                <div className="hidden sm:flex items-center gap-1.5 font-body text-xs px-2 flex-shrink-0 text-bone-dark">
-                  <User className="w-3.5 h-3.5 text-red-700" />
-                  <span className="max-w-[90px] truncate">{user?.username}</span>
-                </div>
-                <button
-                  onClick={() => { clearAuth(); toast.success('Вы вышли') }}
-                  className="flex items-center justify-center text-bone-dark border border-white/10 hover:border-red-600/60 hover:text-red-400 hover:bg-red-950/20 transition-all rounded-md"
-                  style={{ minHeight: 44, minWidth: 44 }}
-                  aria-label="Выйти"
-                >
-                  <LogOut className="w-4 h-4" />
-                </button>
-              </>
-            ) : (
-              <button
-                onClick={() => setShowAuth(true)}
-                className="btn-blood text-xs px-4 flex items-center justify-center"
-                style={{ minHeight: 44 }}
-              >
-                Войти
-              </button>
-            )}
-          </nav>
+          {/* Right: lang toggle */}
+          <button
+            onClick={() => setLang(l => l === 'ru' ? 'kz' : 'ru')}
+            className="relative flex items-center font-mono text-[11px] tracking-widest rounded border border-white/8 bg-black/60 hover:border-red-900/40 transition-colors overflow-hidden"
+            style={{ minHeight: 36 }}
+            title="Сменить язык / Тілді өзгерту"
+            aria-label="Сменить язык / Тілді өзгерту"
+          >
+            <span
+              className={`absolute inset-y-0 w-1/2 bg-red-950/60 border-r border-l border-red-900/25 transition-all duration-300 ease-in-out ${lang === 'kz' ? 'left-1/2' : 'left-0'}`}
+            />
+            <span className={`relative z-10 w-10 text-center py-2 transition-colors duration-200 ${lang === 'ru' ? 'text-red-400' : 'text-gray-500'}`}>RU</span>
+            <span className={`relative z-10 w-10 text-center py-2 transition-colors duration-200 ${lang === 'kz' ? 'text-red-400' : 'text-gray-500'}`}>KZ</span>
+          </button>
         </div>
+
+        {/* Row 2 — Nav buttons stick here once hero nav scrolls out of view */}
+        {showStickyNav && (
+          <div className="max-w-7xl mx-auto px-3 sm:px-5 pb-2.5 animate-slide-down">
+            <div className="flex items-stretch gap-2 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+              {NAV_SECTIONS.map(s => {
+                const active = activeSection === s.key
+                return (
+                  <button
+                    key={s.key}
+                    onClick={() => scrollTo(s.ref)}
+                    aria-current={active ? 'true' : undefined}
+                    className={`flex-shrink-0 flex-1 min-w-[80px] text-center font-mono text-[10px] sm:text-xs tracking-widest uppercase px-3 py-2 rounded-md border transition-all duration-200 ${
+                      active
+                        ? 'border-red-600/70 bg-red-950/40 text-white shadow-[0_0_14px_rgba(185,28,28,0.25)]'
+                        : 'border-white/5 bg-black/30 text-gray-400 hover:border-red-900/50 hover:text-white hover:bg-red-950/20'
+                    }`}
+                  >
+                    {s.label}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
       </header>
 
-      {/* ── My Reservations (inline, authenticated only) ─── */}
-      {isAuthenticated && <MyReservations inline sessionPrice={grid?.sessionPrice ?? 3500} />}
-
-      {/* ── Hero ───────────────────────────────────────────── */}
-      <section className="relative overflow-hidden">
-        {/* Atmospheric backdrop */}
+      {/* ── Hero ──────────────────────────────────────────────── */}
+      <section className="relative min-h-[88vh] flex items-center justify-center overflow-hidden border-b border-red-950/30">
+        {/* Backdrop overlay */}
         <div
-          aria-hidden="true"
-          className="absolute inset-0 pointer-events-none"
+          className="absolute inset-0 pointer-events-none z-[1]"
           style={{
-            background: `
-              radial-gradient(ellipse 70% 60% at 30% 0%, rgba(139,0,0,0.35) 0%, transparent 65%),
-              radial-gradient(ellipse 60% 50% at 80% 20%, rgba(58,15,63,0.4) 0%, transparent 60%)
+            background: heroBgUrl
+              ? `linear-gradient(to bottom, rgba(5,5,5,0.65) 0%, rgba(5,5,5,0.40) 50%, rgba(5,5,5,0.85) 100%)`
+              : `
+              radial-gradient(circle at 50% 40%, rgba(153,27,27,0.18) 0%, transparent 60%),
+              radial-gradient(circle at 20% 80%, rgba(88,28,135,0.10) 0%, transparent 50%),
+              linear-gradient(to bottom, #050505 0%, transparent 30%, transparent 70%, #050505 100%)
             `,
           }}
+          aria-hidden
         />
-        <div className="relative max-w-4xl mx-auto text-center px-4 py-10 sm:py-14">
-          <p className="font-mono text-[10px] sm:text-xs text-red-500/70 tracking-[0.4em] mb-3 animate-flicker">
-            — ДОБРО ПОЖАЛОВАТЬ —
-          </p>
-          {/*<h1 className="drip-text text-4xl sm:text-5xl md:text-6xl tracking-[0.1em] leading-none mb-4">
-            ВОЙДИ В DARK CINEMA
-          </h1>*/}
 
-          <h1 className="drip-text text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold leading-[0.95] tracking-tight mb-4">
-            чеLOVEку нужен <span className="text-red-600 drop-shadow-[0_0_15px_rgba(255,0,0,0.35)]">
-              ADRENALINE
-            </span>
-          </h1>
-          <p className="font-body text-base sm:text-lg text-bone-dark max-w-xl mx-auto leading-relaxed">
-            Это не фильм. Это не игра. <span className="text-crimson">Место где страх становится реальным.</span>
-          </p>
-          <div className="flex items-center justify-center gap-3 mt-4 font-mono text-[10px] sm:text-xs text-red-700/80 tracking-[0.2em]">
-            <span>СЕАНСЫ ДО 2 ЧАСОВ</span>
-            <span className="w-1 h-1 rounded-full bg-red-700/50" />
-            <span>12+</span>
+        <div className="relative z-[2] max-w-5xl mx-auto text-center px-4 py-8 flex flex-col items-center">
+          {/* Badge */}
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 border border-red-900/40 bg-red-950/20 backdrop-blur-md rounded-md mb-5 shadow-[inset_0_0_12px_rgba(185,28,28,0.1)]">
+            <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse flex-shrink-0" />
+            <p className="font-mono text-[10px] sm:text-xs text-red-400 tracking-[0.25em] uppercase">{t.heroBadge}</p>
           </div>
+
+          {/* Big neon text */}
+          <h1 className="drip-text text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold leading-[0.95] tracking-tight mb-5 uppercase select-none text-center">
+            {t.heroText}
+          </h1>
+
+          <p className="font-sans text-base sm:text-lg text-gray-400 max-w-xl mx-auto leading-relaxed mb-8">
+            {t.heroSub}
+          </p>
+
+          {/* Trailer video — no title, no lines */}
+          <div ref={sectionRef.trailer} id="trailer" className="w-full max-w-3xl mx-auto mb-8">
+            {embedId ? (
+              <div className="relative rounded-xl overflow-hidden border border-red-900/30" style={{ paddingBottom: '56.25%', background: '#000' }}>
+                <iframe
+                  src={`https://www.youtube.com/embed/${embedId}`}
+                  className="absolute inset-0 w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  title="Dark Cinema Trailer"
+                />
+              </div>
+            ) : (
+              <div className="flex items-center justify-center border border-red-900/20 rounded-xl bg-black/40" style={{ aspectRatio: '16/9' }}>
+                <p className="font-mono text-xs text-gray-600 tracking-widest">{t.noTrailer}</p>
+              </div>
+            )}
+          </div>
+
+          {/* Nav buttons — move to header once scrolled past */}
+          <div ref={heroNavRef} className="flex flex-col items-center gap-3 mb-8 w-full">
+            {/* Big book button */}
+            <button
+              onClick={() => scrollTo(sectionRef.reservation)}
+              className="btn-hero-blood w-full max-w-xs font-mono font-black tracking-[0.25em] uppercase px-10 py-4 text-base sm:text-lg mb-2"
+            >
+              {t.nav[0]}
+            </button>
+
+            {/* Other 4 nav buttons */}
+            <div className="flex flex-wrap gap-2 justify-center">
+              {NAV_SECTIONS.slice(1).map(s => {
+                const active = activeSection === s.key
+                return (
+                  <button
+                    key={s.key}
+                    onClick={() => scrollTo(s.ref)}
+                    aria-current={active ? 'true' : undefined}
+                    className={`group relative px-5 py-2.5 border font-mono text-[11px] sm:text-xs tracking-widest uppercase rounded-md transition-all duration-200 overflow-hidden ${
+                      active
+                        ? 'border-red-600 bg-red-900/60 text-white shadow-[0_0_16px_rgba(185,28,28,0.4)]'
+                        : 'border-red-700/70 bg-red-950/50 text-red-200 hover:border-red-600 hover:text-white hover:bg-red-900/60 hover:shadow-[0_0_16px_rgba(185,28,28,0.4)]'
+                    }`}
+                  >
+                    <span className="relative z-10">{s.label}</span>
+                    <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-500 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* <button
+            onClick={scrollToReservation}
+            className="group relative px-10 py-4 bg-red-700 hover:bg-red-600 text-white font-mono font-bold tracking-[0.2em] uppercase rounded-md transition-all duration-300 shadow-[0_0_30px_rgba(185,28,28,0.3)] hover:shadow-[0_0_40px_rgba(185,28,28,0.6)] overflow-hidden"
+          >
+            <span className="relative z-10">{t.book}</span>
+            <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+          </button> */}
         </div>
-        {/* Scroll-down indicator */}
-        <div className="relative flex justify-center pb-3">
-          <ArrowDown className="w-4 h-4 text-red-800/50 animate-pulse-soft" />
+
+        {/* Scroll indicator */}
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-40 animate-bounce pointer-events-none z-[2]">
+          <span className="font-mono text-[10px] tracking-widest text-gray-400 uppercase">{t.scrollHint}</span>
+          <ArrowDown className="w-4 h-4 text-red-700" />
         </div>
-        <div
-          className="absolute bottom-0 left-0 right-0 h-px"
-          style={{ background: 'linear-gradient(90deg, transparent, #8B0000, #dc143c, #8B0000, transparent)' }}
-        />
+
+        {/* Bottom gradient line */}
+        <div className="absolute bottom-0 left-0 right-0 h-px z-[2]" style={{ background: 'linear-gradient(90deg,transparent,#8B0000,#dc143c,#8B0000,transparent)' }} />
       </section>
 
-      {/* ── Onboarding hint ────────────────────────────────── */}
-      {showHint && !loading && (
-        <div className="max-w-7xl mx-auto w-full px-3 sm:px-5 mt-5">
-          <div className="onboarding-strip animate-slide-up p-3 sm:p-4 flex items-center gap-3 sm:gap-4">
-            <ol className="flex-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs sm:text-sm font-body text-bone-dark">
-              <li className="flex items-center gap-1.5">
-                <span className="w-5 h-5 rounded-full bg-crimson/20 border border-crimson/60 text-crimson font-bold flex items-center justify-center text-[10px]">1</span>
-                Выбери дату
-              </li>
-              <ChevronRight className="w-3 h-3 text-crimson/50" />
-              <li className="flex items-center gap-1.5">
-                <span className="w-5 h-5 rounded-full bg-crimson/20 border border-crimson/60 text-crimson font-bold flex items-center justify-center text-[10px]">2</span>
-                Выбери комнату и время
-              </li>
-              <ChevronRight className="w-3 h-3 text-crimson/50" />
-              <li className="flex items-center gap-1.5">
-                <span className="w-5 h-5 rounded-full bg-crimson/20 border border-crimson/60 text-crimson font-bold flex items-center justify-center text-[10px]">3</span>
-                Забронируй и оплати
-              </li>
-            </ol>
-            <button
-              onClick={() => setShowHint(false)}
-              className="text-bone-dark/60 hover:text-bone font-mono text-[10px] tracking-widest px-2 py-1 border border-white/10 hover:border-white/30 rounded transition-colors"
-              aria-label="Скрыть подсказку"
+      {/* ── About + Rules ─────────────────────────────────────── */}
+      <section ref={sectionRef.about} id="about" className="max-w-3xl mx-auto px-3 sm:px-5 pt-10 pb-5 w-full scroll-mt-36 bg-[#050505]/70">
+        <h2 className="drip-text text-3xl sm:text-4xl font-extrabold text-center mb-6 tracking-widest uppercase block">
+          {t.aboutTitle}
+        </h2>
+        <div className="border border-white/8 bg-black/40 rounded-xl px-5 py-4 mb-6">
+          <p className="font-sans text-sm text-gray-300 leading-relaxed">{t.description}</p>
+        </div>
+
+        <h3 className="drip-text text-xl sm:text-2xl font-extrabold text-center mb-4 tracking-widest uppercase block">
+          {t.rulesTitle}
+        </h3>
+        <div className="border border-red-900/25 rounded-xl overflow-hidden bg-black/40">
+          {t.rules.map((rule, i) => (
+            <div
+              key={i}
+              className="flex items-start gap-3 px-4 py-2.5"
+              style={{ borderBottom: i < t.rules.length - 1 ? '1px solid rgba(139,0,0,0.12)' : 'none' }}
             >
-              OK
+              <span className="drip-text text-xs mt-0.5 flex-shrink-0">▸</span>
+              <p className="font-sans text-xs text-gray-300 leading-relaxed">{rule}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Levels (card grid) ────────────────────────────────── */}
+      <section ref={sectionRef.levels} id="levels" className="pt-6 pb-8 bg-[#070202]/80 border-b border-red-950/20 scroll-mt-36">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6">
+          <h2 className="drip-text text-3xl sm:text-4xl font-extrabold tracking-widest uppercase text-center mb-8">
+            {t.levelsTitle}
+          </h2>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-red-950/20 rounded-xl overflow-hidden border border-red-950/20">
+            {t.levels.map((lvl) => (
+              <div
+                key={lvl.level}
+                className={`flex flex-col gap-1.5 px-5 py-5 bg-[#070202] ${lvl.isMax ? 'border-t-2 border-red-600' : 'border-t-2 border-transparent'}`}
+              >
+                <span className={`font-mono text-xs tracking-[0.25em] font-black uppercase ${lvl.isMax ? 'text-red-500' : 'text-red-700'}`}>
+                  LEVEL {lvl.level}
+                </span>
+                <p className="text-white text-sm font-semibold leading-snug">{lvl.title}</p>
+                {lvl.desc && (
+                  <p className="text-gray-500 text-xs leading-snug">({lvl.desc})</p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Prices (line by line) ─────────────────────────────── */}
+      <section ref={sectionRef.prices} id="prices" className="pt-6 pb-10 bg-black/80 border-b border-red-950/20 scroll-mt-36">
+        <div className="max-w-sm mx-auto px-4 sm:px-6">
+          <div className="text-center mb-8">
+            <h2 className="drip-text text-3xl sm:text-4xl font-extrabold tracking-widest uppercase block mt-2">
+              {t.pricesTitle}
+            </h2>
+            <p className="text-gray-400 mt-3 text-xs">{t.pricesSub}</p>
+          </div>
+
+          <div className="border border-red-950/30 rounded-xl overflow-hidden bg-black/60">
+            {t.prices.map((p, i) => (
+              <div
+                key={p.count}
+                className="flex items-center gap-3 px-4 py-2.5 hover:bg-red-950/10 transition-colors"
+                style={{ borderBottom: i < t.prices.length - 1 ? '1px solid rgba(139,0,0,0.12)' : 'none' }}
+              >
+                <span className="w-6 h-6 rounded-full bg-red-950/60 border border-red-900/50 text-red-400 font-mono text-xs font-black flex items-center justify-center flex-shrink-0">
+                  {p.count}
+                </span>
+                <span className="font-mono text-xs text-gray-400 tracking-widest flex-1">{t.people}</span>
+                <span className="font-mono text-sm font-black text-white tracking-wide">{p.price.toLocaleString('ru-RU')} ₸</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-4 p-3 rounded-lg bg-amber-950/10 border border-amber-800/20 text-center">
+            <p className="font-mono text-xs text-amber-400/80 tracking-wider leading-relaxed">{t.priceNote}</p>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Reservation ───────────────────────────────────────── */}
+      <section ref={sectionRef.reservation} id="reservation" className="max-w-7xl mx-auto px-3 sm:px-5 py-16 w-full scroll-mt-36 bg-[#050505]/70">
+        <div className="flex flex-col items-center gap-2 mb-10 text-center">
+          <div className="flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/5 rounded font-mono text-[10px] tracking-[0.2em] uppercase text-gray-400">
+            <Calendar className="w-3.5 h-3.5 text-red-600" />
+            {lang === 'kz' ? 'Онлайн сеанс брондау' : 'Онлайн бронирование сеансов'}
+          </div>
+          <h2 className="drip-text text-3xl sm:text-4xl font-extrabold uppercase tracking-wider mt-1 block">
+            {lang === 'kz' ? 'ОЙЫН УАҚЫТЫН ТАҢДАҢЫЗ' : 'ВЫБЕРИТЕ ВРЕМЯ ИГРЫ'}
+          </h2>
+        </div>
+
+        {/* Date picker */}
+        <div className="mb-8 w-full max-w-2xl mx-auto bg-[#0a0a0a] border border-white/5 p-4 rounded-xl shadow-2xl">
+          {/* Quick chips */}
+          <div className="flex items-stretch gap-2 mb-4 overflow-x-auto pb-2" style={{ scrollbarWidth: 'none' }}>
+            {quickDates.map(({ date, short, num }) => {
+              const active = isSameDay(date, selectedDate)
+              return (
+                <button
+                  key={short + num}
+                  onClick={() => setSelDate(date)}
+                  aria-pressed={active}
+                  className={`flex-shrink-0 flex-1 min-w-[78px] px-3 py-2.5 rounded-lg border transition-all text-center ${
+                    active
+                      ? 'border-red-600 bg-red-950/30 shadow-[0_0_20px_rgba(220,20,60,0.2)]'
+                      : 'border-white/5 bg-black hover:border-red-900/40 hover:bg-red-950/5'
+                  }`}
+                >
+                  <div className={`font-mono text-[10px] tracking-widest ${active ? 'text-red-500 font-bold' : 'text-gray-500'}`}>{short}</div>
+                  <div className={`text-xl font-black leading-none mt-1.5 ${active ? 'text-white' : 'text-gray-300'}`}>{num}</div>
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Arrow nav */}
+          <div className="flex items-center gap-2 justify-center">
+            <button
+              onClick={() => setSelDate(d => subDays(d, 1))}
+              className="border border-white/5 bg-black hover:border-red-900/40 hover:text-white transition-all rounded-lg flex items-center justify-center text-gray-400"
+              style={{ minWidth: 44, minHeight: 44 }}
+              aria-label={lang === 'kz' ? 'Алдыңғы күн' : 'Предыдущий день'}
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <div
+              className="flex-1 text-center py-2.5 border border-red-900/30 bg-gradient-to-b from-red-950/10 to-transparent rounded-lg"
+              style={{ maxWidth: 320 }}
+            >
+              <p className="font-mono text-xs sm:text-sm tracking-wider font-bold text-gray-200 uppercase">
+                {format(selectedDate, 'EEEE, d MMMM yyyy', { locale: ru })}
+              </p>
+            </div>
+            <button
+              onClick={() => setSelDate(d => addDays(d, 1))}
+              className="border border-white/5 bg-black hover:border-red-900/40 hover:text-white transition-all rounded-lg flex items-center justify-center text-gray-400"
+              style={{ minWidth: 44, minHeight: 44 }}
+              aria-label={lang === 'kz' ? 'Келесі күн' : 'Следующий день'}
+            >
+              <ChevronRight className="w-5 h-5" />
             </button>
           </div>
         </div>
-      )}
 
-      {/* ── Date Picker ────────────────────────────────────── */}
-      <div className="max-w-7xl mx-auto px-3 sm:px-5 mt-6 mb-6 w-full">
-        <div className="flex items-center gap-2 mb-3">
-          <Calendar className="w-4 h-4 text-crimson" />
-          <p className="font-mono text-[10px] sm:text-xs tracking-[0.25em] uppercase text-bone-dark/70">
-            Выберите дату
-          </p>
+        {/* Grid */}
+        <div className="relative min-h-[300px]">
+          {loading
+            ? <GridSkeleton />
+            : grid && grid.rooms.length > 0
+              ? <ReservationGrid grid={grid} lang={lang} whatsappNumber={settings.whatsapp_number} />
+              : <EmptyState t={t} />
+          }
         </div>
-
-        {/* Quick chips row */}
-        <div className="flex items-stretch gap-2 mb-3 overflow-x-auto pb-1 -mx-3 px-3 sm:-mx-0 sm:px-0" style={{ scrollbarWidth: 'none' }}>
-          {quickDates.map(({ date, short, num }) => {
-            const active = isSameDay(date, selectedDate)
-            return (
-              <button
-                key={short + num}
-                onClick={() => setSelectedDate(date)}
-                className={`flex-shrink-0 min-w-[74px] px-3 py-2 rounded-lg border transition-all text-center ${active
-                    ? 'border-crimson bg-crimson/15 shadow-[0_0_20px_rgba(220,20,60,0.25)]'
-                    : 'border-white/10 hover:border-crimson/60 hover:bg-crimson/5'
-                  }`}
-                aria-pressed={active}
-              >
-                <div className={`font-mono text-[9px] tracking-widest ${active ? 'text-crimson' : 'text-bone-dark/60'}`}>
-                  {short}
-                </div>
-                <div className={`font-display text-lg leading-none mt-1 ${active ? 'text-white text-glow-subtle' : 'text-bone-dark'}`}>
-                  {num}
-                </div>
-              </button>
-            )
-          })}
-        </div>
-
-        {/* Arrow navigation */}
-        <div className="flex items-center gap-2 sm:gap-3 justify-center">
-          <button
-            onClick={() => setSelectedDate(d => subDays(d, 1))}
-            className="btn-ghost flex items-center justify-center flex-shrink-0"
-            style={{ minWidth: 46, minHeight: 46, padding: '0 12px' }}
-            aria-label="Предыдущий день"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          <div
-            className="flex-1 text-center px-3 sm:px-6 py-3 border rounded-lg"
-            style={{
-              borderColor: 'rgba(220,20,60,0.35)',
-              background: 'linear-gradient(180deg, rgba(220,20,60,0.08) 0%, rgba(58,15,63,0.08) 100%)',
-              maxWidth: 360,
-            }}
-          >
-            <p className="font-display text-xs sm:text-sm tracking-wider leading-tight text-bone">
-              {dateLabel}
-            </p>
-          </div>
-          <button
-            onClick={() => setSelectedDate(d => addDays(d, 1))}
-            className="btn-ghost flex items-center justify-center flex-shrink-0"
-            style={{ minWidth: 46, minHeight: 46, padding: '0 12px' }}
-            aria-label="Следующий день"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-
-      {/* ── Grid ───────────────────────────────────────────── */}
-      <main className="flex-1 max-w-7xl mx-auto px-3 sm:px-5 pb-16 w-full">
-        {loading ? (
-          <GridSkeleton />
-        ) : grid && grid.rooms.length > 0 ? (
-          <ReservationGrid
-            grid={grid}
-            onSlotClick={handleSlotClick}
-            onPendingSlotClick={handlePendingSlotClick}
-          />
-        ) : (
-          <EmptyState />
-        )}
 
         {/* Legend */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6 justify-items-center mt-10 pt-6"
-          style={{ borderTop: '1px solid rgba(139,0,0,0.25)' }}>
-          <LegendDot color="bg-green-900/40 border-green-600/50" label="СВОБОДНО" />
-          <LegendDot color="bg-amber-900/40 border-amber-600/50" label="ОЖИДАНИЕ" />
-          <LegendDot color="bg-red-900/40 border-red-600/50" label="ЗАНЯТО" />
-          <LegendDot color="bg-gray-900/40 border-gray-600/40 border-dashed" label="ПРОШЁЛ" />
+        <div className="grid grid-cols-3 gap-3 justify-items-center mt-10 pt-6" style={{ borderTop: '1px solid rgba(139,0,0,0.2)' }}>
+          <LegendDot color="bg-green-900/40 border-green-600/50 text-green-400"  label={t.legendFree} />
+          <LegendDot color="bg-red-900/40 border-red-600/50 text-red-400"        label={t.legendBusy} />
+          <LegendDot color="bg-neutral-900/60 border-neutral-700 text-neutral-500 border-dashed" label={t.legendPast} />
         </div>
-      </main>
+      </section>
 
-      {/* ── Footer ─────────────────────────────────────────── */}
-      <footer className="py-8 px-4 text-center border-t border-red-900/25">
-        <div className="flex items-center justify-center gap-2 mb-4 opacity-70">
-          <Moon className="w-3 h-3 text-red-800" />
-          <p className="font-mono text-xs tracking-[0.25em] text-red-800">
-            © DARK CINEMA · ALMATY
-          </p>
-          <Moon className="w-3 h-3 text-red-800" />
+      {/* ── Reviews ───────────────────────────────────────────── */}
+      <section className="max-w-5xl mx-auto px-3 sm:px-5 py-16 w-full bg-[#050505]/70">
+        <h2 className="drip-text text-3xl sm:text-4xl font-extrabold text-center mb-8 tracking-widest uppercase block">
+          {t.reviewsTitle}
+        </h2>
+        <Reviews lang={lang} />
+      </section>
+
+      {/* ── Footer ────────────────────────────────────────────── */}
+      <footer className="py-12 px-4 text-center border-t border-red-950/40 bg-[#030303]/85">
+        <div className="flex items-center justify-center gap-2 mb-6 opacity-60">
+          <Moon className="w-3.5 h-3.5 text-red-800" />
+          <p className="font-mono text-xs tracking-[0.3em] text-red-700 font-bold uppercase">© DARK CINEMA · SHYMKENT</p>
+          <Moon className="w-3.5 h-3.5 text-red-800" />
         </div>
-        <div className="flex justify-center gap-3 flex-wrap">
+        <div className="flex justify-center gap-2.5 flex-wrap max-w-xl mx-auto">
           {[
-            { name: 'Instagram', href: 'https://instagram.com/dark__cinema' },
-            { name: 'WhatsApp', href: 'https://wa.me/77066302270' },
+            { name: 'Instagram', href: 'https://instagram.com/dark_cinema_shymkent' },
+            { name: 'WhatsApp', href: `https://wa.me/${settings.whatsapp_number}` },
             { name: 'TikTok', href: 'https://tiktok.com/@dark_cinema_' },
-            { name: '2GIS — Адрес', href: 'https://go.2gis.com/MKR9F' },
-          ].map(link => (
+            { name: '2GIS', href: 'https://go.2gis.com/MKR9F' },
+          ].map(l => (
             <a
-              key={link.name}
-              href={link.href}
+              key={l.name}
+              href={l.href}
               target="_blank"
               rel="noopener noreferrer"
-              className="font-mono text-xs tracking-wider px-4 py-2 rounded-md border border-white/10 text-bone-dark hover:border-crimson/60 hover:text-bone hover:bg-crimson/8 transition-all duration-200"
+              className="font-mono text-xs tracking-widest uppercase px-5 py-3 rounded border border-white/5 bg-black text-gray-400 hover:border-red-800/60 hover:text-white hover:bg-red-950/10 transition-all duration-200"
             >
-              {link.name}
+              {l.name}
             </a>
           ))}
         </div>
       </footer>
-
-      {/* ── Modals ─────────────────────────────────────────── */}
-      {booking && (
-        <BookingModal
-          booking={booking}
-          sessionPrice={grid?.sessionPrice ?? 3500}
-          onClose={() => setBooking(null)}
-          onComplete={handleBookingComplete}
-        />
-      )}
-      {showAuth && (
-        <AuthModal
-          onClose={() => setShowAuth(false)}
-          onSuccess={() => setShowAuth(false)}
-        />
-      )}
-      {payingReservation && (
-        <PaymentModal
-          reservation={payingReservation}
-          sessionPrice={grid?.sessionPrice ?? 3500}
-          onClose={() => setPayingReservation(null)}
-          onBack={() => setPayingReservation(null)}
-          onComplete={() => { setPayingReservation(null); setRefreshKey(k => k + 1) }}
-        />
-      )}
     </div>
   )
 }
 
-/* ── Sub-components ─────────────────────────────────────── */
+/* ── Sub-components ───────────────────────────────────────── */
 
 function LegendDot({ color, label }: { color: string; label: string }) {
   return (
-    <div className="flex items-center gap-2">
-      <div className={`w-3.5 h-3.5 rounded-sm flex-shrink-0 border ${color}`} />
-      <span className="font-mono text-[10px] sm:text-xs tracking-wider text-bone-dark/80">{label}</span>
+    <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-black border border-white/5">
+      <div className={`w-3 h-3 rounded-sm flex-shrink-0 border ${color}`} />
+      <span className="font-mono text-[11px] tracking-widest font-bold text-gray-400">{label}</span>
     </div>
   )
 }
 
 function GridSkeleton() {
   return (
-    <div className="grid gap-5 sm:gap-6 lg:grid-cols-2 xl:grid-cols-3" aria-busy="true">
+    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 animate-pulse" aria-busy="true">
       {[0, 1, 2].map(i => (
-        <div key={i} className="room-card theme-living p-4">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="skeleton w-11 h-11 rounded-lg" />
+        <div key={i} className="bg-[#0a0a0a] border border-white/5 rounded-xl p-5 space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-lg bg-white/5" />
             <div className="flex-1 space-y-2">
-              <div className="skeleton h-4 w-32" />
-              <div className="skeleton h-3 w-24" />
+              <div className="h-4 bg-white/5 rounded w-2/3" />
+              <div className="h-3 bg-white/5 rounded w-1/2" />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-2.5 mt-4">
-            {[0, 1, 2, 3, 4, 5].map(j => <div key={j} className="skeleton h-[92px]" />)}
+          <div className="grid grid-cols-2 gap-2.5 pt-2">
+            {[0, 1, 2, 3].map(j => <div key={j} className="h-20 bg-white/5 rounded-lg" />)}
           </div>
         </div>
       ))}
@@ -464,14 +665,12 @@ function GridSkeleton() {
   )
 }
 
-function EmptyState() {
+function EmptyState({ t }: { t: typeof T['ru'] }) {
   return (
-    <div className="flex flex-col items-center justify-center py-24 gap-4 text-center">
+    <div className="flex flex-col items-center justify-center py-20 gap-4 text-center border border-dashed border-red-950/30 rounded-xl bg-black/40">
       <div className="drip-text text-5xl animate-pulse-soft">☠</div>
-      <p className="font-display text-lg text-bone tracking-wider">НЕТ СЕАНСОВ</p>
-      <p className="font-body text-bone-dark/60 max-w-sm">
-        На выбранную дату сеансы не запланированы. Попробуйте другой день.
-      </p>
+      <p className="font-mono text-sm text-white tracking-widest uppercase font-bold">{t.noSlots}</p>
+      <p className="font-sans text-xs text-gray-500 max-w-xs mx-auto leading-relaxed">{t.noSlotsSub}</p>
     </div>
   )
 }

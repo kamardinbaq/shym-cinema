@@ -1,58 +1,50 @@
-version: '3.9'
+# DEV WORKFLOW
+# First run:           docker-compose up --build
+# Normal development:  docker-compose up
+# Stop:                docker-compose stop
+# Full reset:          docker-compose down
 
 services:
 
-  # ── PostgreSQL ─────────────────────────────────────────────
   postgres:
     image: postgres:15-alpine
     container_name: horror_cinema_db
     restart: unless-stopped
     environment:
-      POSTGRES_DB:       horror_cinema
-      POSTGRES_USER:     postgres
+      POSTGRES_DB: horror_cinema
+      POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
-  # ── Spring Boot Backend ────────────────────────────────────
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     container_name: horror_cinema_backend
     restart: unless-stopped
     depends_on:
-      postgres:
-        condition: service_healthy
+      - postgres
     environment:
-      SPRING_DATASOURCE_URL:      jdbc:postgresql://postgres:5432/horror_cinema
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/horror_cinema
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
-      APP_JWT_SECRET:             ${APP_JWT_SECRET}
-      APP_CORS_ALLOWED_ORIGINS:   ${APP_CORS_ALLOWED_ORIGINS:-http://localhost:3000}
-      TELEGRAM_BOT_TOKEN:         ${TELEGRAM_BOT_TOKEN:-}
-      KASPI_SELLER_IIN:           ${KASPI_SELLER_IIN:-990811301225}
-      SESSION_PRICE:              ${SESSION_PRICE:-3500}
+      JWT_SECRET: ${JWT_SECRET}
+      CORS_ALLOWED_ORIGINS: http://localhost:3000
+      ROOT_ADMIN_USERNAME: ${ROOT_ADMIN_USERNAME}
+      ROOT_ADMIN_PASSWORD: ${ROOT_ADMIN_PASSWORD}
     ports:
       - "8080:8080"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+    volumes:
+      - ./backend:/app
+      - ~/.m2:/root/.m2
 
-  # ── Next.js Frontend ───────────────────────────────────────
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     container_name: horror_cinema_frontend
     restart: unless-stopped
     depends_on:
@@ -61,6 +53,74 @@ services:
       NEXT_PUBLIC_API_URL: http://localhost:8080
     ports:
       - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
 
 volumes:
   postgres_data:
+  frontend_node_modules:
+
+# ─── PRODUCTION WORKFLOW ──────────────────────────────────────────────────────
+# version: '3.9'
+#
+# services:
+#
+#   postgres:
+#     image: postgres:15-alpine
+#     container_name: horror_cinema_db
+#     restart: unless-stopped
+#     environment:
+#       POSTGRES_DB:       horror_cinema
+#       POSTGRES_USER:     postgres
+#       POSTGRES_PASSWORD: postgres
+#     ports:
+#       - "5432:5432"
+#     volumes:
+#       - postgres_data:/var/lib/postgresql/data
+#     healthcheck:
+#       test: ["CMD-SHELL", "pg_isready -U postgres"]
+#       interval: 10s
+#       timeout: 5s
+#       retries: 5
+#
+#   backend:
+#     build:
+#       context: ./backend
+#       dockerfile: Dockerfile
+#     container_name: horror_cinema_backend
+#     restart: unless-stopped
+#     depends_on:
+#       postgres:
+#         condition: service_healthy
+#     environment:
+#       SPRING_DATASOURCE_URL:      jdbc:postgresql://postgres:5432/horror_cinema
+#       SPRING_DATASOURCE_USERNAME: postgres
+#       SPRING_DATASOURCE_PASSWORD: postgres
+#       JWT_SECRET:                 ${JWT_SECRET}
+#       CORS_ALLOWED_ORIGINS:       ${CORS_ALLOWED_ORIGINS:-http://localhost:3000}
+#       ROOT_ADMIN_USERNAME:        ${ROOT_ADMIN_USERNAME}
+#       ROOT_ADMIN_PASSWORD:        ${ROOT_ADMIN_PASSWORD}
+#     ports:
+#       - "8080:8080"
+#     healthcheck:
+#       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+#       interval: 30s
+#       timeout: 10s
+#       retries: 3
+#
+#   frontend:
+#     build:
+#       context: ./frontend
+#       dockerfile: Dockerfile
+#     container_name: horror_cinema_frontend
+#     restart: unless-stopped
+#     depends_on:
+#       - backend
+#     environment:
+#       NEXT_PUBLIC_API_URL: http://localhost:8080
+#     ports:
+#       - "3000:3000"
+#
+# volumes:
+#   postgres_data:

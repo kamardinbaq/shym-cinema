@@ -1,101 +1,59 @@
 -- ============================================================
---  Horror Cinema Reservation System – PostgreSQL Schema
+--  Dark Cinema – Simplified Schema (no users / payments)
 -- ============================================================
 
-CREATE TABLE IF NOT EXISTS users (
-    id          BIGSERIAL PRIMARY KEY,
-    username    VARCHAR(50)  NOT NULL UNIQUE,
-    password    VARCHAR(255) NOT NULL,
-    phone       VARCHAR(20)  NOT NULL,
-    role        VARCHAR(20)  NOT NULL DEFAULT 'USER',
-    active      BOOLEAN      NOT NULL DEFAULT TRUE,
-    created_at  TIMESTAMP    NOT NULL DEFAULT NOW(),
-    updated_at  TIMESTAMP    NOT NULL DEFAULT NOW()
-);
-
--- Migration: remove email/full_name columns if they exist (idempotent)
-ALTER TABLE users DROP COLUMN IF EXISTS email;
-ALTER TABLE users DROP COLUMN IF EXISTS full_name;
--- Make phone NOT NULL for existing rows that may have null (set placeholder)
-UPDATE users SET phone = '+70000000000' WHERE phone IS NULL;
-ALTER TABLE users ALTER COLUMN phone SET NOT NULL;
-
 CREATE TABLE IF NOT EXISTS rooms (
-    id           BIGSERIAL PRIMARY KEY,
-    name         VARCHAR(100)  NOT NULL UNIQUE,
-    description  TEXT,
-    capacity     INT           NOT NULL,
-    min_people   INT           NOT NULL,
-    theme_code   VARCHAR(50),
-    active       BOOLEAN       NOT NULL DEFAULT TRUE,
-    created_at   TIMESTAMP     NOT NULL DEFAULT NOW()
+    id          BIGSERIAL PRIMARY KEY,
+    name        VARCHAR(100) NOT NULL UNIQUE,
+    description TEXT,
+    capacity    INT          NOT NULL,
+    min_people  INT          NOT NULL,
+    theme_code  VARCHAR(50),
+    active      BOOLEAN      NOT NULL DEFAULT TRUE,
+    created_at  TIMESTAMP    NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS time_slots (
-    id           BIGSERIAL PRIMARY KEY,
-    room_id      BIGINT        NOT NULL REFERENCES rooms(id),
-    start_time   TIME          NOT NULL,
-    end_time     TIME          NOT NULL,
-    active       BOOLEAN       NOT NULL DEFAULT TRUE,
+    id         BIGSERIAL PRIMARY KEY,
+    room_id    BIGINT    NOT NULL REFERENCES rooms(id),
+    start_time TIME      NOT NULL,
+    end_time   TIME      NOT NULL,
+    active     BOOLEAN   NOT NULL DEFAULT TRUE,
     UNIQUE (room_id, start_time)
 );
 
-CREATE TABLE IF NOT EXISTS reservations (
-    id              BIGSERIAL PRIMARY KEY,
-    user_id         BIGINT       NOT NULL REFERENCES users(id),
-    room_id         BIGINT       NOT NULL REFERENCES rooms(id),
-    time_slot_id    BIGINT       NOT NULL REFERENCES time_slots(id),
-    reservation_date DATE        NOT NULL,
-    people_count    INT          NOT NULL,
-    status          VARCHAR(30)  NOT NULL DEFAULT 'PENDING',
-    notes           TEXT,
-    created_at      TIMESTAMP    NOT NULL DEFAULT NOW(),
-    updated_at      TIMESTAMP    NOT NULL DEFAULT NOW()
+-- Admin marks a specific slot on a specific date as reserved
+CREATE TABLE IF NOT EXISTS slot_reservations (
+    id               BIGSERIAL PRIMARY KEY,
+    room_id          BIGINT NOT NULL REFERENCES rooms(id),
+    time_slot_id     BIGINT NOT NULL REFERENCES time_slots(id),
+    reservation_date DATE   NOT NULL,
+    created_at       TIMESTAMP NOT NULL DEFAULT NOW(),
+    UNIQUE (time_slot_id, reservation_date)
 );
 
--- Drop old full unique constraint if it exists (from previous schema version)
-ALTER TABLE reservations
-    DROP CONSTRAINT IF EXISTS reservations_room_id_time_slot_id_reservation_date_key;
-
--- Only one ACTIVE (PENDING or CONFIRMED) reservation per slot per date is allowed.
--- CANCELLED and EXPIRED rows are excluded so the slot can be rebooked.
-CREATE UNIQUE INDEX IF NOT EXISTS idx_reservations_unique_active
-    ON reservations (room_id, time_slot_id, reservation_date)
-    WHERE status IN ('PENDING', 'CONFIRMED');
-
-CREATE TABLE IF NOT EXISTS payments (
-    id                  BIGSERIAL PRIMARY KEY,
-    reservation_id      BIGINT        NOT NULL REFERENCES reservations(id) UNIQUE,
-    amount              DECIMAL(10,2) NOT NULL,
-    currency            VARCHAR(10)   NOT NULL DEFAULT 'KZT',
-    provider            VARCHAR(50)   NOT NULL DEFAULT 'KASPI',
-    status              VARCHAR(30)   NOT NULL DEFAULT 'PENDING',
-    transaction_id      VARCHAR(100),
-    kaspi_order_id      VARCHAR(100),
-    payment_method      VARCHAR(50),
-    paid_at             TIMESTAMP,
-    created_at          TIMESTAMP     NOT NULL DEFAULT NOW(),
-    updated_at          TIMESTAMP     NOT NULL DEFAULT NOW()
+CREATE TABLE IF NOT EXISTS reviews (
+    id         BIGSERIAL PRIMARY KEY,
+    name       VARCHAR(100),
+    stars      INT       NOT NULL CHECK (stars BETWEEN 1 AND 5),
+    body       TEXT      NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
--- Tracks used Kaspi receipt numbers so each receipt can only confirm one reservation.
-CREATE TABLE IF NOT EXISTS used_receipts (
-    id              BIGSERIAL PRIMARY KEY,
-    receipt_number  VARCHAR(100) NOT NULL UNIQUE,
-    reservation_id  BIGINT       NOT NULL REFERENCES reservations(id),
-    used_at         TIMESTAMP    NOT NULL DEFAULT NOW()
+CREATE TABLE IF NOT EXISTS admins (
+    id         BIGSERIAL PRIMARY KEY,
+    username   VARCHAR(50)  NOT NULL UNIQUE,
+    password   VARCHAR(255) NOT NULL,
+    is_root    BOOLEAN      NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP    NOT NULL DEFAULT NOW()
 );
 
--- Migration: add confirmation_code for telegram bot verification (unique random 8-char code per reservation)
-ALTER TABLE reservations ADD COLUMN IF NOT EXISTS confirmation_code VARCHAR(10);
-CREATE UNIQUE INDEX IF NOT EXISTS idx_reservations_confirmation_code
-    ON reservations(confirmation_code) WHERE confirmation_code IS NOT NULL;
+CREATE TABLE IF NOT EXISTS settings (
+    key   VARCHAR(100) PRIMARY KEY,
+    value TEXT NOT NULL
+);
 
--- Indexes for performance
-CREATE INDEX IF NOT EXISTS idx_reservations_date      ON reservations(reservation_date);
-CREATE INDEX IF NOT EXISTS idx_reservations_room      ON reservations(room_id);
-CREATE INDEX IF NOT EXISTS idx_reservations_user      ON reservations(user_id);
-CREATE INDEX IF NOT EXISTS idx_reservations_status    ON reservations(status);
-CREATE INDEX IF NOT EXISTS idx_time_slots_room        ON time_slots(room_id);
-CREATE INDEX IF NOT EXISTS idx_payments_reservation   ON payments(reservation_id);
-CREATE INDEX IF NOT EXISTS idx_payments_status        ON payments(status);
+-- Indexes
+CREATE INDEX IF NOT EXISTS idx_slot_res_date  ON slot_reservations(reservation_date);
+CREATE INDEX IF NOT EXISTS idx_slot_res_slot  ON slot_reservations(time_slot_id);
+CREATE INDEX IF NOT EXISTS idx_reviews_date   ON reviews(created_at);

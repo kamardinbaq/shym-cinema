@@ -9,7 +9,6 @@ import ReservationGrid from '@/components/ReservationGrid'
 import Reviews from '@/components/Reviews'
 import {
   ChevronLeft, ChevronRight, Calendar, Moon,
-  ArrowDown,
 } from 'lucide-react'
 
 // ── Translations ─────────────────────────────────────────────
@@ -230,42 +229,15 @@ export default function HomePage() {
   const embedId = getYouTubeId(settings.youtube_url)
   const heroBgUrl = resolveHeroBg(settings.hero_bg)
 
-  // Pin the hero image to the body background so it's always visible while scrolling
-  useEffect(() => {
-    if (!heroBgUrl) {
-      document.body.style.backgroundImage = ''
-      document.body.style.backgroundSize = ''
-      document.body.style.backgroundPosition = ''
-      document.body.style.backgroundRepeat = ''
-      return
-    }
-    document.body.style.backgroundImage = [
-      `url("${heroBgUrl}")`,
-      'radial-gradient(ellipse 70% 50% at 20% 10%, rgba(58,15,63,0.22) 0%, transparent 60%)',
-      'radial-gradient(ellipse 60% 45% at 85% 15%, rgba(139,0,0,0.14) 0%, transparent 55%)',
-      'radial-gradient(ellipse 90% 60% at 50% 100%, rgba(26,5,31,0.4) 0%, transparent 70%)',
-    ].join(', ')
-    document.body.style.backgroundSize = 'cover, auto, auto, auto'
-    document.body.style.backgroundPosition = 'center center, auto, auto, auto'
-    document.body.style.backgroundRepeat = 'no-repeat, no-repeat, no-repeat, no-repeat'
-    return () => {
-      document.body.style.backgroundImage = ''
-      document.body.style.backgroundSize = ''
-      document.body.style.backgroundPosition = ''
-      document.body.style.backgroundRepeat = ''
-    }
-  }, [heroBgUrl])
 
   return (
     <div className="min-h-screen flex flex-col text-gray-100 antialiased selection:bg-red-900 selection:text-white">
 
       {/* ── Header ────────────────────────────────────────────── */}
       <header
-        className="sticky top-0 z-40 border-b border-red-950/40 pt-safe"
+        className="sticky top-0 z-40 border-b-2 border-red-600 pt-safe"
         style={{
-          background: 'rgba(5,5,5,0.88)',
-          backdropFilter: 'blur(20px) saturate(160%)',
-          WebkitBackdropFilter: 'blur(20px) saturate(160%)',
+          background: '#000000',
         }}
       >
         {/* Row 1 — Logo + Lang + Admin */}
@@ -326,12 +298,26 @@ export default function HomePage() {
 
       {/* ── Hero ──────────────────────────────────────────────── */}
       <section className="relative min-h-[88vh] flex items-center justify-center overflow-hidden border-b border-red-950/30">
+        {/* Background image — scoped to hero only */}
+        {heroBgUrl && (
+          <div
+            className="absolute inset-0 pointer-events-none z-[0]"
+            style={{
+              backgroundImage: `url("${heroBgUrl}")`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center center',
+              backgroundRepeat: 'no-repeat',
+            }}
+            aria-hidden
+          />
+        )}
+
         {/* Backdrop overlay */}
         <div
           className="absolute inset-0 pointer-events-none z-[1]"
           style={{
             background: heroBgUrl
-              ? `linear-gradient(to bottom, rgba(5,5,5,0.65) 0%, rgba(5,5,5,0.40) 50%, rgba(5,5,5,0.85) 100%)`
+              ? `linear-gradient(to bottom, rgba(5,5,5,0.55) 0%, rgba(5,5,5,0.25) 40%, rgba(5,5,5,0.80) 100%)`
               : `
               radial-gradient(circle at 50% 40%, rgba(153,27,27,0.18) 0%, transparent 60%),
               radial-gradient(circle at 20% 80%, rgba(88,28,135,0.10) 0%, transparent 50%),
@@ -418,18 +404,13 @@ export default function HomePage() {
           </button> */}
         </div>
 
-        {/* Scroll indicator */}
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-40 animate-bounce pointer-events-none z-[2]">
-          <span className="font-mono text-[10px] tracking-widest text-gray-400 uppercase">{t.scrollHint}</span>
-          <ArrowDown className="w-4 h-4 text-red-700" />
-        </div>
 
         {/* Bottom gradient line */}
         <div className="absolute bottom-0 left-0 right-0 h-px z-[2]" style={{ background: 'linear-gradient(90deg,transparent,#8B0000,#dc143c,#8B0000,transparent)' }} />
       </section>
 
       {/* ── About + Rules ─────────────────────────────────────── */}
-      <section ref={sectionRef.about} id="about" className="max-w-3xl mx-auto px-3 sm:px-5 pt-10 pb-5 w-full scroll-mt-36 bg-[#050505]/70">
+      <section ref={sectionRef.about} id="about" className="max-w-3xl mx-auto px-3 sm:px-5 pt-10 pb-5 w-full scroll-mt-36 bg-[#050505]">
         <h2 className="drip-text text-3xl sm:text-4xl font-extrabold text-center mb-6 tracking-widest uppercase block">
           {t.aboutTitle}
         </h2>
@@ -455,7 +436,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Levels (card grid) ────────────────────────────────── */}
-      <section ref={sectionRef.levels} id="levels" className="pt-6 pb-8 bg-[#070202]/80 border-b border-red-950/20 scroll-mt-36">
+      <section ref={sectionRef.levels} id="levels" className="pt-6 pb-8 bg-[#050505] border-b border-red-950/20 scroll-mt-36">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
           <h2 className="drip-text text-3xl sm:text-4xl font-extrabold tracking-widest uppercase text-center mb-8">
             {t.levelsTitle}
@@ -481,7 +462,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Prices (line by line) ─────────────────────────────── */}
-      <section ref={sectionRef.prices} id="prices" className="pt-6 pb-10 bg-black/80 border-b border-red-950/20 scroll-mt-36">
+      <section ref={sectionRef.prices} id="prices" className="pt-6 pb-10 bg-[#050505] border-b border-red-950/20 scroll-mt-36">
         <div className="max-w-sm mx-auto px-4 sm:px-6">
           <div className="text-center mb-8">
             <h2 className="drip-text text-3xl sm:text-4xl font-extrabold tracking-widest uppercase block mt-2">
@@ -513,7 +494,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Reservation ───────────────────────────────────────── */}
-      <section ref={sectionRef.reservation} id="reservation" className="max-w-7xl mx-auto px-3 sm:px-5 py-16 w-full scroll-mt-36 bg-[#050505]/70">
+      <section ref={sectionRef.reservation} id="reservation" className="max-w-7xl mx-auto px-3 sm:px-5 py-16 w-full scroll-mt-36 bg-[#050505]">
         <div className="flex flex-col items-center gap-2 mb-10 text-center">
           <div className="flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/5 rounded font-mono text-[10px] tracking-[0.2em] uppercase text-gray-400">
             <Calendar className="w-3.5 h-3.5 text-red-600" />
@@ -596,7 +577,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Reviews ───────────────────────────────────────────── */}
-      <section className="max-w-5xl mx-auto px-3 sm:px-5 py-16 w-full bg-[#050505]/70">
+      <section className="max-w-5xl mx-auto px-3 sm:px-5 py-16 w-full bg-[#050505]">
         <h2 className="drip-text text-3xl sm:text-4xl font-extrabold text-center mb-8 tracking-widest uppercase block">
           {t.reviewsTitle}
         </h2>

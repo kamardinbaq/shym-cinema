@@ -614,8 +614,8 @@ export default function HomePage() {
           {[
             { name: 'Instagram', href: 'https://instagram.com/dark_cinema_shymkent' },
             { name: 'WhatsApp', href: `https://wa.me/${settings.whatsapp_number}` },
-            { name: 'TikTok', href: 'https://tiktok.com/@dark_cinema_' },
-            { name: '2GIS', href: 'https://go.2gis.com/MKR9F' },
+            { name: 'TikTok', href: 'https://www.tiktok.com/@dark_cinema_shym?_r=1&_t=ZS-96ngw0JNOVj' },
+            { name: '2GIS', href: 'https://2gis.kz/shymkent/geo/70000001082734865' },
           ].map(l => (
             <a
               key={l.name}

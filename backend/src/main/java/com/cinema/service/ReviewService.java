@@ -17,17 +17,20 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
 
     @Transactional(readOnly = true)
-    public List<ReviewResponse> getAll() {
-        return reviewRepository.findAllByOrderByCreatedAtDesc()
+    public List<ReviewResponse> getAll(String venue) {
+        return reviewRepository.findAllByVenueOrderByCreatedAtDesc(venue)
                 .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
     @Transactional
     public ReviewResponse create(ReviewRequest req) {
+        String venue = (req.getVenue() != null && !req.getVenue().isBlank())
+                ? req.getVenue().toUpperCase() : "CINEMA";
         Review review = Review.builder()
                 .name(req.getName())
                 .stars(req.getStars())
                 .body(req.getBody())
+                .venue(venue)
                 .build();
         return toResponse(reviewRepository.save(review));
     }

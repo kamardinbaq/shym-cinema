@@ -8,8 +8,11 @@ export interface RoomGridRow {
   capacity: number; minPeople: number; slots: SlotCell[]
 }
 export interface AvailabilityGrid { date: string; rooms: RoomGridRow[] }
-export interface Review { id: number; name?: string; stars: number; body: string; createdAt: string }
+export interface Review { id: number; name?: string; stars: number; body: string; createdAt: string; venue?: string }
 export interface AdminUser { id: number; username: string; root: boolean; createdAt: string }
 export interface AdminAuth { token: string; username: string; root: boolean }
 export interface ApiResponse<T> { success: boolean; message?: string; data: T }
-export interface SiteSettings { whatsapp_number: string; youtube_url: string; hero_bg?: string }
+export interface SiteSettings {
+  whatsapp_number: string; youtube_url: string; hero_bg?: string
+  quest_whatsapp_number?: string; quest_youtube_url?: string; quest_hero_bg?: string
+}

@@ -5,4 +5,5 @@ import lombok.Data;
     @Size(max=100) private String name;
     @NotNull @Min(1) @Max(5) private Integer stars;
     @NotBlank @Size(max=1000) private String body;
+    @Size(max=20) private String venue;
 }

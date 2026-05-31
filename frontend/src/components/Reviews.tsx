@@ -64,7 +64,7 @@ function ReviewCard({ review, onDelete, lang }: { review: Review; onDelete?: () 
   )
 }
 
-export default function Reviews({ lang }: { lang: Language }) {
+export default function Reviews({ lang, venue = 'CINEMA' }: { lang: Language; venue?: 'CINEMA' | 'QUEST' }) {
   const t = T[lang]
   const { isAuthenticated } = useAdminStore()
   const [reviews, setReviews] = useState<Review[]>([])
@@ -75,18 +75,18 @@ export default function Reviews({ lang }: { lang: Language }) {
   const [sending, setSending] = useState(false)
 
   const load = async () => {
-    try { const r = await reviewApi.getAll(); setReviews(r.data.data) }
+    try { const r = await reviewApi.getAll(venue); setReviews(r.data.data) }
     catch { /* silent */ }
     finally { setLoading(false) }
   }
 
-  useEffect(() => { load() }, [])
+  useEffect(() => { load() }, [venue])
 
   const handleSubmit = async () => {
     if (!body.trim()) { toast.error(lang === 'kz' ? 'Пікір жазыңыз' : 'Напишите отзыв'); return }
     setSending(true)
     try {
-      await reviewApi.create({ name: name.trim() || undefined, stars, body: body.trim() })
+      await reviewApi.create({ name: name.trim() || undefined, stars, body: body.trim(), venue })
       toast.success(lang === 'kz' ? 'Пікір жіберілді!' : 'Отзыв отправлен!')
       setName(''); setBody(''); setStars(5)
       await load()

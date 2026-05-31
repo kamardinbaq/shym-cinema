@@ -1,144 +1,138 @@
 'use client'
-import { useEffect, useRef, useState, useCallback, useMemo } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { format, addDays, subDays, isSameDay, startOfDay } from 'date-fns'
 import { ru } from 'date-fns/locale'
 import toast from 'react-hot-toast'
-import { availabilityApi, settingsApi } from '@/lib/api'
-import type { AvailabilityGrid, Language, SiteSettings } from '@/types'
+import { questApi, settingsApi } from '@/lib/api'
+import type { Language, SiteSettings, AvailabilityGrid } from '@/types'
 import ReservationGrid from '@/components/ReservationGrid'
 import Reviews from '@/components/Reviews'
-import {
-  ChevronLeft, ChevronRight, Calendar, Moon,
-} from 'lucide-react'
 import BottomNav from '@/components/BottomNav'
+import { Moon, Calendar, ChevronLeft, ChevronRight } from 'lucide-react'
 
-// ── Translations ─────────────────────────────────────────────
+// ── Translations ──────────────────────────────────────────────
 const T = {
   ru: {
-    langBtn: 'KZzzzz',
-    nav: ['Бронь', 'Цены', 'Уровни', 'Трейлер', 'О нас'],
-    heroText: 'Твой страх начинается здесь',
-    heroBadge: 'Первый хоррор киноквест в Шымкенте',
-    heroSub: 'Это не просто просмотр фильмов. Это территория оживших кошмаров. Выбирайте уровень страха и проверьте свои нервы на прочность.',
-    book: 'Перейти к бронированию',
-    scrollHint: 'Листайте вниз',
+    nav: ['Расписание', 'Цены', 'Уровни', 'Трейлер', 'О нас'],
+    noTrailer: 'ТРЕЙЛЕР НЕ ЗАГРУЖЕН',
+    heroText: 'СТРАХ НАСТИГНЕТ ТЕБЯ',
+    heroBadge: 'Хоррор-квест в реальности · Шымкент',
+    heroSub: 'Тёмные комнаты. Живые актёры. Настоящий ужас. Соберите команду и пройдите испытание.',
     chooseDate: 'Выберите дату',
     today: 'СЕГОДНЯ', tomorrow: 'ЗАВТРА',
-    pricesTitle: 'ЦЕНЫ НА КИНОКВЕСТ',
+    pricesTitle: 'ЦЕНЫ НА КВЕСТ',
     pricesSub: 'Стоимость фиксируется за всю команду в зависимости от общего количества участников.',
     people: 'человек',
-    priceNote: '💡 Базовая стоимость бронирования временного слота — 3 000₸. Итоговый расчёт по тарифной сетке выше.',
+    priceNote: '💡 Минимальное количество участников — 4 человека. Максимум — 15.',
     levelsTitle: 'УРОВНИ СТРАХА',
     levelsSub: 'Каждый уровень полностью меняет ваше восприятие. Выберите формат, который выдержит ваша команда.',
-    trailerTitle: 'ТРЕЙЛЕР',
     aboutTitle: 'О НАС',
     rulesTitle: 'ПРАВИЛА',
-    reviewsTitle: 'ОТЗЫВЫ',
-    description: 'Dark Cinema — уникальное пространство в Шымкенте, где вы можете испытать настоящий ужас. Наши хоррор-квесты сочетают живых актёров, спецэффекты и захватывающие сценарии. Мы предлагаем четыре уровня страха — от лёгкого до максимального.',
-    noTrailer: 'ТРЕЙЛЕР НЕ ЗАГРУЖЕН',
-    noSlots: 'НЕТ СЕАНСОВ',
-    noSlotsSub: 'На выбранную дату сеансы не запланированы. Попробуйте другой день.',
-    legendFree: 'СВОБОДНО', legendBusy: 'ЗАНЯТО', legendPast: 'ПРОШЁЛ',
-    immersionLevel: 'УРОВЕНЬ ПОГРУЖЕНИЯ',
-    levelBtn: 'Выбрать Level',
+    description: 'Dark Quest — захватывающий хоррор-квест в реальности в Шымкенте. Окажитесь в центре живого ужаса: тёмные комнаты, живые актёры и атмосфера настоящего кошмара. Испытайте себя вместе с командой от 4 до 15 человек.',
     rules: [
-      'Опоздание более 15 минут — сеанс аннулируется без возврата',
-      'Алкоголь и наркотики запрещены',
-      'Запрещено включать вспышку внутри залов',
+      'Опоздание более 10 минут — сеанс аннулируется без возврата',
+      'Алкоголь и наркотики строго запрещены',
+      'Запрещено разделяться без ведома ведущего',
       'Насилие в отношении аниматоров ЗАПРЕЩЕНО, штраф 15 000₸',
-      'Участие по собственному желанию — отказ принимается',
+      'Участие добровольное — можно выйти в любой момент',
+      'Минимум 4 участника для начала сеанса',
     ],
     levels: [
-      { level: '1',   title: 'Обычный просмотр фильма',                    desc: 'без спецэффектов и аниматоров' },
-      { level: '2',   title: 'Фильм со спецэффектами',                     desc: 'без аниматора' },
-      { level: '3',   title: 'Фильм со спецэффектами и аниматорами',       desc: '' },
-      { level: 'MAX', title: 'Фильм со спецэффектами и аниматорами',       desc: 'бьют шокером', isMax: true },
+      { level: '1',   title: 'Стандартный квест',                        desc: 'без спецэффектов и аниматоров' },
+      { level: '2',   title: 'Квест со спецэффектами',                   desc: 'без аниматора' },
+      { level: '3',   title: 'Квест со спецэффектами и аниматорами',     desc: '' },
+      { level: 'MAX', title: 'Квест со спецэффектами и аниматорами',     desc: 'бьют шокером', isMax: true },
     ],
     prices: [
-      { count: 2, price: 7000 }, { count: 3, price: 9000 }, { count: 4, price: 12000 },
-      { count: 5, price: 15000 }, { count: 6, price: 18000 }, { count: 7, price: 21000 },
-      { count: 8, price: 24000 }, { count: 9, price: 27000 }, { count: 10, price: 30000 },
+      { label: '4–5', price: 15000 },
+      { label: '6',   price: 18000 },
+      { label: '7',   price: 21000 },
+      { label: '8',   price: 24000 },
+      { label: '9',   price: 27000 },
+      { label: '10',  price: 30000 },
+      { label: '11',  price: 33000 },
+      { label: '12',  price: 36000 },
+      { label: '13',  price: 39000 },
+      { label: '14',  price: 42000 },
+      { label: '15',  price: 45000 },
     ],
+    waMsg: (time: string) =>
+      encodeURIComponent(`Хочу забронировать Dark Quest на сеанс ${time}`),
   },
   kz: {
-    langBtn: 'RU',
-    nav: ['Брондау', 'Бағалар', 'Деңгейлер', 'Трейлер', 'Біз туралы'],
-    heroText: 'Сенің қорқынышың осы жерде басталады',
-    heroBadge: 'Шымкенттегі алғашқы horror киноквест',
-    heroSub: 'Бұл жай ғана фильм көру емес. Бұл тіршілікке келген қиянаттар аймағы. Қорқыныш деңгейін таңдаңыз және жүйкеңізді тексеріңіз.',
-    book: 'Брондауға өту',
-    scrollHint: 'Төмен жылжыңыз',
+    nav: ['Кесте', 'Бағалар', 'Деңгейлер', 'Трейлер', 'Біз туралы'],
+    noTrailer: 'ТРЕЙЛЕР ЖОҚ',
+    heroText: 'ҚОРҚЫНЫШ СЕНІ ҚУЫП ЖЕТЕДІ',
+    heroBadge: 'Шынайы хоррор-квест · Шымкент',
+    heroSub: 'Қараңғы бөлмелер. Тірі актерлер. Нағыз қорқыныш. Командаңызды жинап, сынақтан өтіңіз.',
     chooseDate: 'Күнді таңдаңыз',
     today: 'БҮГІН', tomorrow: 'ЕРТЕҢ',
-    pricesTitle: 'КИНОКВЕСТ БАҒАЛАРЫ',
+    pricesTitle: 'КВЕСТ БАҒАЛАРЫ',
     pricesSub: 'Құны қатысушылардың жалпы санына байланысты бүкіл команда үшін белгіленеді.',
     people: 'адам',
-    priceNote: '💡 Уақытша слотты брондаудың базалық құны — 3 000₸. Қорытынды есеп жоғарыдағы тарифтік торда.',
+    priceNote: '💡 Ең аз қатысушылар саны — 4 адам. Максимум — 15.',
     levelsTitle: 'ҚОРҚЫНЫШ ДЕҢГЕЙЛЕРІ',
     levelsSub: 'Әр деңгей сіздің қабылдауыңызды толықтай өзгертеді. Командаңыз шыдай алатын форматты таңдаңыз.',
-    trailerTitle: 'ТРЕЙЛЕР',
     aboutTitle: 'БІЗ ТУРАЛЫ',
     rulesTitle: 'ЕРЕЖЕЛЕР',
-    reviewsTitle: 'ПІКІРЛЕР',
-    description: 'Dark Cinema — Шымкенттегі нағыз қорқынышты бастан кешіруге болатын бірегей кеңістік. Біздің хоррор-квесттеріміз тірі актерлерді, арнайы эффекттерді және тартымды сценарийлерді біріктіреді. Төрт қорқыныш деңгейін ұсынамыз.',
-    noTrailer: 'ТРЕЙЛЕР ЖОҚ',
-    noSlots: 'СЕАНС ЖОҚ',
-    noSlotsSub: 'Таңдалған күні сеанстар жоқ. Басқа күнді тандаңыз.',
-    legendFree: 'БОС', legendBusy: 'БРОНДАЛҒАН', legendPast: 'ӨТТІ',
-    immersionLevel: 'БАТЫРУ ДЕҢГЕЙІ',
-    levelBtn: 'Level таңдау',
+    description: 'Dark Quest — Шымкенттегі нақты шындықтағы тартымды хоррор-квест. Тірі актерлер, қараңғы бөлмелер және нағыз қорқыныш атмосферасы. 4-тен 15 адамға дейінгі командада өзіңізді сынап көріңіз.',
     rules: [
-      '15 минуттан астам кешігу — сеанс қайтарусыз жойылады',
-      'Алкоголь және есірткі заттары тыйым салынады',
-      'Залдардың ішінде жарқылды қосуға тыйым салынады',
+      '10 минуттан астам кешігу — сеанс қайтарусыз жойылады',
+      'Алкоголь және есірткі заттары қатаң тыйым салынады',
+      'Жетекшінің рұқсатынсыз бөлінуге тыйым салынады',
       'Аниматорларға қатысты зорлық-зомбылық ТЫЙЫМ САЛЫНАДЫ, айыппұл 15 000₸',
-      'Қатысу ерікті — бас тарту қабылданады',
+      'Қатысу ерікті — кез келген уақытта шығуға болады',
+      'Сеансты бастау үшін кемінде 4 қатысушы қажет',
     ],
     levels: [
-      { level: '1', title: 'Қарапайым қарау',                   desc: 'Арнайы эффекттер мен тірі актерлерсіз таза фильм атмосферасы. Алғашқы танысу үшін тамаша.' },
-      { level: '2', title: 'Арнайы эффекттермен фильм',         desc: 'Кенеттен дыбыстық, жарықтық және тактильді триггерлер. Аниматорлардың тікелей қатысуынсыз.' },
-      { level: '3', title: 'Арнайы эффекттер + Аниматорлар',    desc: 'Актерлер сеанс кезінде залға кіреді. Сіз негізгі нысанаға айналатын сюжетке батыру.' },
-      { level: 'MAX', title: 'LEVEL MAX (Шокерлер)',              desc: 'Түпкілікті хоррор. Физикалық байланыс, аниматорлар шокер қолданады. Тек мықты жүйкелілер үшін.', isMax: true },
+      { level: '1',   title: 'Стандартты квест',                          desc: 'Арнайы эффекттер мен аниматорларсыз' },
+      { level: '2',   title: 'Арнайы эффекттермен квест',                 desc: 'Аниматорсыз' },
+      { level: '3',   title: 'Арнайы эффекттер + Аниматорлар',           desc: '' },
+      { level: 'MAX', title: 'Арнайы эффекттер + Аниматорлар',           desc: 'шокер қолданады', isMax: true },
     ],
     prices: [
-      { count: 2, price: 7000 }, { count: 3, price: 9000 }, { count: 4, price: 12000 },
-      { count: 5, price: 15000 }, { count: 6, price: 18000 }, { count: 7, price: 21000 },
-      { count: 8, price: 24000 }, { count: 9, price: 27000 }, { count: 10, price: 30000 },
+      { label: '4–5', price: 15000 },
+      { label: '6',   price: 18000 },
+      { label: '7',   price: 21000 },
+      { label: '8',   price: 24000 },
+      { label: '9',   price: 27000 },
+      { label: '10',  price: 30000 },
+      { label: '11',  price: 33000 },
+      { label: '12',  price: 36000 },
+      { label: '13',  price: 39000 },
+      { label: '14',  price: 42000 },
+      { label: '15',  price: 45000 },
     ],
+    waMsg: (time: string) =>
+      encodeURIComponent(`Dark Quest сеансына брондағым келеді — ${time}`),
   },
-}
-
-
-function getYouTubeId(url: string) {
-  const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([^?&]+)/)
-  return m ? m[1] : ''
 }
 
 function resolveHeroBg(heroBg: string | undefined): string | null {
   if (!heroBg || !heroBg.trim()) return null
   const trimmed = heroBg.trim()
   if (/^\d+$/.test(trimmed)) return `/backgrounds/${trimmed}.jpg`
-  const ytId = getYouTubeId(trimmed)
-  if (ytId) return `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`
+  const m = trimmed.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([^?&]+)/)
+  if (m) return `https://img.youtube.com/vi/${m[1]}/maxresdefault.jpg`
   return trimmed
 }
 
-export default function HomePage() {
+export default function QuestPage() {
   const [lang, setLang]           = useState<Language>('ru')
+  const [settings, setSettings]   = useState<SiteSettings>({ whatsapp_number: '77005767848', youtube_url: '', hero_bg: '' })
   const [grid, setGrid]           = useState<AvailabilityGrid | null>(null)
   const [loading, setLoading]     = useState(true)
   const [selectedDate, setSelDate] = useState(new Date())
-  const [settings, setSettings]   = useState<SiteSettings>({ whatsapp_number: '77005767848', youtube_url: '', hero_bg: '' })
   const [showStickyNav, setShowStickyNav] = useState(false)
   const [activeSection, setActiveSection] = useState('')
   const heroNavRef = useRef<HTMLDivElement>(null)
 
   const sectionRef = {
-    reservation: useRef<HTMLElement>(null),
-    prices:      useRef<HTMLElement>(null),
-    levels:      useRef<HTMLElement>(null),
-    trailer:     useRef<HTMLDivElement>(null),
-    about:       useRef<HTMLElement>(null),
+    schedule: useRef<HTMLElement>(null),
+    prices:   useRef<HTMLElement>(null),
+    levels:   useRef<HTMLElement>(null),
+    trailer:  useRef<HTMLDivElement>(null),
+    about:    useRef<HTMLElement>(null),
   }
 
   const t = T[lang]
@@ -150,7 +144,7 @@ export default function HomePage() {
   const fetchGrid = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await availabilityApi.getGrid(format(selectedDate, 'yyyy-MM-dd'))
+      const res = await questApi.getGrid(format(selectedDate, 'yyyy-MM-dd'))
       setGrid(res.data.data)
     } catch { toast.error(lang === 'kz' ? 'Кесте жүктелмеді' : 'Не удалось загрузить расписание') }
     finally { setLoading(false) }
@@ -158,13 +152,12 @@ export default function HomePage() {
 
   useEffect(() => { fetchGrid() }, [fetchGrid])
 
-  // Silent background poll every 8s
   useEffect(() => {
     const sig = (g: AvailabilityGrid) =>
       g.rooms.flatMap(r => r.slots.map(s => `${s.timeSlotId}:${s.status}`)).join(',')
     const poll = async () => {
       try {
-        const res = await availabilityApi.getGrid(format(selectedDate, 'yyyy-MM-dd'))
+        const res = await questApi.getGrid(format(selectedDate, 'yyyy-MM-dd'))
         const inc = res.data.data
         setGrid(cur => (!cur || sig(cur) !== sig(inc)) ? inc : cur)
       } catch {}
@@ -173,9 +166,6 @@ export default function HomePage() {
     return () => clearInterval(id)
   }, [selectedDate])
 
-  // Hand the nav off to the header the moment the hero copy slides under it.
-  // The top rootMargin (~header height) makes the swap happen right at the edge,
-  // so the buttons never flash or leave a gap during the transition.
   useEffect(() => {
     const el = heroNavRef.current
     if (!el) return
@@ -187,9 +177,8 @@ export default function HomePage() {
     return () => obs.disconnect()
   }, [])
 
-  // Light up the nav item for whichever section is currently centered on screen.
   useEffect(() => {
-    const ids = ['reservation', 'prices', 'levels', 'trailer', 'about']
+    const ids = ['schedule', 'prices', 'levels', 'trailer', 'about']
     const els = ids
       .map(id => document.getElementById(id))
       .filter((el): el is HTMLElement => el !== null)
@@ -202,65 +191,54 @@ export default function HomePage() {
     return () => obs.disconnect()
   }, [])
 
-  const scrollTo = (ref: React.RefObject<HTMLElement>) => {
+  const scrollTo = (ref: React.RefObject<HTMLElement>) =>
     ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }
-  const scrollToReservation = () => scrollTo(sectionRef.reservation)
 
-  const quickDates = useMemo(() => {
+  const heroBgUrl = resolveHeroBg(settings.quest_hero_bg)
+  const questYtUrl = settings.quest_youtube_url || ''
+  const embedId = (() => {
+    const m = questYtUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([^?&]+)/)
+    return m ? m[1] : ''
+  })()
+
+  const quickDates = Array.from({ length: 5 }).map((_, i) => {
     const today = startOfDay(new Date())
-    return Array.from({ length: 5 }).map((_, i) => {
-      const d = addDays(today, i)
-      return {
-        date: d,
-        short: i === 0 ? t.today : i === 1 ? t.tomorrow : format(d, 'EE', { locale: ru }).toUpperCase(),
-        num: format(d, 'd'),
-      }
-    })
-  }, [t.today, t.tomorrow])
+    const d = addDays(today, i)
+    return {
+      date: d,
+      short: i === 0 ? t.today : i === 1 ? t.tomorrow : format(d, 'EE', { locale: ru }).toUpperCase(),
+      num: format(d, 'd'),
+    }
+  })
 
   const NAV_SECTIONS = [
-    { key: 'reservation', label: t.nav[0], ref: sectionRef.reservation },
-    { key: 'prices',      label: t.nav[1], ref: sectionRef.prices },
-    { key: 'levels',      label: t.nav[2], ref: sectionRef.levels },
-    { key: 'trailer',     label: t.nav[3], ref: sectionRef.trailer },
-    { key: 'about',       label: t.nav[4], ref: sectionRef.about },
+    { key: 'schedule', label: t.nav[0], ref: sectionRef.schedule },
+    { key: 'prices',   label: t.nav[1], ref: sectionRef.prices },
+    { key: 'levels',   label: t.nav[2], ref: sectionRef.levels },
+    { key: 'trailer',  label: t.nav[3], ref: sectionRef.trailer as React.RefObject<HTMLElement> },
+    { key: 'about',    label: t.nav[4], ref: sectionRef.about },
   ]
-
-  const embedId = getYouTubeId(settings.youtube_url)
-  const heroBgUrl = resolveHeroBg(settings.hero_bg)
-
 
   return (
     <div className="min-h-screen flex flex-col text-gray-100 antialiased selection:bg-red-900 selection:text-white pb-16">
 
-      {/* ── Header ────────────────────────────────────────────── */}
+      {/* ── Header ───────────────────────────────────────────── */}
       <header
         className="sticky top-0 z-40 border-b-2 border-red-600 pt-safe"
-        style={{
-          background: '#000000',
-        }}
+        style={{ background: '#000000' }}
       >
-        {/* Row 1 — Logo + Lang + Admin */}
         <div className="max-w-7xl mx-auto px-3 sm:px-5 h-16 sm:h-20 flex items-center justify-between gap-2">
-          {/* Logo */}
           <div className="flex items-center gap-3 flex-shrink-0 h-full">
-            <img
-              src="/logo.png"
-              alt="SHYM CINEMA"
-              className="h-full w-auto object-contain"
-            />
+            <img src="/logo-quest.png" alt="DARK QUEST" className="h-full w-auto object-contain" />
             <div className="leading-none">
               <p className="font-mono text-[9px] sm:text-[10px] text-red-600 tracking-[0.4em] mt-0.5 uppercase">Shymkent</p>
             </div>
           </div>
 
-          {/* Right: lang toggle */}
           <button
             onClick={() => setLang(l => l === 'ru' ? 'kz' : 'ru')}
             className="relative flex items-center font-mono text-[11px] tracking-widest rounded border border-white/8 bg-black/60 hover:border-red-900/40 transition-colors overflow-hidden"
             style={{ minHeight: 36 }}
-            title="Сменить язык / Тілді өзгерту"
             aria-label="Сменить язык / Тілді өзгерту"
           >
             <span
@@ -271,7 +249,6 @@ export default function HomePage() {
           </button>
         </div>
 
-        {/* Row 2 — Nav buttons stick here once hero nav scrolls out of view */}
         {showStickyNav && (
           <div className="max-w-7xl mx-auto px-3 sm:px-5 pb-2.5 animate-slide-down">
             <div className="flex items-stretch gap-2 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
@@ -297,9 +274,8 @@ export default function HomePage() {
         )}
       </header>
 
-      {/* ── Hero ──────────────────────────────────────────────── */}
+      {/* ── Hero ─────────────────────────────────────────────── */}
       <section className="relative min-h-[88vh] flex items-center justify-center overflow-hidden border-b border-red-950/30">
-        {/* Background image — scoped to hero only */}
         {heroBgUrl && (
           <div
             className="absolute inset-0 pointer-events-none z-[0]"
@@ -312,8 +288,6 @@ export default function HomePage() {
             aria-hidden
           />
         )}
-
-        {/* Backdrop overlay */}
         <div
           className="absolute inset-0 pointer-events-none z-[1]"
           style={{
@@ -329,13 +303,11 @@ export default function HomePage() {
         />
 
         <div className="relative z-[2] max-w-5xl mx-auto text-center px-4 py-8 flex flex-col items-center">
-          {/* Badge */}
           <div className="inline-flex items-center gap-2 px-3 py-1.5 border border-red-900/40 bg-red-950/20 backdrop-blur-md rounded-md mb-5 shadow-[inset_0_0_12px_rgba(185,28,28,0.1)]">
             <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse flex-shrink-0" />
             <p className="font-mono text-[10px] sm:text-xs text-red-400 tracking-[0.25em] uppercase">{t.heroBadge}</p>
           </div>
 
-          {/* Big neon text */}
           <h1 className="drip-text text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold leading-[0.95] tracking-tight mb-5 uppercase select-none text-center">
             {t.heroText}
           </h1>
@@ -344,7 +316,7 @@ export default function HomePage() {
             {t.heroSub}
           </p>
 
-          {/* Trailer video — no title, no lines */}
+          {/* Trailer */}
           <div ref={sectionRef.trailer} id="trailer" className="w-full max-w-3xl mx-auto mb-8">
             {embedId ? (
               <div className="relative rounded-xl overflow-hidden border border-red-900/30" style={{ paddingBottom: '56.25%', background: '#000' }}>
@@ -353,7 +325,7 @@ export default function HomePage() {
                   className="absolute inset-0 w-full h-full"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
-                  title="Dark Cinema Trailer"
+                  title="Dark Quest Trailer"
                 />
               </div>
             ) : (
@@ -363,17 +335,15 @@ export default function HomePage() {
             )}
           </div>
 
-          {/* Nav buttons — move to header once scrolled past */}
+          {/* Nav buttons */}
           <div ref={heroNavRef} className="flex flex-col items-center gap-3 mb-8 w-full">
-            {/* Big book button */}
             <button
-              onClick={() => scrollTo(sectionRef.reservation)}
+              onClick={() => scrollTo(sectionRef.schedule)}
               className="btn-hero-blood w-full max-w-xs font-mono font-black tracking-[0.25em] uppercase px-10 py-4 text-base sm:text-lg mb-2"
             >
               {t.nav[0]}
             </button>
 
-            {/* Other 4 nav buttons */}
             <div className="flex flex-wrap gap-2 justify-center">
               {NAV_SECTIONS.slice(1).map(s => {
                 const active = activeSection === s.key
@@ -395,22 +365,12 @@ export default function HomePage() {
               })}
             </div>
           </div>
-
-          {/* <button
-            onClick={scrollToReservation}
-            className="group relative px-10 py-4 bg-red-700 hover:bg-red-600 text-white font-mono font-bold tracking-[0.2em] uppercase rounded-md transition-all duration-300 shadow-[0_0_30px_rgba(185,28,28,0.3)] hover:shadow-[0_0_40px_rgba(185,28,28,0.6)] overflow-hidden"
-          >
-            <span className="relative z-10">{t.book}</span>
-            <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/15 to-transparent" />
-          </button> */}
         </div>
 
-
-        {/* Bottom gradient line */}
         <div className="absolute bottom-0 left-0 right-0 h-px z-[2]" style={{ background: 'linear-gradient(90deg,transparent,#8B0000,#dc143c,#8B0000,transparent)' }} />
       </section>
 
-      {/* ── About + Rules ─────────────────────────────────────── */}
+      {/* ── About + Rules ────────────────────────────────────── */}
       <section ref={sectionRef.about} id="about" className="max-w-3xl mx-auto px-3 sm:px-5 pt-10 pb-5 w-full scroll-mt-36 bg-[#050505]">
         <h2 className="drip-text text-3xl sm:text-4xl font-extrabold text-center mb-6 tracking-widest uppercase block">
           {t.aboutTitle}
@@ -436,7 +396,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Levels (card grid) ────────────────────────────────── */}
+      {/* ── Levels ───────────────────────────────────────────── */}
       <section ref={sectionRef.levels} id="levels" className="pt-6 pb-8 bg-[#050505] border-b border-red-950/20 scroll-mt-36">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
           <h2 className="drip-text text-3xl sm:text-4xl font-extrabold tracking-widest uppercase text-center mb-8">
@@ -462,7 +422,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Prices (line by line) ─────────────────────────────── */}
+      {/* ── Prices ───────────────────────────────────────────── */}
       <section ref={sectionRef.prices} id="prices" className="pt-6 pb-10 bg-[#050505] border-b border-red-950/20 scroll-mt-36">
         <div className="max-w-sm mx-auto px-4 sm:px-6">
           <div className="text-center mb-8">
@@ -475,12 +435,12 @@ export default function HomePage() {
           <div className="border border-red-950/30 rounded-xl overflow-hidden bg-black/60">
             {t.prices.map((p, i) => (
               <div
-                key={p.count}
+                key={p.label}
                 className="flex items-center gap-3 px-4 py-2.5 hover:bg-red-950/10 transition-colors"
                 style={{ borderBottom: i < t.prices.length - 1 ? '1px solid rgba(139,0,0,0.12)' : 'none' }}
               >
-                <span className="w-6 h-6 rounded-full bg-red-950/60 border border-red-900/50 text-red-400 font-mono text-xs font-black flex items-center justify-center flex-shrink-0">
-                  {p.count}
+                <span className="w-10 h-6 rounded-full bg-red-950/60 border border-red-900/50 text-red-400 font-mono text-xs font-black flex items-center justify-center flex-shrink-0 px-1">
+                  {p.label}
                 </span>
                 <span className="font-mono text-xs text-gray-400 tracking-widest flex-1">{t.people}</span>
                 <span className="font-mono text-sm font-black text-white tracking-wide">{p.price.toLocaleString('ru-RU')} ₸</span>
@@ -494,12 +454,12 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Reservation ───────────────────────────────────────── */}
-      <section ref={sectionRef.reservation} id="reservation" className="max-w-7xl mx-auto px-3 sm:px-5 py-16 w-full scroll-mt-36 bg-[#050505]">
+      {/* ── Schedule (Reservation Grid) ──────────────────────── */}
+      <section ref={sectionRef.schedule} id="schedule" className="max-w-7xl mx-auto px-3 sm:px-5 py-16 w-full scroll-mt-36 bg-[#050505]">
         <div className="flex flex-col items-center gap-2 mb-10 text-center">
           <div className="flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/5 rounded font-mono text-[10px] tracking-[0.2em] uppercase text-gray-400">
             <Calendar className="w-3.5 h-3.5 text-red-600" />
-            {lang === 'kz' ? 'Онлайн сеанс брондау' : 'Онлайн бронирование сеансов'}
+            {lang === 'kz' ? 'Онлайн квест брондау' : 'Онлайн бронирование квеста'}
           </div>
           <h2 className="drip-text text-3xl sm:text-4xl font-extrabold uppercase tracking-wider mt-1 block">
             {lang === 'kz' ? 'ОЙЫН УАҚЫТЫН ТАҢДАҢЫЗ' : 'ВЫБЕРИТЕ ВРЕМЯ ИГРЫ'}
@@ -564,40 +524,40 @@ export default function HomePage() {
           {loading
             ? <GridSkeleton />
             : grid && grid.rooms.length > 0
-              ? <ReservationGrid grid={grid} lang={lang} whatsappNumber={settings.whatsapp_number} />
+              ? <ReservationGrid grid={grid} lang={lang} whatsappNumber={settings.quest_whatsapp_number || settings.whatsapp_number} />
               : <EmptyState t={t} />
           }
         </div>
 
         {/* Legend */}
         <div className="grid grid-cols-3 gap-3 justify-items-center mt-10 pt-6" style={{ borderTop: '1px solid rgba(139,0,0,0.2)' }}>
-          <LegendDot color="bg-green-900/40 border-green-600/50 text-green-400"  label={t.legendFree} />
-          <LegendDot color="bg-red-900/40 border-red-600/50 text-red-400"        label={t.legendBusy} />
-          <LegendDot color="bg-neutral-900/60 border-neutral-700 text-neutral-500 border-dashed" label={t.legendPast} />
+          <LegendDot color="bg-green-900/40 border-green-600/50 text-green-400"  label={lang === 'kz' ? 'БОС' : 'СВОБОДНО'} />
+          <LegendDot color="bg-red-900/40 border-red-600/50 text-red-400"        label={lang === 'kz' ? 'БРОНДАЛҒАН' : 'ЗАНЯТО'} />
+          <LegendDot color="bg-neutral-900/60 border-neutral-700 text-neutral-500 border-dashed" label={lang === 'kz' ? 'ӨТТІ' : 'ПРОШЁЛ'} />
         </div>
       </section>
 
-      {/* ── Reviews ───────────────────────────────────────────── */}
+      {/* ── Reviews ─────────────────────────────────────────── */}
       <section className="max-w-5xl mx-auto px-3 sm:px-5 py-16 w-full bg-[#050505]">
         <h2 className="drip-text text-3xl sm:text-4xl font-extrabold text-center mb-8 tracking-widest uppercase block">
-          {t.reviewsTitle}
+          {lang === 'kz' ? 'ПІКІРЛЕР' : 'ОТЗЫВЫ'}
         </h2>
-        <Reviews lang={lang} />
+        <Reviews lang={lang} venue="QUEST" />
       </section>
 
-      {/* ── Footer ────────────────────────────────────────────── */}
+      {/* ── Footer ───────────────────────────────────────────── */}
       <footer className="py-12 px-4 text-center border-t border-red-950/40 bg-[#030303]/85">
         <div className="flex items-center justify-center gap-2 mb-6 opacity-60">
           <Moon className="w-3.5 h-3.5 text-red-800" />
-          <p className="font-mono text-xs tracking-[0.3em] text-red-700 font-bold uppercase">© DARK CINEMA · SHYMKENT</p>
+          <p className="font-mono text-xs tracking-[0.3em] text-red-700 font-bold uppercase">© DARK QUEST · SHYMKENT</p>
           <Moon className="w-3.5 h-3.5 text-red-800" />
         </div>
         <div className="flex justify-center gap-2.5 flex-wrap max-w-xl mx-auto">
           {[
-            { name: 'Instagram', href: 'https://instagram.com/dark_cinema_shymkent' },
-            { name: 'WhatsApp', href: `https://wa.me/${settings.whatsapp_number}` },
-            { name: 'TikTok', href: 'https://www.tiktok.com/@dark_cinema_shym?_r=1&_t=ZS-96ngw0JNOVj' },
-            { name: '2GIS', href: 'https://2gis.kz/shymkent/geo/70000001082734865' },
+            { name: 'Instagram', href: 'https://www.instagram.com/dark_quest_shymkent?igsh=bW9ncTFpNWR6Yzlo' },
+            { name: 'WhatsApp', href: `https://wa.me/${settings.quest_whatsapp_number || settings.whatsapp_number}` },
+            { name: 'TikTok', href: 'https://www.tiktok.com/@dark_quest_shymkent3?_r=1&_t=ZS-96oZOb9xYn9' },
+            { name: '2GIS', href: 'https://2gis.kz/shymkent/geo/70000001083681979' },
           ].map(l => (
             <a
               key={l.name}
@@ -653,8 +613,8 @@ function EmptyState({ t }: { t: typeof T['ru'] }) {
   return (
     <div className="flex flex-col items-center justify-center py-20 gap-4 text-center border border-dashed border-red-950/30 rounded-xl bg-black/40">
       <div className="drip-text text-5xl animate-pulse-soft">☠</div>
-      <p className="font-mono text-sm text-white tracking-widest uppercase font-bold">{t.noSlots}</p>
-      <p className="font-sans text-xs text-gray-500 max-w-xs mx-auto leading-relaxed">{t.noSlotsSub}</p>
+      <p className="font-mono text-sm text-white tracking-widest uppercase font-bold">НЕТ СЕАНСОВ</p>
+      <p className="font-sans text-xs text-gray-500 max-w-xs mx-auto leading-relaxed">На выбранную дату сеансы не запланированы. Попробуйте другой день.</p>
     </div>
   )
 }

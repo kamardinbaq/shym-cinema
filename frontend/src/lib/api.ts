@@ -22,12 +22,17 @@ api.interceptors.response.use(res => res, err => {
 export const availabilityApi = {
   getGrid: (date?: string) => api.get<ApiResponse<AvailabilityGrid>>('/api/availability', { params: { date } }),
 }
+export const questApi = {
+  getGrid: (date?: string) => api.get<ApiResponse<AvailabilityGrid>>('/api/availability/quest', { params: { date } }),
+}
 export const settingsApi = {
   get: () => api.get<ApiResponse<SiteSettings>>('/api/settings'),
 }
 export const reviewApi = {
-  getAll: () => api.get<ApiResponse<Review[]>>('/api/reviews'),
-  create: (d: { name?: string; stars: number; body: string }) => api.post<ApiResponse<Review>>('/api/reviews', d),
+  getAll: (venue: 'CINEMA' | 'QUEST' = 'CINEMA') =>
+    api.get<ApiResponse<Review[]>>('/api/reviews', { params: { venue } }),
+  create: (d: { name?: string; stars: number; body: string; venue?: string }) =>
+    api.post<ApiResponse<Review>>('/api/reviews', d),
   delete: (id: number) => api.delete<ApiResponse<void>>(`/api/admin/reviews/${id}`),
 }
 export const adminApi = {

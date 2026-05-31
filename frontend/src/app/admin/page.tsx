@@ -2,8 +2,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { format, addDays, subDays } from 'date-fns'
 import toast from 'react-hot-toast'
-import { adminApi, reviewApi } from '@/lib/api'
-import { availabilityApi } from '@/lib/api'
+import { adminApi, reviewApi, availabilityApi, questApi } from '@/lib/api'
 import { useAdminStore } from '@/lib/store'
 import type { AvailabilityGrid, AdminUser, Review } from '@/types'
 import ReservationGrid from '@/components/ReservationGrid'
@@ -136,15 +135,18 @@ function ReservationsTab() {
   const [selectedDate, setSelDate] = useState(new Date())
   const [grid, setGrid]            = useState<AvailabilityGrid | null>(null)
   const [loading, setLoading]      = useState(true)
+  const [mode, setMode]            = useState<'cinema' | 'quest'>('cinema')
 
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await availabilityApi.getGrid(format(selectedDate, 'yyyy-MM-dd'))
+      const res = mode === 'cinema'
+        ? await availabilityApi.getGrid(format(selectedDate, 'yyyy-MM-dd'))
+        : await questApi.getGrid(format(selectedDate, 'yyyy-MM-dd'))
       setGrid(res.data.data)
     } catch { toast.error('Не удалось загрузить расписание') }
     finally { setLoading(false) }
-  }, [selectedDate])
+  }, [selectedDate, mode])
 
   useEffect(() => { load() }, [load])
 
@@ -163,6 +165,23 @@ function ReservationsTab() {
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <h2 className="font-display text-sm text-bone tracking-widest">УПРАВЛЕНИЕ РАСПИСАНИЕМ</h2>
         <p className="font-body text-xs text-bone-dark/50">Нажмите на слот чтобы сделать занятым / свободным</p>
+      </div>
+
+      {/* Cinema / Quest toggle */}
+      <div className="flex gap-1 mb-6 border border-white/8 rounded-lg p-1 w-fit">
+        {(['cinema', 'quest'] as const).map(m => (
+          <button
+            key={m}
+            onClick={() => setMode(m)}
+            className={`px-5 py-2 rounded-md font-mono text-[10px] tracking-widest uppercase transition-all ${
+              mode === m
+                ? 'bg-red-950/60 text-red-400 border border-red-900/50'
+                : 'text-bone-dark/50 hover:text-bone'
+            }`}
+          >
+            {m === 'cinema' ? '🎬 Кино' : '💀 Квест'}
+          </button>
+        ))}
       </div>
 
       {/* Date nav */}
@@ -203,17 +222,18 @@ function ReservationsTab() {
 
 /* ── Reviews Tab ─────────────────────────────────────────── */
 function ReviewsTab() {
+  const [venue, setVenue]     = useState<'CINEMA' | 'QUEST'>('CINEMA')
   const [reviews, setReviews] = useState<Review[]>([])
   const [loading, setLoading] = useState(true)
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true)
-    try { const r = await reviewApi.getAll(); setReviews(r.data.data) }
+    try { const r = await reviewApi.getAll(venue); setReviews(r.data.data) }
     catch { toast.error('Ошибка загрузки') }
     finally { setLoading(false) }
-  }
+  }, [venue])
 
-  useEffect(() => { load() }, [])
+  useEffect(() => { load() }, [load])
 
   const handleDelete = async (id: number) => {
     if (!confirm('Удалить этот отзыв?')) return
@@ -229,6 +249,19 @@ function ReviewsTab() {
           <RefreshCw className="w-3.5 h-3.5"/> Обновить
         </button>
       </div>
+
+      {/* Cinema / Quest toggle */}
+      <div className="flex gap-1 mb-6 border border-white/8 rounded-lg p-1 w-fit">
+        {(['CINEMA', 'QUEST'] as const).map(v => (
+          <button key={v} onClick={() => setVenue(v)}
+            className={`px-5 py-2 rounded-md font-mono text-[10px] tracking-widest uppercase transition-all ${
+              venue === v ? 'bg-red-950/60 text-red-400 border border-red-900/50' : 'text-bone-dark/50 hover:text-bone'
+            }`}>
+            {v === 'CINEMA' ? '🎬 Кино' : '💀 Квест'}
+          </button>
+        ))}
+      </div>
+
       {loading ? (
         <div className="space-y-3">{[0,1,2].map(i => <div key={i} className="skeleton h-20 rounded-xl"/>)}</div>
       ) : reviews.length === 0 ? (
@@ -259,16 +292,29 @@ function ReviewsTab() {
 
 /* ── Settings Tab ────────────────────────────────────────── */
 function SettingsTab() {
-  const [waNumber, setWaNumber]    = useState('')
-  const [youtubeUrl, setYtUrl]     = useState('')
-  const [heroBg, setHeroBg]        = useState('')
-  const [loading, setLoading]      = useState(true)
-  const [saving, setSaving]        = useState(false)
+  const [venue, setVenue] = useState<'cinema' | 'quest'>('cinema')
+
+  // Cinema settings
+  const [waNumber, setWaNumber]   = useState('')
+  const [youtubeUrl, setYtUrl]    = useState('')
+  const [heroBg, setHeroBg]       = useState('')
+  // Quest settings
+  const [qWaNumber, setQWaNumber] = useState('')
+  const [qYtUrl, setQYtUrl]       = useState('')
+  const [qHeroBg, setQHeroBg]     = useState('')
+
+  const [loading, setLoading]     = useState(true)
+  const [saving, setSaving]       = useState(false)
+
   useEffect(() => {
     adminApi.getSettings().then(r => {
-      setWaNumber(r.data.data.whatsapp_number || '')
-      setYtUrl(r.data.data.youtube_url || '')
-      setHeroBg(r.data.data.hero_bg || '')
+      const d = r.data.data
+      setWaNumber(d.whatsapp_number || '')
+      setYtUrl(d.youtube_url || '')
+      setHeroBg(d.hero_bg || '')
+      setQWaNumber(d.quest_whatsapp_number || '')
+      setQYtUrl(d.quest_youtube_url || '')
+      setQHeroBg(d.quest_hero_bg || '')
     }).catch(() => toast.error('Ошибка загрузки'))
     .finally(() => setLoading(false))
   }, [])
@@ -276,7 +322,10 @@ function SettingsTab() {
   const handleSave = async () => {
     setSaving(true)
     try {
-      await adminApi.updateSettings({ whatsapp_number: waNumber, youtube_url: youtubeUrl, hero_bg: heroBg })
+      await adminApi.updateSettings({
+        whatsapp_number: waNumber, youtube_url: youtubeUrl, hero_bg: heroBg,
+        quest_whatsapp_number: qWaNumber, quest_youtube_url: qYtUrl, quest_hero_bg: qHeroBg,
+      })
       toast.success('Настройки сохранены')
     } catch { toast.error('Ошибка сохранения') }
     finally { setSaving(false) }
@@ -284,9 +333,24 @@ function SettingsTab() {
 
   if (loading) return <div className="skeleton h-64 rounded-xl"/>
 
+  const isCinema = venue === 'cinema'
+
   return (
     <div className="max-w-lg">
-      <h2 className="font-display text-sm text-bone tracking-widest mb-8">НАСТРОЙКИ САЙТА</h2>
+      <h2 className="font-display text-sm text-bone tracking-widest mb-6">НАСТРОЙКИ САЙТА</h2>
+
+      {/* Cinema / Quest toggle */}
+      <div className="flex gap-1 mb-8 border border-white/8 rounded-lg p-1 w-fit">
+        {(['cinema', 'quest'] as const).map(v => (
+          <button key={v} onClick={() => setVenue(v)}
+            className={`px-5 py-2 rounded-md font-mono text-[10px] tracking-widest uppercase transition-all ${
+              venue === v ? 'bg-red-950/60 text-red-400 border border-red-900/50' : 'text-bone-dark/50 hover:text-bone'
+            }`}>
+            {v === 'cinema' ? '🎬 Кино' : '💀 Квест'}
+          </button>
+        ))}
+      </div>
+
       <div className="space-y-6">
         <div>
           <label className="font-mono text-[10px] text-red-800 tracking-widest block mb-2">
@@ -294,42 +358,47 @@ function SettingsTab() {
             <span className="text-bone-dark/50 ml-2 normal-case">(без +, пример: 77005767848)</span>
           </label>
           <input className="horror-input w-full font-mono" placeholder="77005767848"
-            value={waNumber} onChange={e => setWaNumber(e.target.value)}/>
+            value={isCinema ? waNumber : qWaNumber}
+            onChange={e => isCinema ? setWaNumber(e.target.value) : setQWaNumber(e.target.value)}/>
           <p className="font-mono text-[9px] text-bone-dark/40 mt-1 tracking-wider">
-            Предпросмотр: wa.me/{waNumber || '—'}
+            Предпросмотр: wa.me/{(isCinema ? waNumber : qWaNumber) || '—'}
           </p>
         </div>
+
         <div>
           <label className="font-mono text-[10px] text-red-800 tracking-widest block mb-2">
             ССЫЛКА НА ТРЕЙЛЕР (YouTube)
           </label>
           <input className="horror-input w-full" placeholder="https://youtu.be/..."
-            value={youtubeUrl} onChange={e => setYtUrl(e.target.value)}/>
+            value={isCinema ? youtubeUrl : qYtUrl}
+            onChange={e => isCinema ? setYtUrl(e.target.value) : setQYtUrl(e.target.value)}/>
           <p className="font-mono text-[9px] text-bone-dark/40 mt-1 tracking-wider">
             Поддерживается youtu.be/... и youtube.com/watch?v=...
           </p>
         </div>
+
         <div>
           <label className="font-mono text-[10px] text-red-800 tracking-widest block mb-2">
             ФОН ГЛАВНОГО ЭКРАНА
           </label>
           <div className="space-y-3">
             <input className="horror-input w-full" placeholder="1 — 9, YouTube ссылка, или прямая ссылка на фото"
-              value={heroBg} onChange={e => setHeroBg(e.target.value)}/>
-            {heroBg && heroBg.startsWith('http') && (
+              value={isCinema ? heroBg : qHeroBg}
+              onChange={e => isCinema ? setHeroBg(e.target.value) : setQHeroBg(e.target.value)}/>
+            {(() => { const bg = isCinema ? heroBg : qHeroBg; return bg && bg.startsWith('http') && (
               <div className="relative border border-red-900/30 rounded-lg overflow-hidden bg-black h-32">
-                <img src={heroBg} alt="preview" className="w-full h-full object-cover"/>
+                <img src={bg} alt="preview" className="w-full h-full object-cover"/>
               </div>
-            )}
+            )})()}
           </div>
           <div className="font-mono text-[9px] text-bone-dark/40 mt-2 tracking-wider space-y-0.5">
-            <p>• Загрузить фото → выберите изображение с телефона</p>
             <p>• Цифра (1–9) → использует фото /backgrounds/1.jpg ... /backgrounds/9.jpg</p>
             <p>• YouTube ссылка → автоматически берёт превью видео как фон</p>
             <p>• Прямая ссылка на фото → используется как есть</p>
             <p>• Пусто → стандартный тёмный фон</p>
           </div>
         </div>
+
         <button onClick={handleSave} disabled={saving}
           className="btn-blood flex items-center gap-2 px-6">
           {saving ? <span className="animate-pulse">СОХРАНЕНИЕ...</span>

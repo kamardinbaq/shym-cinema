@@ -15,6 +15,8 @@ public class Review {
     private Integer stars;
     @Column(nullable = false, columnDefinition = "TEXT")
     private String body;
+    @Column(nullable = false, length = 20) @Builder.Default
+    private String venue = "CINEMA";
     @Column(name = "created_at", nullable = false, updatable = false)
     @Builder.Default private LocalDateTime createdAt = LocalDateTime.now();
 }

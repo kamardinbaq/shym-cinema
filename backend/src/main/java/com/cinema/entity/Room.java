@@ -21,6 +21,8 @@ public class Room {
     private Integer minPeople;
     @Column(name = "theme_code", length = 50)
     private String themeCode;
+    @Column(nullable = false, length = 20) @Builder.Default
+    private String type = "CINEMA";
     @Column(nullable = false) @Builder.Default
     private boolean active = true;
     @Column(name = "created_at", nullable = false, updatable = false) @Builder.Default

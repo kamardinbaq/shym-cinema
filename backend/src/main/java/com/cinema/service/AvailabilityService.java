@@ -17,19 +17,28 @@ public class AvailabilityService {
     private final RoomRepository roomRepository;
     private final SlotReservationRepository slotReservationRepository;
 
-    private static final LocalTime BUSINESS_DAY_START = LocalTime.of(13, 0);
-    private static final ZoneId    ALMATY_ZONE        = ZoneId.of("Asia/Almaty");
-    private static final DateTimeFormatter TIME_FMT   = DateTimeFormatter.ofPattern("HH:mm");
+    private static final LocalTime CINEMA_DAY_START = LocalTime.of(13, 0);
+    private static final LocalTime QUEST_DAY_START  = LocalTime.of(11, 0);
+    private static final ZoneId    ALMATY_ZONE      = ZoneId.of("Asia/Almaty");
+    private static final DateTimeFormatter TIME_FMT  = DateTimeFormatter.ofPattern("HH:mm");
 
     @Transactional(readOnly = true)
     public AvailabilityGridResponse getGrid(LocalDate date) {
+        return buildGrid(date, "CINEMA", CINEMA_DAY_START);
+    }
+
+    @Transactional(readOnly = true)
+    public AvailabilityGridResponse getQuestGrid(LocalDate date) {
+        return buildGrid(date, "QUEST", QUEST_DAY_START);
+    }
+
+    private AvailabilityGridResponse buildGrid(LocalDate date, String type, LocalTime businessDayStart) {
         LocalDate nextDay = date.plusDays(1);
-        List<Room> rooms  = roomRepository.findAllActiveWithSlots();
+        List<Room> rooms  = roomRepository.findAllActiveByTypeWithSlots(type);
 
         List<SlotReservation> reservations = slotReservationRepository
                 .findAllByDates(List.of(date, nextDay));
 
-        // key: timeSlotId + "_" + reservationDate
         Set<String> reservedKeys = reservations.stream()
                 .map(r -> r.getTimeSlot().getId() + "_" + r.getReservationDate())
                 .collect(Collectors.toSet());
@@ -41,15 +50,14 @@ public class AvailabilityService {
                     .filter(TimeSlot::isActive)
                     .sorted(Comparator.comparingLong(slot -> {
                         long mins    = slot.getStartTime().toSecondOfDay() / 60;
-                        long bizMins = BUSINESS_DAY_START.toSecondOfDay() / 60;
+                        long bizMins = businessDayStart.toSecondOfDay() / 60;
                         return mins < bizMins ? mins + 1440 : mins;
                     }))
                     .map(slot -> {
-                        // Night slots (00:00-13:00) physically happen on nextDay
-                        LocalDate slotDate = slot.getStartTime().isBefore(BUSINESS_DAY_START)
+                        // Night slots (before businessDayStart) physically happen on nextDay
+                        LocalDate slotDate = slot.getStartTime().isBefore(businessDayStart)
                                 ? nextDay : date;
 
-                        // Compute end datetime (handle midnight crossing)
                         LocalDate endDate = slotDate;
                         if (slot.getEndTime().isBefore(slot.getStartTime()) ||
                             slot.getEndTime().equals(LocalTime.MIDNIGHT)) {

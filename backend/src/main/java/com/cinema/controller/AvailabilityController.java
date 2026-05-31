@@ -25,6 +25,13 @@ public class AvailabilityController {
         return ApiResponse.ok(availabilityService.getGrid(date != null ? date : LocalDate.now()));
     }
 
+    @GetMapping("/availability/quest")
+    public ApiResponse<AvailabilityGridResponse> getQuestGrid(
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        return ApiResponse.ok(availabilityService.getQuestGrid(date != null ? date : LocalDate.now()));
+    }
+
     /** Public endpoint — frontend reads whatsapp_number and youtube_url */
     @GetMapping("/settings")
     public ApiResponse<Map<String, String>> getPublicSettings() {

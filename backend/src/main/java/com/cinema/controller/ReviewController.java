@@ -18,8 +18,9 @@ public class ReviewController {
     private final ReviewService reviewService;
 
     @GetMapping("/api/reviews")
-    public ApiResponse<List<ReviewResponse>> getAll() {
-        return ApiResponse.ok(reviewService.getAll());
+    public ApiResponse<List<ReviewResponse>> getAll(
+            @RequestParam(defaultValue = "CINEMA") String venue) {
+        return ApiResponse.ok(reviewService.getAll(venue.toUpperCase()));
     }
 
     @PostMapping("/api/reviews")

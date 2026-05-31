@@ -16,7 +16,10 @@ import java.util.stream.Collectors;
 @Service @RequiredArgsConstructor
 public class AdminService {
 
-    private static final Set<String> ALLOWED_SETTING_KEYS = Set.of("whatsapp_number", "youtube_url", "hero_bg");
+    private static final Set<String> ALLOWED_SETTING_KEYS = Set.of(
+        "whatsapp_number", "youtube_url", "hero_bg",
+        "quest_whatsapp_number", "quest_youtube_url", "quest_hero_bg"
+    );
 
     private final AdminRepository         adminRepository;
     private final SlotReservationRepository slotRepository;

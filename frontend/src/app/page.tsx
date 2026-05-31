@@ -318,7 +318,7 @@ export default function HomePage() {
           className="absolute inset-0 pointer-events-none z-[1]"
           style={{
             background: heroBgUrl
-              ? `linear-gradient(to bottom, rgba(5,5,5,0.55) 0%, rgba(5,5,5,0.25) 40%, rgba(5,5,5,0.80) 100%)`
+              ? `linear-gradient(to bottom, rgba(5,5,5,0.75) 0%, rgba(5,5,5,0.55) 40%, rgba(5,5,5,0.92) 100%)`
               : `
               radial-gradient(circle at 50% 40%, rgba(153,27,27,0.18) 0%, transparent 60%),
               radial-gradient(circle at 20% 80%, rgba(88,28,135,0.10) 0%, transparent 50%),

@@ -27,7 +27,8 @@ const T = {
     pricesTitle: 'ЦЕНЫ НА КИНОКВЕСТ',
     pricesSub: 'Стоимость фиксируется за всю команду в зависимости от общего количества участников.',
     people: 'человек',
-    priceNote: '🎉 Акция 5+1: при группе от 5 человек — 1 место бесплатно. Именинники входят бесплатно!',
+    priceNote: 'Акция 5+1: при группе от 5 человек — 1 место бесплатно.',
+    priceBirthday: 'Именинники входят бесплатно!',
     levelsTitle: 'УРОВНИ СТРАХА',
     levelsSub: 'Каждый уровень полностью меняет ваше восприятие. Выберите формат, который выдержит ваша команда.',
     trailerTitle: 'ТРЕЙЛЕР',
@@ -73,7 +74,8 @@ const T = {
     pricesTitle: 'КИНОКВЕСТ БАҒАЛАРЫ',
     pricesSub: 'Құны қатысушылардың жалпы санына байланысты бүкіл команда үшін белгіленеді.',
     people: 'адам',
-    priceNote: '🎉 5+1 акциясы: 5 адамнан топта — 1 орын тегін. Туған күн иелері тегін кіреді!',
+    priceNote: '5+1 акциясы: 5 адамнан топта — 1 орын тегін.',
+    priceBirthday: 'Туған күн иелері тегін кіреді!',
     levelsTitle: 'ҚОРҚЫНЫШ ДЕҢГЕЙЛЕРІ',
     levelsSub: 'Әр деңгей сіздің қабылдауыңызды толықтай өзгертеді. Командаңыз шыдай алатын форматты таңдаңыз.',
     trailerTitle: 'ТРЕЙЛЕР',
@@ -465,9 +467,13 @@ export default function HomePage() {
       {/* ── Prices (line by line) ─────────────────────────────── */}
       <section ref={sectionRef.prices} id="prices" className="pt-6 pb-10 bg-[#050505] border-b border-red-950/20 scroll-mt-36">
         <div className="max-w-sm mx-auto px-4 sm:px-6">
-          <div className="mb-5 p-3 rounded-lg bg-amber-950/10 border border-amber-800/20 text-center">
+          <div className="mb-3 p-3 rounded-lg bg-amber-950/10 border border-amber-800/20 text-center">
             <p className="font-mono text-xs text-amber-400/80 tracking-wider leading-relaxed">{t.priceNote}</p>
           </div>
+
+          <p className="text-center font-mono font-black text-base sm:text-lg text-red-500 tracking-wider mb-5 uppercase">
+            {t.priceBirthday}
+          </p>
 
           <div className="text-center mb-6">
             <h2 className="drip-text text-3xl sm:text-4xl font-extrabold tracking-widest uppercase block mt-2">

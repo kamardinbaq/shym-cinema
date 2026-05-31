@@ -347,7 +347,7 @@ export default function HomePage() {
           </p>
 
           {/* Trailer video — no title, no lines */}
-          <div ref={sectionRef.trailer} id="trailer" className="w-full max-w-3xl mx-auto mb-8">
+          <div className="w-full max-w-3xl mx-auto mb-8">
             {embedId ? (
               <div className="relative rounded-xl overflow-hidden border border-red-900/30" style={{ paddingBottom: '56.25%', background: '#000' }}>
                 <iframe
@@ -461,6 +461,30 @@ export default function HomePage() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ── Trailer ──────────────────────────────────────────── */}
+      <section ref={sectionRef.trailer} id="trailer" className="pt-6 pb-10 bg-[#050505] border-b border-red-950/20 scroll-mt-36">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6">
+          <h2 className="drip-text text-3xl sm:text-4xl font-extrabold tracking-widest uppercase text-center mb-8">
+            {t.trailerTitle}
+          </h2>
+          {embedId ? (
+            <div className="relative rounded-xl overflow-hidden border border-red-900/30" style={{ paddingBottom: '56.25%', background: '#000' }}>
+              <iframe
+                src={`https://www.youtube.com/embed/${embedId}`}
+                className="absolute inset-0 w-full h-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                title="Dark Cinema Trailer"
+              />
+            </div>
+          ) : (
+            <div className="flex items-center justify-center border border-red-900/20 rounded-xl bg-black/40" style={{ aspectRatio: '16/9' }}>
+              <p className="font-mono text-xs text-gray-600 tracking-widest">{t.noTrailer}</p>
+            </div>
+          )}
         </div>
       </section>
 

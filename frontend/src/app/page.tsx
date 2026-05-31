@@ -49,10 +49,10 @@ const T = {
       'Участие по собственному желанию — отказ принимается',
     ],
     levels: [
-      { level: '1',   title: 'Обычный просмотр фильма',                    desc: 'без спецэффектов и аниматоров' },
-      { level: '2',   title: 'Фильм со спецэффектами',                     desc: 'без аниматора' },
-      { level: '3',   title: 'Фильм со спецэффектами и аниматорами',       desc: '' },
-      { level: 'MAX', title: 'Фильм со спецэффектами и аниматорами',       desc: 'бьют шокером', isMax: true },
+      { level: '1',   title: 'Обычный просмотр',           desc: 'Чистая атмосфера фильма без спецэффектов и аниматоров. Идеально для первого знакомства с форматом.' },
+      { level: '2',   title: 'Спецэффекты',                desc: 'Внезапные звуковые, световые и тактильные триггеры без прямого участия аниматоров.' },
+      { level: '3',   title: 'Спецэффекты + Аниматоры',   desc: 'Актёры заходят в зал во время сеанса. Вы становитесь главной мишенью сюжета.' },
+      { level: 'MAX', title: 'LEVEL MAX (Шокеры)',         desc: 'Предельный хоррор. Физический контакт — аниматоры используют шокер. Только для тех, кто реально готов.', isMax: true },
     ],
     prices: [
       { count: 2, price: 7000 }, { count: 3, price: 9000 }, { count: 4, price: 12000 },
@@ -454,7 +454,7 @@ export default function HomePage() {
                 </span>
                 <p className="text-white text-sm font-semibold leading-snug">{lvl.title}</p>
                 {lvl.desc && (
-                  <p className="text-gray-500 text-xs leading-snug">({lvl.desc})</p>
+                  <p className="text-gray-500 text-xs leading-snug mt-0.5">{lvl.desc}</p>
                 )}
               </div>
             ))}
@@ -465,7 +465,11 @@ export default function HomePage() {
       {/* ── Prices (line by line) ─────────────────────────────── */}
       <section ref={sectionRef.prices} id="prices" className="pt-6 pb-10 bg-[#050505] border-b border-red-950/20 scroll-mt-36">
         <div className="max-w-sm mx-auto px-4 sm:px-6">
-          <div className="text-center mb-8">
+          <div className="mb-5 p-3 rounded-lg bg-amber-950/10 border border-amber-800/20 text-center">
+            <p className="font-mono text-xs text-amber-400/80 tracking-wider leading-relaxed">{t.priceNote}</p>
+          </div>
+
+          <div className="text-center mb-6">
             <h2 className="drip-text text-3xl sm:text-4xl font-extrabold tracking-widest uppercase block mt-2">
               {t.pricesTitle}
             </h2>
@@ -486,10 +490,6 @@ export default function HomePage() {
                 <span className="font-mono text-sm font-black text-white tracking-wide">{p.price.toLocaleString('ru-RU')} ₸</span>
               </div>
             ))}
-          </div>
-
-          <div className="mt-4 p-3 rounded-lg bg-amber-950/10 border border-amber-800/20 text-center">
-            <p className="font-mono text-xs text-amber-400/80 tracking-wider leading-relaxed">{t.priceNote}</p>
           </div>
         </div>
       </section>

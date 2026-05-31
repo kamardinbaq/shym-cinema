@@ -264,7 +264,6 @@ function SettingsTab() {
   const [heroBg, setHeroBg]        = useState('')
   const [loading, setLoading]      = useState(true)
   const [saving, setSaving]        = useState(false)
-
   useEffect(() => {
     adminApi.getSettings().then(r => {
       setWaNumber(r.data.data.whatsapp_number || '')
@@ -314,9 +313,17 @@ function SettingsTab() {
           <label className="font-mono text-[10px] text-red-800 tracking-widest block mb-2">
             ФОН ГЛАВНОГО ЭКРАНА
           </label>
-          <input className="horror-input w-full" placeholder="1 — 9, YouTube ссылка, или прямая ссылка на фото"
-            value={heroBg} onChange={e => setHeroBg(e.target.value)}/>
-          <div className="font-mono text-[9px] text-bone-dark/40 mt-1 tracking-wider space-y-0.5">
+          <div className="space-y-3">
+            <input className="horror-input w-full" placeholder="1 — 9, YouTube ссылка, или прямая ссылка на фото"
+              value={heroBg} onChange={e => setHeroBg(e.target.value)}/>
+            {heroBg && heroBg.startsWith('http') && (
+              <div className="relative border border-red-900/30 rounded-lg overflow-hidden bg-black h-32">
+                <img src={heroBg} alt="preview" className="w-full h-full object-cover"/>
+              </div>
+            )}
+          </div>
+          <div className="font-mono text-[9px] text-bone-dark/40 mt-2 tracking-wider space-y-0.5">
+            <p>• Загрузить фото → выберите изображение с телефона</p>
             <p>• Цифра (1–9) → использует фото /backgrounds/1.jpg ... /backgrounds/9.jpg</p>
             <p>• YouTube ссылка → автоматически берёт превью видео как фон</p>
             <p>• Прямая ссылка на фото → используется как есть</p>

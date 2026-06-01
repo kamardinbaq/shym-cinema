@@ -13,6 +13,6 @@ export interface AdminUser { id: number; username: string; root: boolean; create
 export interface AdminAuth { token: string; username: string; root: boolean }
 export interface ApiResponse<T> { success: boolean; message?: string; data: T }
 export interface SiteSettings {
-  whatsapp_number: string; youtube_url: string; hero_bg?: string
+  whatsapp_number: string; youtube_url: string; youtube_url_2?: string; hero_bg?: string
   quest_whatsapp_number?: string; quest_youtube_url?: string; quest_hero_bg?: string
 }

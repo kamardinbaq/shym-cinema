@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 public class AdminService {
 
     private static final Set<String> ALLOWED_SETTING_KEYS = Set.of(
-        "whatsapp_number", "youtube_url", "hero_bg",
+        "whatsapp_number", "youtube_url", "youtube_url_2", "hero_bg",
         "quest_whatsapp_number", "quest_youtube_url", "quest_hero_bg"
     );
 

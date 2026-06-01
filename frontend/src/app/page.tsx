@@ -130,7 +130,7 @@ export default function HomePage() {
   const [grid, setGrid]           = useState<AvailabilityGrid | null>(null)
   const [loading, setLoading]     = useState(true)
   const [selectedDate, setSelDate] = useState(new Date())
-  const [settings, setSettings]   = useState<SiteSettings>({ whatsapp_number: '77005767848', youtube_url: '', hero_bg: '' })
+  const [settings, setSettings]   = useState<SiteSettings>({ whatsapp_number: '77005767848', youtube_url: '', youtube_url_2: '', hero_bg: '' })
   const [showStickyNav, setShowStickyNav] = useState(false)
   const [activeSection, setActiveSection] = useState('')
   const heroNavRef = useRef<HTMLDivElement>(null)
@@ -229,7 +229,8 @@ export default function HomePage() {
     { key: 'about',       label: t.nav[4], ref: sectionRef.about },
   ]
 
-  const embedId = getYouTubeId(settings.youtube_url)
+  const embedId  = getYouTubeId(settings.youtube_url)
+  const embedId2 = getYouTubeId(settings.youtube_url_2 || '')
   const heroBgUrl = resolveHeroBg(settings.hero_bg)
 
 
@@ -349,14 +350,27 @@ export default function HomePage() {
           {/* Trailer video — no title, no lines */}
           <div className="w-full max-w-3xl mx-auto mb-8">
             {embedId ? (
-              <div className="relative rounded-xl overflow-hidden border border-red-900/30" style={{ paddingBottom: '56.25%', background: '#000' }}>
-                <iframe
-                  src={`https://www.youtube.com/embed/${embedId}`}
-                  className="absolute inset-0 w-full h-full"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  title="Dark Cinema Trailer"
-                />
+              <div className={`flex flex-col gap-4`}>
+                <div className="relative rounded-xl overflow-hidden border border-red-900/30" style={{ paddingBottom: '56.25%', background: '#000' }}>
+                  <iframe
+                    src={`https://www.youtube.com/embed/${embedId}`}
+                    className="absolute inset-0 w-full h-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    title="Dark Cinema Trailer 1"
+                  />
+                </div>
+                {embedId2 && (
+                  <div className="relative rounded-xl overflow-hidden border border-red-900/30" style={{ paddingBottom: '56.25%', background: '#000' }}>
+                    <iframe
+                      src={`https://www.youtube.com/embed/${embedId2}`}
+                      className="absolute inset-0 w-full h-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      title="Dark Cinema Trailer 2"
+                    />
+                  </div>
+                )}
               </div>
             ) : (
               <div className="flex items-center justify-center border border-red-900/20 rounded-xl bg-black/40" style={{ aspectRatio: '16/9' }}>
@@ -468,14 +482,27 @@ export default function HomePage() {
       <section ref={sectionRef.trailer} id="trailer" className="pt-6 pb-10 bg-[#050505] border-b border-red-950/20 scroll-mt-36">
         <div className="max-w-3xl mx-auto px-4 sm:px-6">
           {embedId ? (
-            <div className="relative rounded-xl overflow-hidden border border-red-900/30" style={{ paddingBottom: '56.25%', background: '#000' }}>
-              <iframe
-                src={`https://www.youtube.com/embed/${embedId}`}
-                className="absolute inset-0 w-full h-full"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                title="Dark Cinema Trailer"
-              />
+            <div className="flex flex-col gap-4">
+              <div className="relative rounded-xl overflow-hidden border border-red-900/30" style={{ paddingBottom: '56.25%', background: '#000' }}>
+                <iframe
+                  src={`https://www.youtube.com/embed/${embedId}`}
+                  className="absolute inset-0 w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  title="Dark Cinema Trailer 1"
+                />
+              </div>
+              {embedId2 && (
+                <div className="relative rounded-xl overflow-hidden border border-red-900/30" style={{ paddingBottom: '56.25%', background: '#000' }}>
+                  <iframe
+                    src={`https://www.youtube.com/embed/${embedId2}`}
+                    className="absolute inset-0 w-full h-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    title="Dark Cinema Trailer 2"
+                  />
+                </div>
+              )}
             </div>
           ) : (
             <div className="flex items-center justify-center border border-red-900/20 rounded-xl bg-black/40" style={{ aspectRatio: '16/9' }}>

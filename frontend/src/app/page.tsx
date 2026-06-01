@@ -43,7 +43,7 @@ const T = {
     immersionLevel: 'УРОВЕНЬ ПОГРУЖЕНИЯ',
     levelBtn: 'Выбрать Level',
     rules: [
-      'Опоздание более 15 минут — сеанс аннулируется без возврата',
+      'Опоздание более 30 минут — сеанс аннулируется без возврата',
       'Алкоголь и наркотики запрещены',
       'Запрещено включать вспышку внутри залов',
       'Насилие в отношении аниматоров ЗАПРЕЩЕНО, штраф 15 000₸',
@@ -90,7 +90,7 @@ const T = {
     immersionLevel: 'БАТЫРУ ДЕҢГЕЙІ',
     levelBtn: 'Level таңдау',
     rules: [
-      '15 минуттан астам кешігу — сеанс қайтарусыз жойылады',
+      '30 минуттан астам кешігу — сеанс қайтарусыз жойылады',
       'Алкоголь және есірткі заттары тыйым салынады',
       'Залдардың ішінде жарқылды қосуға тыйым салынады',
       'Аниматорларға қатысты зорлық-зомбылық ТЫЙЫМ САЛЫНАДЫ, айыппұл 15 000₸',
@@ -450,9 +450,9 @@ export default function HomePage() {
             {t.levels.map((lvl) => (
               <div
                 key={lvl.level}
-                className={`flex flex-col gap-1.5 px-5 py-5 bg-[#070202] ${lvl.isMax ? 'border-t-2 border-red-600' : 'border-t-2 border-transparent'}`}
+                className={`flex flex-col gap-1.5 px-7 py-5 bg-[#070202] ${lvl.isMax ? 'border-t-2 border-red-600' : 'border-t-2 border-transparent'}`}
               >
-                <span className={`font-mono text-xs tracking-[0.25em] font-black uppercase ${lvl.isMax ? 'text-red-500' : 'text-red-700'}`}>
+                <span className={`font-mono text-xl sm:text-2xl tracking-[0.15em] font-black uppercase ${lvl.isMax ? 'text-red-500' : 'text-red-700'}`}>
                   LEVEL {lvl.level}
                 </span>
                 <p className="text-white text-sm font-semibold leading-snug">{lvl.title}</p>

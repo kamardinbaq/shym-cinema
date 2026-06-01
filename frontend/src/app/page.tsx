@@ -350,27 +350,14 @@ export default function HomePage() {
           {/* Trailer video — no title, no lines */}
           <div className="w-full max-w-3xl mx-auto mb-8">
             {embedId ? (
-              <div className={`flex flex-col gap-4`}>
-                <div className="relative rounded-xl overflow-hidden border border-red-900/30" style={{ paddingBottom: '56.25%', background: '#000' }}>
-                  <iframe
-                    src={`https://www.youtube.com/embed/${embedId}`}
-                    className="absolute inset-0 w-full h-full"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    title="Dark Cinema Trailer 1"
-                  />
-                </div>
-                {embedId2 && (
-                  <div className="relative rounded-xl overflow-hidden border border-red-900/30" style={{ paddingBottom: '56.25%', background: '#000' }}>
-                    <iframe
-                      src={`https://www.youtube.com/embed/${embedId2}`}
-                      className="absolute inset-0 w-full h-full"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                      title="Dark Cinema Trailer 2"
-                    />
-                  </div>
-                )}
+              <div className="relative rounded-xl overflow-hidden border border-red-900/30" style={{ paddingBottom: '56.25%', background: '#000' }}>
+                <iframe
+                  src={`https://www.youtube.com/embed/${embedId}`}
+                  className="absolute inset-0 w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  title="Dark Cinema Trailer 1"
+                />
               </div>
             ) : (
               <div className="flex items-center justify-center border border-red-900/20 rounded-xl bg-black/40" style={{ aspectRatio: '16/9' }}>
@@ -481,28 +468,15 @@ export default function HomePage() {
       {/* ── Trailer ──────────────────────────────────────────── */}
       <section ref={sectionRef.trailer} id="trailer" className="pt-6 pb-10 bg-[#050505] border-b border-red-950/20 scroll-mt-36">
         <div className="max-w-3xl mx-auto px-4 sm:px-6">
-          {embedId ? (
-            <div className="flex flex-col gap-4">
-              <div className="relative rounded-xl overflow-hidden border border-red-900/30" style={{ paddingBottom: '56.25%', background: '#000' }}>
-                <iframe
-                  src={`https://www.youtube.com/embed/${embedId}`}
-                  className="absolute inset-0 w-full h-full"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  title="Dark Cinema Trailer 1"
-                />
-              </div>
-              {embedId2 && (
-                <div className="relative rounded-xl overflow-hidden border border-red-900/30" style={{ paddingBottom: '56.25%', background: '#000' }}>
-                  <iframe
-                    src={`https://www.youtube.com/embed/${embedId2}`}
-                    className="absolute inset-0 w-full h-full"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    title="Dark Cinema Trailer 2"
-                  />
-                </div>
-              )}
+          {embedId2 ? (
+            <div className="relative rounded-xl overflow-hidden border border-red-900/30" style={{ paddingBottom: '56.25%', background: '#000' }}>
+              <iframe
+                src={`https://www.youtube.com/embed/${embedId2}`}
+                className="absolute inset-0 w-full h-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                title="Dark Cinema Trailer 2"
+              />
             </div>
           ) : (
             <div className="flex items-center justify-center border border-red-900/20 rounded-xl bg-black/40" style={{ aspectRatio: '16/9' }}>

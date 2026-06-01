@@ -23,7 +23,8 @@ const T = {
     pricesTitle: 'ЦЕНЫ НА КВЕСТ',
     pricesSub: 'Стоимость фиксируется за всю команду в зависимости от общего количества участников.',
     people: 'человек',
-    priceNote: '💡 Минимальное количество участников — 4 человека. Максимум — 15.',
+    priceBirthday: 'Именинники входят бесплатно!',
+    priceNote: 'Акция 5+1: при группе от 5 человек — 1 место бесплатно.',
     levelsTitle: 'УРОВНИ СТРАХА',
     levelsSub: 'Каждый уровень полностью меняет ваше восприятие. Выберите формат, который выдержит ваша команда.',
     aboutTitle: 'О НАС',
@@ -33,7 +34,7 @@ const T = {
       'Опоздание более 10 минут — сеанс аннулируется без возврата',
       'Алкоголь и наркотики строго запрещены',
       'Запрещено разделяться без ведома ведущего',
-      'Насилие в отношении аниматоров ЗАПРЕЩЕНО, штраф 15 000₸',
+      'Нельзя бить и плевать на аниматоров, штраф 15 000₸',
       'Участие добровольное — можно выйти в любой момент',
       'Минимум 4 участника для начала сеанса',
     ],
@@ -70,7 +71,8 @@ const T = {
     pricesTitle: 'КВЕСТ БАҒАЛАРЫ',
     pricesSub: 'Құны қатысушылардың жалпы санына байланысты бүкіл команда үшін белгіленеді.',
     people: 'адам',
-    priceNote: '💡 Ең аз қатысушылар саны — 4 адам. Максимум — 15.',
+    priceBirthday: 'Туған күн иелері тегін кіреді!',
+    priceNote: '5+1 акциясы: 5 адамнан топта — 1 орын тегін.',
     levelsTitle: 'ҚОРҚЫНЫШ ДЕҢГЕЙЛЕРІ',
     levelsSub: 'Әр деңгей сіздің қабылдауыңызды толықтай өзгертеді. Командаңыз шыдай алатын форматты таңдаңыз.',
     aboutTitle: 'БІЗ ТУРАЛЫ',
@@ -80,7 +82,7 @@ const T = {
       '10 минуттан астам кешігу — сеанс қайтарусыз жойылады',
       'Алкоголь және есірткі заттары қатаң тыйым салынады',
       'Жетекшінің рұқсатынсыз бөлінуге тыйым салынады',
-      'Аниматорларға қатысты зорлық-зомбылық ТЫЙЫМ САЛЫНАДЫ, айыппұл 15 000₸',
+      'Аниматорлардың үстіне ұрып және түкіндеуге болмайды, айыппұл 15 000₸',
       'Қатысу ерікті — кез келген уақытта шығуға болады',
       'Сеансты бастау үшін кемінде 4 қатысушы қажет',
     ],
@@ -409,7 +411,7 @@ export default function QuestPage() {
                 key={lvl.level}
                 className={`flex flex-col gap-1.5 px-5 py-5 bg-[#070202] ${lvl.isMax ? 'border-t-2 border-red-600' : 'border-t-2 border-transparent'}`}
               >
-                <span className={`font-mono text-xs tracking-[0.25em] font-black uppercase ${lvl.isMax ? 'text-red-500' : 'text-red-700'}`}>
+                <span className={`font-mono text-xl sm:text-2xl tracking-[0.15em] font-black uppercase ${lvl.isMax ? 'text-red-500' : 'text-red-700'}`}>
                   LEVEL {lvl.level}
                 </span>
                 <p className="text-white text-sm font-semibold leading-snug">{lvl.title}</p>
@@ -425,7 +427,15 @@ export default function QuestPage() {
       {/* ── Prices ───────────────────────────────────────────── */}
       <section ref={sectionRef.prices} id="prices" className="pt-6 pb-10 bg-[#050505] border-b border-red-950/20 scroll-mt-36">
         <div className="max-w-sm mx-auto px-4 sm:px-6">
-          <div className="text-center mb-8">
+          <div className="mb-3 p-3 rounded-lg bg-amber-950/10 border border-amber-800/20 text-center">
+            <p className="font-mono text-xs text-amber-400/80 tracking-wider leading-relaxed">{t.priceNote}</p>
+          </div>
+
+          <p className="text-center font-mono font-black text-base sm:text-lg text-red-500 tracking-wider mb-5 uppercase">
+            {t.priceBirthday}
+          </p>
+
+          <div className="text-center mb-6">
             <h2 className="drip-text text-3xl sm:text-4xl font-extrabold tracking-widest uppercase block mt-2">
               {t.pricesTitle}
             </h2>
@@ -448,9 +458,6 @@ export default function QuestPage() {
             ))}
           </div>
 
-          <div className="mt-4 p-3 rounded-lg bg-amber-950/10 border border-amber-800/20 text-center">
-            <p className="font-mono text-xs text-amber-400/80 tracking-wider leading-relaxed">{t.priceNote}</p>
-          </div>
         </div>
       </section>
 

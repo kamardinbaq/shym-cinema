@@ -382,7 +382,7 @@ export default function HomePage() {
           {/* Trailer 3 — vertical 9:16, "Эмоции после сеанса" */}
           {embedId3 && (
             <div className="w-full max-w-xs mx-auto mb-8">
-              <p className="font-mono text-[10px] tracking-[0.3em] text-red-500 uppercase text-center mb-3">
+              <p className="font-mono text-base tracking-[0.3em] text-red-500 uppercase text-center mb-3">
                 ЭМОЦИИ ПОСЛЕ СЕАНСА
               </p>
               <div className="relative rounded-xl overflow-hidden border border-red-900/30" style={{ paddingBottom: '177.78%', background: '#000' }}>
@@ -450,7 +450,7 @@ export default function HomePage() {
           {t.aboutTitle}
         </h2>
         <div className="border border-white/8 bg-black/40 rounded-xl px-5 py-4 mb-6">
-          <p className="font-sans text-sm text-gray-300 leading-relaxed">{t.description}</p>
+          <p className="font-sans text-sm text-gray-300 leading-relaxed whitespace-pre-line">{t.description}</p>
         </div>
 
         <h3 className="drip-text text-xl sm:text-2xl font-extrabold text-center mb-4 tracking-widest uppercase block">

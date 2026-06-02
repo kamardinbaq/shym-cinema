@@ -303,6 +303,7 @@ function SettingsTab() {
   // Quest settings
   const [qWaNumber, setQWaNumber] = useState('')
   const [qYtUrl, setQYtUrl]       = useState('')
+  const [qYtUrl3, setQYtUrl3]     = useState('')
   const [qHeroBg, setQHeroBg]     = useState('')
 
   const [loading, setLoading]     = useState(true)
@@ -318,6 +319,7 @@ function SettingsTab() {
       setHeroBg(d.hero_bg || '')
       setQWaNumber(d.quest_whatsapp_number || '')
       setQYtUrl(d.quest_youtube_url || '')
+      setQYtUrl3(d.quest_youtube_url_3 || '')
       setQHeroBg(d.quest_hero_bg || '')
     }).catch(() => toast.error('Ошибка загрузки'))
     .finally(() => setLoading(false))
@@ -328,7 +330,7 @@ function SettingsTab() {
     try {
       await adminApi.updateSettings({
         whatsapp_number: waNumber, youtube_url: youtubeUrl, youtube_url_2: youtubeUrl2, youtube_url_3: youtubeUrl3, hero_bg: heroBg,
-        quest_whatsapp_number: qWaNumber, quest_youtube_url: qYtUrl, quest_hero_bg: qHeroBg,
+        quest_whatsapp_number: qWaNumber, quest_youtube_url: qYtUrl, quest_youtube_url_3: qYtUrl3, quest_hero_bg: qHeroBg,
       })
       toast.success('Настройки сохранены')
     } catch { toast.error('Ошибка сохранения') }
@@ -403,6 +405,20 @@ function SettingsTab() {
             <input className="horror-input w-full" placeholder="https://youtu.be/..."
               value={youtubeUrl3}
               onChange={e => setYtUrl3(e.target.value)}/>
+            <p className="font-mono text-[9px] text-bone-dark/40 mt-1 tracking-wider">
+              Вертикальный трейлер 9:16. Отображается между первым трейлером и кнопками навигации. Оставьте пустым, если не нужен.
+            </p>
+          </div>
+        )}
+
+        {!isCinema && (
+          <div>
+            <label className="font-mono text-[10px] text-red-800 tracking-widest block mb-2">
+              ССЫЛКА НА ТРЕЙЛЕР 3 — ЭМОЦИИ ПОСЛЕ СЕАНСА (YouTube, вертикальный 9:16)
+            </label>
+            <input className="horror-input w-full" placeholder="https://youtu.be/..."
+              value={qYtUrl3}
+              onChange={e => setQYtUrl3(e.target.value)}/>
             <p className="font-mono text-[9px] text-bone-dark/40 mt-1 tracking-wider">
               Вертикальный трейлер 9:16. Отображается между первым трейлером и кнопками навигации. Оставьте пустым, если не нужен.
             </p>

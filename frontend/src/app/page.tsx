@@ -382,9 +382,9 @@ export default function HomePage() {
           {/* Trailer 3 — vertical 9:16, "Эмоции после сеанса" */}
           {embedId3 && (
             <div className="w-full max-w-xs mx-auto mb-8">
-              <p className="font-mono text-base tracking-[0.3em] text-red-500 uppercase text-center mb-3">
+              <h2 className="drip-text text-3xl sm:text-4xl font-extrabold text-center mb-6 tracking-widest uppercase block">
                 ЭМОЦИИ ПОСЛЕ СЕАНСА
-              </p>
+              </h2>
               <div className="relative rounded-xl overflow-hidden border border-red-900/30" style={{ paddingBottom: '177.78%', background: '#000' }}>
                 <iframe
                   src={`https://www.youtube.com/embed/${embedId3}`}

@@ -44,6 +44,7 @@ ON CONFLICT DO NOTHING;
 INSERT INTO settings (key, value) VALUES
     ('whatsapp_number',       '77005767848'),
     ('youtube_url',           'https://youtu.be/OpThntO9ixc?si=LcP6FJ0wI3iDmYYL'),
+    ('youtube_url_3',         'https://youtube.com/shorts/PHZwtpGp2qM?si=fucOShtu7ztVU698'),
     ('quest_whatsapp_number', '77005767848'),
     ('quest_youtube_url',     ''),
     ('quest_hero_bg',         '')

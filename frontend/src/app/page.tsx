@@ -35,7 +35,13 @@ const T = {
     aboutTitle: 'О НАС',
     rulesTitle: 'ПРАВИЛА',
     reviewsTitle: 'ОТЗЫВЫ',
-    description: 'Dark Cinema — уникальное пространство в Шымкенте, где вы можете испытать настоящий ужас. Наши хоррор-квесты сочетают живых актёров, спецэффекты и захватывающие сценарии. Мы предлагаем четыре уровня страха — от лёгкого до максимального.',
+    description: `Просмотр хоррор-фильмов с участием пугающих аниматоров
+• Спецэффекты во время сеанса
+• Формат для компаний от 2 до 16 человек
+• Просторные залы
+• Более 100 фильмов ужасов со всего мира
+• Фотозона
+• Видео с камер наблюдения после сеанса`,
     noTrailer: 'ТРЕЙЛЕР НЕ ЗАГРУЖЕН',
     noSlots: 'НЕТ СЕАНСОВ',
     noSlotsSub: 'На выбранную дату сеансы не запланированы. Попробуйте другой день.',
@@ -82,14 +88,13 @@ const T = {
     aboutTitle: 'БІЗ ТУРАЛЫ',
     rulesTitle: 'ЕРЕЖЕЛЕР',
     reviewsTitle: 'ПІКІРЛЕР',
-    description: `Просмотр хоррор-фильмов с участием пугающих аниматоров
-• Спецэффекты во время сеанса
-• Формат для компаний от 2 до 16 человек
-• Просторные залы
-• Более 100 фильмов ужасов со всего мира
-• Фотозона
-• Видео с камер наблюдения после сеанса
-`,
+    description: `Қорқынышты аниматорлардың қатысуымен қорқынышты фильмдерді көру
+• Сеанс кезіндегі арнайы әсерлер
+• 2-ден 16 адамға дейінгі компаниялар үшін Формат
+• Кең залдар
+• Әлемнің түкпір-түкпірінен 100-ден астам қорқынышты фильмдер
+• Фотоаймақ
+• Сеанстан кейінгі бақылау камераларындағы бейнелер`,
     noTrailer: 'ТРЕЙЛЕР ЖОҚ',
     noSlots: 'СЕАНС ЖОҚ',
     noSlotsSub: 'Таңдалған күні сеанстар жоқ. Басқа күнді тандаңыз.',
@@ -119,7 +124,7 @@ const T = {
 
 
 function getYouTubeId(url: string) {
-  const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([^?&]+)/)
+  const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([^?&]+)/)
   return m ? m[1] : ''
 }
 
@@ -137,7 +142,7 @@ export default function HomePage() {
   const [grid, setGrid]           = useState<AvailabilityGrid | null>(null)
   const [loading, setLoading]     = useState(true)
   const [selectedDate, setSelDate] = useState(new Date())
-  const [settings, setSettings]   = useState<SiteSettings>({ whatsapp_number: '77005767848', youtube_url: '', youtube_url_2: '', hero_bg: '' })
+  const [settings, setSettings]   = useState<SiteSettings>({ whatsapp_number: '77005767848', youtube_url: '', youtube_url_2: '', youtube_url_3: '', hero_bg: '' })
   const [showStickyNav, setShowStickyNav] = useState(false)
   const [activeSection, setActiveSection] = useState('')
   const heroNavRef = useRef<HTMLDivElement>(null)

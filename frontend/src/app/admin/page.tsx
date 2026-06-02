@@ -298,6 +298,7 @@ function SettingsTab() {
   const [waNumber, setWaNumber]   = useState('')
   const [youtubeUrl, setYtUrl]    = useState('')
   const [youtubeUrl2, setYtUrl2]  = useState('')
+  const [youtubeUrl3, setYtUrl3]  = useState('')
   const [heroBg, setHeroBg]       = useState('')
   // Quest settings
   const [qWaNumber, setQWaNumber] = useState('')
@@ -313,6 +314,7 @@ function SettingsTab() {
       setWaNumber(d.whatsapp_number || '')
       setYtUrl(d.youtube_url || '')
       setYtUrl2(d.youtube_url_2 || '')
+      setYtUrl3(d.youtube_url_3 || '')
       setHeroBg(d.hero_bg || '')
       setQWaNumber(d.quest_whatsapp_number || '')
       setQYtUrl(d.quest_youtube_url || '')
@@ -325,7 +327,7 @@ function SettingsTab() {
     setSaving(true)
     try {
       await adminApi.updateSettings({
-        whatsapp_number: waNumber, youtube_url: youtubeUrl, youtube_url_2: youtubeUrl2, hero_bg: heroBg,
+        whatsapp_number: waNumber, youtube_url: youtubeUrl, youtube_url_2: youtubeUrl2, youtube_url_3: youtubeUrl3, hero_bg: heroBg,
         quest_whatsapp_number: qWaNumber, quest_youtube_url: qYtUrl, quest_hero_bg: qHeroBg,
       })
       toast.success('Настройки сохранены')
@@ -389,6 +391,20 @@ function SettingsTab() {
               onChange={e => setYtUrl2(e.target.value)}/>
             <p className="font-mono text-[9px] text-bone-dark/40 mt-1 tracking-wider">
               Второй трейлер отображается под первым. Оставьте пустым, если не нужен.
+            </p>
+          </div>
+        )}
+
+        {isCinema && (
+          <div>
+            <label className="font-mono text-[10px] text-red-800 tracking-widest block mb-2">
+              ССЫЛКА НА ТРЕЙЛЕР 3 — ЭМОЦИИ ПОСЛЕ СЕАНСА (YouTube, вертикальный 9:16)
+            </label>
+            <input className="horror-input w-full" placeholder="https://youtu.be/..."
+              value={youtubeUrl3}
+              onChange={e => setYtUrl3(e.target.value)}/>
+            <p className="font-mono text-[9px] text-bone-dark/40 mt-1 tracking-wider">
+              Вертикальный трейлер 9:16. Отображается между первым трейлером и кнопками навигации. Оставьте пустым, если не нужен.
             </p>
           </div>
         )}

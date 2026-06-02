@@ -243,6 +243,7 @@ export default function HomePage() {
 
   const embedId  = getYouTubeId(settings.youtube_url)
   const embedId2 = getYouTubeId(settings.youtube_url_2 || '')
+  const embedId3 = getYouTubeId(settings.youtube_url_3 || '')
   const heroBgUrl = resolveHeroBg(settings.hero_bg)
 
 
@@ -377,6 +378,24 @@ export default function HomePage() {
               </div>
             )}
           </div>
+
+          {/* Trailer 3 — vertical 9:16, "Эмоции после сеанса" */}
+          {embedId3 && (
+            <div className="w-full max-w-xs mx-auto mb-8">
+              <p className="font-mono text-[10px] tracking-[0.3em] text-red-500 uppercase text-center mb-3">
+                ЭМОЦИИ ПОСЛЕ СЕАНСА
+              </p>
+              <div className="relative rounded-xl overflow-hidden border border-red-900/30" style={{ paddingBottom: '177.78%', background: '#000' }}>
+                <iframe
+                  src={`https://www.youtube.com/embed/${embedId3}`}
+                  className="absolute inset-0 w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  title="Dark Cinema Trailer 3"
+                />
+              </div>
+            </div>
+          )}
 
           {/* Nav buttons — move to header once scrolled past */}
           <div ref={heroNavRef} className="flex flex-col items-center gap-3 mb-8 w-full">

@@ -15,7 +15,7 @@ const T = {
   ru: {
     nav: ['Бронь', 'Цены', 'Уровни', 'Трейлер', 'О нас'],
     noTrailer: 'ТРЕЙЛЕР НЕ ЗАГРУЖЕН',
-    heroText: 'СТРАХ НАСТИГНЕТ ТЕБЯ',
+    heroText: 'чеLOVEку НУЖЕН ADRENALINE',
     heroBadge: 'Хоррор-квест в реальности · Шымкент',
     heroSub: 'Тёмные комнаты. Живые актёры. Настоящий ужас. Соберите команду и пройдите испытание.',
     chooseDate: 'Выберите дату',
@@ -63,7 +63,7 @@ const T = {
   kz: {
     nav: ['Бронь', 'Бағалар', 'Деңгейлер', 'Трейлер', 'Біз туралы'],
     noTrailer: 'ТРЕЙЛЕР ЖОҚ',
-    heroText: 'ҚОРҚЫНЫШ СЕНІ ҚУЫП ЖЕТЕДІ',
+    heroText: 'АДАMҒА ADRENALINE КЕРЕК',
     heroBadge: 'Шынайы хоррор-квест · Шымкент',
     heroSub: 'Қараңғы бөлмелер. Тірі актерлер. Нағыз қорқыныш. Командаңызды жинап, сынақтан өтіңіз.',
     chooseDate: 'Күнді таңдаңыз',
@@ -121,7 +121,7 @@ function resolveHeroBg(heroBg: string | undefined): string | null {
 
 export default function QuestPage() {
   const [lang, setLang]           = useState<Language>('ru')
-  const [settings, setSettings]   = useState<SiteSettings>({ whatsapp_number: '77005767848', youtube_url: '', hero_bg: '' })
+  const [settings, setSettings]   = useState<SiteSettings>({ whatsapp_number: '87714278825', youtube_url: '', hero_bg: '' })
   const [grid, setGrid]           = useState<AvailabilityGrid | null>(null)
   const [loading, setLoading]     = useState(true)
   const [selectedDate, setSelDate] = useState(new Date())

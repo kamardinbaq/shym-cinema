@@ -23,7 +23,7 @@ export default async function Page() {
 
     return (
       <HomePageClient 
-        initialSettings={settings} 
+        initialSettings={settings as any} 
         initialGrid={initialGrid} 
         initialReviews={initialReviews} 
       />

@@ -16,7 +16,7 @@ export default async function Page() {
 
   return (
     <QuestPageClient 
-      initialSettings={settings} 
+      initialSettings={settings as any} 
       initialGrid={initialGrid} 
       initialReviews={initialReviews} 
     />

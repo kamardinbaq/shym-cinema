@@ -137,6 +137,15 @@ function resolveHeroBg(val?: string) {
   return trimmed
 }
 
+function getYouTubeId(url?: string) {
+  if (!url) return ''
+  const trimmed = url.trim()
+  if (!trimmed) return ''
+  if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) return trimmed
+  const m = trimmed.match(/(?:youtu\.be\/|youtube\.com\/(?:.*v=|embed\/|shorts\/|live\/))([^?&/]+)/)
+  return m ? m[1] : ''
+}
+
 export default function QuestPageClient({ initialSettings, initialGrid, initialReviews }: { initialSettings: SiteSettings, initialGrid: AvailabilityGrid | null, initialReviews: any[] }) {
   const [lang, setLang]           = useState<Language>('ru')
   const [settings, setSettings]   = useState<SiteSettings>(initialSettings)
@@ -212,19 +221,9 @@ export default function QuestPageClient({ initialSettings, initialGrid, initialR
     ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 
   const heroBgUrl = resolveHeroBg(settings.quest_hero_bg)
-  const questYtUrl = settings.quest_youtube_url || ''
-  const embedId = (() => {
-    const m = questYtUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([^?&]+)/)
-    return m ? m[1] : ''
-  })()
-  const embedId2 = (() => {
-    const m = (settings.quest_youtube_url_2 || '').match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([^?&]+)/)
-    return m ? m[1] : ''
-  })()
-  const embedId3 = (() => {
-    const m = (settings.quest_youtube_url_3 || '').match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([^?&]+)/)
-    return m ? m[1] : ''
-  })()
+  const embedId = getYouTubeId(settings.quest_youtube_url)
+  const embedId2 = getYouTubeId(settings.quest_youtube_url_2)
+  const embedId3 = getYouTubeId(settings.quest_youtube_url_3)
 
   const quickDates = Array.from({ length: 5 }).map((_, i) => {
     const today = startOfDay(new Date())

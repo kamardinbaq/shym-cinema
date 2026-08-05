@@ -135,8 +135,12 @@ const T = {
 }
 
 
-function getYouTubeId(url: string) {
-  const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([^?&]+)/)
+function getYouTubeId(url?: string) {
+  if (!url) return ''
+  const trimmed = url.trim()
+  if (!trimmed) return ''
+  if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) return trimmed
+  const m = trimmed.match(/(?:youtu\.be\/|youtube\.com\/(?:.*v=|embed\/|shorts\/|live\/))([^?&/]+)/)
   return m ? m[1] : ''
 }
 

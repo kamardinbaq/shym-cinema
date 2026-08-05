@@ -384,11 +384,7 @@ export default function QuestPageClient({ initialSettings, initialGrid, initialR
       {/* ── Main Trailer ───────────────────────── */}
       <section ref={sectionRef.trailer} id="trailer" className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pt-12 pb-8 grid grid-cols-1 lg:grid-cols-3 gap-8 items-center border-b border-red-950/20 scroll-mt-24">
         {embedId ? (
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.2 }}
-            transition={{ duration: 0.6 }}
+          <div 
             className={`relative rounded-xl overflow-hidden border border-red-900/30 shadow-2xl ${embedId3 ? 'lg:col-span-2' : 'lg:col-span-3 max-w-4xl mx-auto w-full'}`} 
             style={{ paddingBottom: embedId3 ? '42%' : '56.25%', background: '#000', minHeight: embedId3 ? 'auto' : '300px' }}
           >
@@ -399,17 +395,11 @@ export default function QuestPageClient({ initialSettings, initialGrid, initialR
               allowFullScreen
               title="Dark Quest Main Trailer"
             />
-          </motion.div>
+          </div>
         ) : null}
         
         {embedId3 && (
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.2 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="lg:col-span-1"
-          >
+          <div className="lg:col-span-1">
             <div className="relative rounded-xl overflow-hidden border border-red-900/30 shadow-2xl mx-auto lg:mx-0 max-w-[280px] w-full" style={{ paddingBottom: '177.78%', background: '#000' }}>
               <iframe
                 src={`https://www.youtube.com/embed/${embedId3}`}
@@ -419,7 +409,7 @@ export default function QuestPageClient({ initialSettings, initialGrid, initialR
                 title="Dark Quest Emotions"
               />
             </div>
-          </motion.div>
+          </div>
         )}
       </section>
 

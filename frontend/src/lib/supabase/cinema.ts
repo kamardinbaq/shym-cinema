@@ -8,7 +8,7 @@ const ALMATY_TZ = 'Asia/Almaty'
 
 const ALLOWED_SETTING_KEYS = new Set([
   'whatsapp_number', 'youtube_url', 'youtube_url_2', 'youtube_url_3', 'hero_bg',
-  'quest_whatsapp_number', 'quest_youtube_url', 'quest_youtube_url_3', 'quest_hero_bg',
+  'quest_whatsapp_number', 'quest_youtube_url', 'quest_youtube_url_2', 'quest_youtube_url_3', 'quest_hero_bg',
 ])
 
 /* ── Date & Time Utilities for Asia/Almaty ────────────────── */

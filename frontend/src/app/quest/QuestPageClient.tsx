@@ -217,6 +217,10 @@ export default function QuestPageClient({ initialSettings, initialGrid, initialR
     const m = questYtUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([^?&]+)/)
     return m ? m[1] : ''
   })()
+  const embedId2 = (() => {
+    const m = (settings.quest_youtube_url_2 || '').match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([^?&]+)/)
+    return m ? m[1] : ''
+  })()
   const embedId3 = (() => {
     const m = (settings.quest_youtube_url_3 || '').match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([^?&]+)/)
     return m ? m[1] : ''
@@ -397,11 +401,7 @@ export default function QuestPageClient({ initialSettings, initialGrid, initialR
               title="Dark Quest Main Trailer"
             />
           </motion.div>
-        ) : (
-          <div className="lg:col-span-3 flex items-center justify-center border border-red-900/20 rounded-xl bg-black/40 max-w-4xl mx-auto w-full" style={{ aspectRatio: '16/9' }}>
-            <p className="font-mono text-xs text-gray-600 tracking-widest">{t.noTrailer}</p>
-          </div>
-        )}
+        ) : null}
         
         {embedId3 && (
           <motion.div 
@@ -423,6 +423,31 @@ export default function QuestPageClient({ initialSettings, initialGrid, initialR
           </motion.div>
         )}
       </section>
+
+      {/* ── Secondary Trailer ───────────────────────── */}
+      {(!embedId && !embedId2 && !embedId3) ? (
+        <section className="pt-6 pb-10 bg-transparent border-b border-red-950/20 scroll-mt-36">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6">
+            <div className="flex items-center justify-center border border-red-900/20 rounded-xl bg-black/40" style={{ aspectRatio: '16/9' }}>
+              <p className="font-mono text-xs text-gray-600 tracking-widest">{t.noTrailer}</p>
+            </div>
+          </div>
+        </section>
+      ) : embedId2 ? (
+        <section className="pt-6 pb-10 bg-transparent border-b border-red-950/20 scroll-mt-36">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6">
+            <div className="relative rounded-xl overflow-hidden border border-red-900/30" style={{ paddingBottom: '56.25%', background: '#000' }}>
+              <iframe
+                src={`https://www.youtube.com/embed/${embedId2}`}
+                className="absolute inset-0 w-full h-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                title="Dark Quest Trailer 2"
+              />
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       {/* ── Schedule (Reservation Grid) ──────────────────────── */}
       <section ref={sectionRef.schedule} id="schedule" className="max-w-7xl mx-auto px-3 sm:px-5 py-16 w-full scroll-mt-36 bg-transparent">

@@ -29,7 +29,7 @@ export const questApi = {
 }
 
 export const settingsApi = {
-  get: () => request<SiteSettings>('/api/settings'),
+  get: () => request<SiteSettings>('/api/settings', { cache: 'no-store' }),
 }
 
 export const reviewApi = {

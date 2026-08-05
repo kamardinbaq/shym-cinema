@@ -166,6 +166,10 @@ export default function QuestPageClient({ initialSettings, initialGrid, initialR
 
   const t = T[lang]
 
+  useEffect(() => {
+    settingsApi.get().then(r => setSettings(r.data.data)).catch(() => {})
+  }, [])
+
   const fetchGrid = useCallback(async () => {
     setLoading(true)
     try {

@@ -339,7 +339,14 @@ function SettingsTab() {
       setQYtUrl2(d.quest_youtube_url_2 || '')
       setQYtUrl3(d.quest_youtube_url_3 || '')
       setQHeroBg(d.quest_hero_bg || '')
-    }).catch(() => toast.error('Ошибка загрузки'))
+    }).catch((err: any) => {
+      if (err.response?.status === 401) {
+        useAdminStore.getState().clearAuth()
+        toast.error('Сессия истекла. Войдите заново.')
+      } else {
+        toast.error('Ошибка загрузки: ' + (err.response?.data?.message || err.message))
+      }
+    })
     .finally(() => setLoading(false))
   }, [])
 
@@ -351,7 +358,14 @@ function SettingsTab() {
         quest_whatsapp_number: qWaNumber, quest_youtube_url: qYtUrl, quest_youtube_url_2: qYtUrl2, quest_youtube_url_3: qYtUrl3, quest_hero_bg: qHeroBg,
       })
       toast.success('Настройки сохранены')
-    } catch { toast.error('Ошибка сохранения') }
+    } catch (err: any) { 
+      if (err.response?.status === 401) {
+        useAdminStore.getState().clearAuth()
+        toast.error('Сессия истекла. Войдите заново.')
+      } else {
+        toast.error('Ошибка сохранения: ' + (err.response?.data?.message || err.message))
+      }
+    }
     finally { setSaving(false) }
   }
 

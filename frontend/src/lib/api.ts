@@ -1,49 +1,65 @@
-import axios from 'axios'
 import type { ApiResponse, AvailabilityGrid, Review, AdminUser, AdminAuth, SiteSettings } from '@/types'
 
-const BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
-export const api = axios.create({ baseURL: BASE, headers: { 'Content-Type': 'application/json' }, timeout: 15000 })
+async function request<T>(path: string, options?: RequestInit): Promise<{ data: ApiResponse<T> }> {
+  const res = await fetch(path, {
+    headers: {
+      'Content-Type': 'application/json',
+      ...options?.headers,
+    },
+    ...options,
+  })
 
-api.interceptors.request.use(cfg => {
-  if (typeof window !== 'undefined') {
-    const t = localStorage.getItem('admin_token')
-    if (t) cfg.headers.Authorization = `Bearer ${t}`
+  const json = await res.json()
+  if (!res.ok && !json.success) {
+    const error: any = new Error(json.message || 'Request failed')
+    error.response = { status: res.status, data: json }
+    throw error
   }
-  return cfg
-})
-api.interceptors.response.use(res => res, err => {
-  if (err.response?.status === 401 && typeof window !== 'undefined') {
-    const url = err.config?.url || ''
-    if (!url.includes('/auth/login')) { localStorage.removeItem('admin_token'); localStorage.removeItem('admin_user') }
-  }
-  return Promise.reject(err)
-})
+  return { data: json }
+}
 
 export const availabilityApi = {
-  getGrid: (date?: string) => api.get<ApiResponse<AvailabilityGrid>>('/api/availability', { params: { date } }),
+  getGrid: (date?: string) =>
+    request<AvailabilityGrid>(`/api/availability${date ? `?date=${date}` : ''}`),
 }
+
 export const questApi = {
-  getGrid: (date?: string) => api.get<ApiResponse<AvailabilityGrid>>('/api/availability/quest', { params: { date } }),
+  getGrid: (date?: string) =>
+    request<AvailabilityGrid>(`/api/availability/quest${date ? `?date=${date}` : ''}`),
 }
+
 export const settingsApi = {
-  get: () => api.get<ApiResponse<SiteSettings>>('/api/settings'),
+  get: () => request<SiteSettings>('/api/settings'),
 }
+
 export const reviewApi = {
   getAll: (venue: 'CINEMA' | 'QUEST' = 'CINEMA') =>
-    api.get<ApiResponse<Review[]>>('/api/reviews', { params: { venue } }),
+    request<Review[]>(`/api/reviews?venue=${venue}`),
   create: (d: { name?: string; stars: number; body: string; venue?: string }) =>
-    api.post<ApiResponse<Review>>('/api/reviews', d),
-  delete: (id: number) => api.delete<ApiResponse<void>>(`/api/admin/reviews/${id}`),
+    request<Review>('/api/reviews', { method: 'POST', body: JSON.stringify(d) }),
+  delete: (id: number) => request<void>(`/api/admin/reviews/${id}`, { method: 'DELETE' }),
 }
+
 export const adminApi = {
   login: (username: string, password: string) =>
-    api.post<ApiResponse<AdminAuth>>('/api/admin/auth/login', { username, password }),
+    request<AdminAuth>('/api/admin/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ username, password }),
+    }),
+  logout: () => request<void>('/api/admin/auth/logout', { method: 'POST' }),
   toggleSlot: (timeSlotId: number, date: string) =>
-    api.post<ApiResponse<boolean>>('/api/admin/slots/toggle', null, { params: { timeSlotId, date } }),
-  getSettings: () => api.get<ApiResponse<Record<string, string>>>('/api/admin/settings'),
-  updateSettings: (s: Record<string, string>) => api.put<ApiResponse<void>>('/api/admin/settings', s),
-  getAdmins: () => api.get<ApiResponse<AdminUser[]>>('/api/admin/users'),
+    request<boolean>(`/api/admin/slots/toggle?timeSlotId=${timeSlotId}&date=${date}`, {
+      method: 'POST',
+    }),
+  getSettings: () => request<Record<string, string>>('/api/admin/settings'),
+  updateSettings: (s: Record<string, string>) =>
+    request<void>('/api/admin/settings', { method: 'PUT', body: JSON.stringify(s) }),
+  getAdmins: () => request<AdminUser[]>('/api/admin/users'),
   createAdmin: (username: string, password: string) =>
-    api.post<ApiResponse<AdminUser>>('/api/admin/users', { username, password }),
-  deleteAdmin: (id: number) => api.delete<ApiResponse<void>>(`/api/admin/users/${id}`),
+    request<AdminUser>('/api/admin/users', {
+      method: 'POST',
+      body: JSON.stringify({ username, password }),
+    }),
+  deleteAdmin: (id: number) =>
+    request<void>(`/api/admin/users/${id}`, { method: 'DELETE' }),
 }

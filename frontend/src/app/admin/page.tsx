@@ -100,7 +100,7 @@ export default function AdminPage() {
           </div>
           <div className="flex items-center gap-2">
             <a href="/" className="btn-ghost text-[10px] py-1.5 px-3">← Сайт</a>
-            <button onClick={() => { clearAuth(); window.location.href = '/admin' }}
+            <button onClick={async () => { await adminApi.logout(); clearAuth(); window.location.href = '/admin' }}
               className="btn-ghost text-[10px] py-1.5 px-3 flex items-center gap-1">
               <LogOut className="w-3.5 h-3.5"/> Выйти
             </button>
@@ -153,8 +153,24 @@ function ReservationsTab() {
   const handleToggle = async (timeSlotId: number, date: string) => {
     try {
       const res = await adminApi.toggleSlot(timeSlotId, date)
-      toast.success(res.data.data ? '🔴 Слот занят' : '🟢 Слот свободен')
-      await load()
+      const nowReserved = res.data.data
+      toast.success(nowReserved ? '🔴 Слот занят' : '🟢 Слот свободен')
+
+      // Optimistic in-place update: just flip the slot status in current grid state
+      setGrid(prev => {
+        if (!prev) return prev
+        return {
+          ...prev,
+          rooms: prev.rooms.map(room => ({
+            ...room,
+            slots: room.slots.map(slot =>
+              slot.timeSlotId === timeSlotId && slot.slotDate === date
+                ? { ...slot, status: nowReserved ? 'RESERVED' as const : 'AVAILABLE' as const }
+                : slot
+            ),
+          })),
+        }
+      })
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Ошибка')
     }
@@ -440,7 +456,7 @@ function SettingsTab() {
             )})()}
           </div>
           <div className="font-mono text-[9px] text-bone-dark/40 mt-2 tracking-wider space-y-0.5">
-            <p>• Цифра (1–9) → использует фото /backgrounds/1.jpg ... /backgrounds/9.jpg</p>
+            <p>• Цифра (1–9) → использует фото /backgrounds/1.webp ... /backgrounds/9.webp</p>
             <p>• YouTube ссылка → автоматически берёт превью видео как фон</p>
             <p>• Прямая ссылка на фото → используется как есть</p>
             <p>• Пусто → стандартный тёмный фон</p>

@@ -6,8 +6,8 @@ export const metadata: Metadata = {
   title: 'SHYM CINEMA — Shymkent',
   description: 'Бронирование сеансов в Dark Cinema. 4 уровня страха. Shymkent.',
   icons: {
-    icon: '/logo.png',
-    apple: '/logo.png',
+    icon: '/logo.webp',
+    apple: '/logo.webp',
   },
   appleWebApp: { capable: true, statusBarStyle: 'black-translucent' },
 }

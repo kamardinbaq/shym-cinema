@@ -64,11 +64,11 @@ function ReviewCard({ review, onDelete, lang }: { review: Review; onDelete?: () 
   )
 }
 
-export default function Reviews({ lang, venue = 'CINEMA' }: { lang: Language; venue?: 'CINEMA' | 'QUEST' }) {
+export default function Reviews({ lang, venue = 'CINEMA', initialReviews }: { lang: Language; venue?: 'CINEMA' | 'QUEST'; initialReviews?: Review[] }) {
   const t = T[lang]
   const { isAuthenticated } = useAdminStore()
-  const [reviews, setReviews] = useState<Review[]>([])
-  const [loading, setLoading] = useState(true)
+  const [reviews, setReviews] = useState<Review[]>(initialReviews || [])
+  const [loading, setLoading] = useState(initialReviews === undefined)
   const [name, setName]       = useState('')
   const [body, setBody]       = useState('')
   const [stars, setStars]     = useState(5)
@@ -80,7 +80,11 @@ export default function Reviews({ lang, venue = 'CINEMA' }: { lang: Language; ve
     finally { setLoading(false) }
   }
 
-  useEffect(() => { load() }, [venue])
+  useEffect(() => {
+    if (initialReviews === undefined) {
+      load()
+    }
+  }, [venue, initialReviews])
 
   const handleSubmit = async () => {
     if (!body.trim()) { toast.error(lang === 'kz' ? 'Пікір жазыңыз' : 'Напишите отзыв'); return }

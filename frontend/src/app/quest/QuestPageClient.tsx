@@ -326,38 +326,72 @@ export default function QuestPageClient({ initialSettings, initialGrid, initialR
       </header>
 
       {/* ── Hero ─────────────────────────────────────────────── */}
-      <section className="relative min-h-[100dvh] flex items-center justify-start overflow-hidden border-b border-red-950/30 pt-16">
-        <div className="relative z-[2] max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+      <section className="relative min-h-[88vh] flex items-center justify-center overflow-hidden border-b border-red-950/30">
+        <div className="relative z-[2] max-w-5xl mx-auto text-center px-4 py-8 flex flex-col items-center">
           <motion.div 
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="flex flex-col items-start text-left"
+            className="flex flex-col items-center text-center w-full"
           >
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 border border-red-900/40 bg-red-950/20 backdrop-blur-md rounded-md mb-6 shadow-[inset_0_0_12px_rgba(185,28,28,0.1)]">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 border border-red-900/40 bg-red-950/20 backdrop-blur-md rounded-md mb-5 shadow-[inset_0_0_12px_rgba(185,28,28,0.1)]">
               <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse flex-shrink-0" />
-              <p className="font-mono text-[10px] sm:text-xs text-red-400 tracking-[0.15em] uppercase font-semibold">{t.heroBadge}</p>
+              <p className="font-mono text-[10px] sm:text-xs text-red-400 tracking-[0.25em] uppercase">{t.heroBadge}</p>
             </div>
 
-            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-[5.5rem] font-extrabold leading-[1.05] tracking-tight mb-6 uppercase select-none text-left font-display text-white">
-              <span className="drip-text block mb-2">{t.heroText.split(' ')[0]}</span>
-              {t.heroText.split(' ').slice(1).join(' ')}
+            <h1 className="drip-text text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold leading-[0.95] tracking-tight mb-5 uppercase select-none text-center">
+              {t.heroText}
             </h1>
 
-            <p className="font-sans text-base sm:text-lg text-gray-400 max-w-lg leading-relaxed mb-10">
+            <p className="font-sans text-base sm:text-lg text-gray-400 max-w-xl mx-auto leading-relaxed mb-8">
               {t.heroSub}
             </p>
 
+            <div ref={sectionRef.trailer} id="trailer" className="w-full max-w-3xl mx-auto mb-8 scroll-mt-36">
+              {embedId ? (
+                <div className="relative rounded-xl overflow-hidden border border-red-900/30" style={{ paddingBottom: '56.25%', background: '#000' }}>
+                  <iframe
+                    src={`https://www.youtube.com/embed/${embedId}`}
+                    className="absolute inset-0 w-full h-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    title="Dark Quest Trailer"
+                  />
+                </div>
+              ) : (
+                <div className="flex items-center justify-center border border-red-900/20 rounded-xl bg-black/40" style={{ aspectRatio: '16/9' }}>
+                  <p className="font-mono text-xs text-gray-600 tracking-widest">{t.noTrailer}</p>
+                </div>
+              )}
+            </div>
+
+            {embedId3 && (
+              <div className="w-full max-w-xs mx-auto mb-8">
+                <h2 className="drip-text text-3xl sm:text-4xl font-extrabold text-center mb-6 tracking-widest uppercase block">
+                  ЭМОЦИИ ПОСЛЕ СЕАНСА
+                </h2>
+                <div className="relative rounded-xl overflow-hidden border border-red-900/30" style={{ paddingBottom: '177.78%', background: '#000' }}>
+                  <iframe
+                    src={`https://www.youtube.com/embed/${embedId3}`}
+                    className="absolute inset-0 w-full h-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    title="Dark Quest Trailer 3"
+                  />
+                </div>
+              </div>
+            )}
+
             {/* Nav buttons */}
-            <div ref={heroNavRef} className="flex flex-col sm:flex-row items-start gap-4 mb-8 w-full max-w-lg">
+            <div ref={heroNavRef} className="flex flex-col items-center gap-3 mb-8 w-full">
               <button
                 onClick={() => scrollTo(sectionRef.schedule)}
-                className="btn-hero-blood w-full sm:w-auto font-mono font-black tracking-[0.15em] uppercase px-8 py-4 text-sm sm:text-base whitespace-nowrap"
+                className="btn-hero-blood w-full max-w-xs font-mono font-black tracking-[0.25em] uppercase px-10 py-4 text-base sm:text-lg mb-2"
               >
                 {t.nav[0]}
               </button>
 
-              <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 w-full sm:w-auto">
+              <div className="flex flex-wrap gap-2 justify-center">
                 {NAV_SECTIONS.slice(1).map(s => {
                   const active = activeSection === s.key
                   return (
@@ -365,7 +399,7 @@ export default function QuestPageClient({ initialSettings, initialGrid, initialR
                       key={s.key}
                       onClick={() => scrollTo(s.ref)}
                       aria-current={active ? 'true' : undefined}
-                      className={`group relative px-4 py-3 sm:py-2.5 border font-mono text-[10px] sm:text-xs tracking-wider uppercase rounded-md transition-all duration-200 overflow-hidden flex-1 text-center whitespace-nowrap ${
+                      className={`group relative px-5 py-2.5 border font-mono text-[11px] sm:text-xs tracking-widest uppercase rounded-md transition-all duration-200 overflow-hidden ${
                         active
                           ? 'border-red-600 bg-red-900/60 text-white shadow-[0_0_16px_rgba(185,28,28,0.4)]'
                           : 'border-red-700/70 bg-red-950/50 text-red-200 hover:border-red-600 hover:text-white hover:bg-red-900/60 hover:shadow-[0_0_16px_rgba(185,28,28,0.4)]'
@@ -379,54 +413,13 @@ export default function QuestPageClient({ initialSettings, initialGrid, initialR
               </div>
             </div>
           </motion.div>
-          <div className="hidden lg:block" />
         </div>
 
         <div className="absolute bottom-0 left-0 right-0 h-px z-[2]" style={{ background: 'linear-gradient(90deg,transparent,#8B0000,#dc143c,#8B0000,transparent)' }} />
       </section>
 
-      {/* ── Main Trailer ───────────────────────── */}
-      <section ref={sectionRef.trailer} id="trailer" className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pt-12 pb-8 grid grid-cols-1 lg:grid-cols-3 gap-8 items-center border-b border-red-950/20 scroll-mt-24">
-        {embedId ? (
-          <div 
-            className={`relative rounded-xl overflow-hidden border border-red-900/30 shadow-2xl ${embedId3 ? 'lg:col-span-2' : 'lg:col-span-3 max-w-4xl mx-auto w-full'}`} 
-            style={{ paddingBottom: embedId3 ? '42%' : '56.25%', background: '#000', minHeight: embedId3 ? 'auto' : '300px' }}
-          >
-            <iframe
-              src={`https://www.youtube.com/embed/${embedId}`}
-              className="absolute inset-0 w-full h-full"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              title="Dark Quest Main Trailer"
-            />
-          </div>
-        ) : null}
-        
-        {embedId3 && (
-          <div className="lg:col-span-1">
-            <div className="relative rounded-xl overflow-hidden border border-red-900/30 shadow-2xl mx-auto lg:mx-0 max-w-[280px] w-full" style={{ paddingBottom: '177.78%', background: '#000' }}>
-              <iframe
-                src={`https://www.youtube.com/embed/${embedId3}`}
-                className="absolute inset-0 w-full h-full"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                title="Dark Quest Emotions"
-              />
-            </div>
-          </div>
-        )}
-      </section>
-
       {/* ── Secondary Trailer ───────────────────────── */}
-      {(!embedId && !embedId2 && !embedId3) ? (
-        <section className="pt-6 pb-10 bg-transparent border-b border-red-950/20 scroll-mt-36">
-          <div className="max-w-3xl mx-auto px-4 sm:px-6">
-            <div className="flex items-center justify-center border border-red-900/20 rounded-xl bg-black/40" style={{ aspectRatio: '16/9' }}>
-              <p className="font-mono text-xs text-gray-600 tracking-widest">{t.noTrailer}</p>
-            </div>
-          </div>
-        </section>
-      ) : embedId2 ? (
+      {embedId2 && (
         <section className="pt-6 pb-10 bg-transparent border-b border-red-950/20 scroll-mt-36">
           <div className="max-w-3xl mx-auto px-4 sm:px-6">
             <div className="relative rounded-xl overflow-hidden border border-red-900/30" style={{ paddingBottom: '56.25%', background: '#000' }}>
@@ -440,7 +433,7 @@ export default function QuestPageClient({ initialSettings, initialGrid, initialR
             </div>
           </div>
         </section>
-      ) : null}
+      )}
 
       {/* ── Schedule (Reservation Grid) ──────────────────────── */}
       <section ref={sectionRef.schedule} id="schedule" className="max-w-7xl mx-auto px-3 sm:px-5 py-16 w-full scroll-mt-36 bg-transparent">

@@ -165,7 +165,7 @@ export default function HomePageClient({ initialSettings, initialGrid, initialRe
     reservation: useRef<HTMLElement>(null),
     prices:      useRef<HTMLElement>(null),
     levels:      useRef<HTMLElement>(null),
-    trailer:     useRef<HTMLDivElement>(null),
+    trailer:     useRef<HTMLElement>(null),
     about:       useRef<HTMLElement>(null),
   }
 
@@ -259,6 +259,8 @@ export default function HomePageClient({ initialSettings, initialGrid, initialRe
   const embedId  = getYouTubeId(settings.youtube_url)
   const embedId2 = getYouTubeId(settings.youtube_url_2 || '')
   const embedId3 = getYouTubeId(settings.youtube_url_3 || '')
+  const hasMainTrailer = Boolean(embedId || embedId3)
+  const hasAnyTrailer = Boolean(embedId || embedId2 || embedId3)
   const heroBgUrl = resolveHeroBg(settings.hero_bg)
 
 
@@ -417,8 +419,8 @@ export default function HomePageClient({ initialSettings, initialGrid, initialRe
       </section>
 
       {/* ── Main Trailer (moved out of hero) ───────────────────────── */}
-      {(embedId || embedId3) && (
-        <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pt-12 pb-8 grid grid-cols-1 lg:grid-cols-3 gap-8 items-center border-b border-red-950/20">
+      {hasMainTrailer && (
+        <section ref={sectionRef.trailer} id="trailer" className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pt-12 pb-8 grid grid-cols-1 lg:grid-cols-3 gap-8 items-center border-b border-red-950/20 scroll-mt-36">
           {embedId && (
             <div 
               className={`relative rounded-xl overflow-hidden border border-red-900/30 shadow-2xl ${embedId3 ? 'lg:col-span-2' : 'lg:col-span-3 max-w-4xl mx-auto w-full'}`} 
@@ -617,25 +619,31 @@ export default function HomePageClient({ initialSettings, initialGrid, initialRe
       </section>
 
       {/* ── Trailer ──────────────────────────────────────────── */}
-      <section ref={sectionRef.trailer} id="trailer" className="pt-6 pb-10 bg-transparent border-b border-red-950/20 scroll-mt-36">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6">
-          {embedId2 ? (
-            <div className="relative rounded-xl overflow-hidden border border-red-900/30" style={{ paddingBottom: '56.25%', background: '#000' }}>
-              <iframe
-                src={`https://www.youtube.com/embed/${embedId2}`}
-                className="absolute inset-0 w-full h-full"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                title="Dark Cinema Trailer 2"
-              />
-            </div>
-          ) : (
-            <div className="flex items-center justify-center border border-red-900/20 rounded-xl bg-black/40" style={{ aspectRatio: '16/9' }}>
-              <p className="font-mono text-xs text-gray-600 tracking-widest">{t.noTrailer}</p>
-            </div>
-          )}
-        </div>
-      </section>
+      {(embedId2 || !hasAnyTrailer) && (
+        <section
+          ref={!hasMainTrailer ? sectionRef.trailer : undefined}
+          id={!hasMainTrailer ? 'trailer' : undefined}
+          className="pt-6 pb-10 bg-transparent border-b border-red-950/20 scroll-mt-36"
+        >
+          <div className="max-w-3xl mx-auto px-4 sm:px-6">
+            {embedId2 ? (
+              <div className="relative rounded-xl overflow-hidden border border-red-900/30" style={{ paddingBottom: '56.25%', background: '#000' }}>
+                <iframe
+                  src={`https://www.youtube.com/embed/${embedId2}`}
+                  className="absolute inset-0 w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  title="Dark Cinema Trailer 2"
+                />
+              </div>
+            ) : (
+              <div className="flex items-center justify-center border border-red-900/20 rounded-xl bg-black/40" style={{ aspectRatio: '16/9' }}>
+                <p className="font-mono text-xs text-gray-600 tracking-widest">{t.noTrailer}</p>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* ── About + Rules ─────────────────────────────────────── */}
       <section ref={sectionRef.about} id="about" className="max-w-4xl mx-auto px-4 sm:px-6 py-16 w-full scroll-mt-24 bg-transparent border-b border-red-950/20">

@@ -424,7 +424,7 @@ function SettingsTab() {
               value={youtubeUrl2}
               onChange={e => setYtUrl2(e.target.value)}/>
             <p className="font-mono text-[9px] text-bone-dark/40 mt-1 tracking-wider">
-              Второй трейлер отображается под первым. Оставьте пустым, если не нужен.
+              Второй трейлер отображается отдельным блоком после уровней. Оставьте пустым, если не нужен.
             </p>
           </div>
         )}
@@ -452,7 +452,7 @@ function SettingsTab() {
               value={qYtUrl2}
               onChange={e => setQYtUrl2(e.target.value)}/>
             <p className="font-mono text-[9px] text-bone-dark/40 mt-1 tracking-wider">
-              Второй трейлер отображается под первым. Оставьте пустым, если не нужен.
+              Второй трейлер отображается отдельным блоком после уровней. Оставьте пустым, если не нужен.
             </p>
           </div>
         )}

@@ -418,23 +418,6 @@ export default function QuestPageClient({ initialSettings, initialGrid, initialR
         <div className="absolute bottom-0 left-0 right-0 h-px z-[2]" style={{ background: 'linear-gradient(90deg,transparent,#8B0000,#dc143c,#8B0000,transparent)' }} />
       </section>
 
-      {/* ── Secondary Trailer ───────────────────────── */}
-      {embedId2 && (
-        <section className="pt-6 pb-10 bg-transparent border-b border-red-950/20 scroll-mt-36">
-          <div className="max-w-3xl mx-auto px-4 sm:px-6">
-            <div className="relative rounded-xl overflow-hidden border border-red-900/30" style={{ paddingBottom: '56.25%', background: '#000' }}>
-              <iframe
-                src={`https://www.youtube.com/embed/${embedId2}`}
-                className="absolute inset-0 w-full h-full"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                title="Dark Quest Trailer 2"
-              />
-            </div>
-          </div>
-        </section>
-      )}
-
       {/* ── Schedule (Reservation Grid) ──────────────────────── */}
       <section ref={sectionRef.schedule} id="schedule" className="max-w-7xl mx-auto px-3 sm:px-5 py-16 w-full scroll-mt-36 bg-transparent">
         <div className="flex flex-col items-center gap-3 mb-12 text-center">
@@ -600,6 +583,23 @@ export default function QuestPageClient({ initialSettings, initialGrid, initialR
           </div>
         </div>
       </section>
+
+      {/* ── Trailer ──────────────────────────────────────────── */}
+      {embedId2 && (
+        <section className="pt-6 pb-10 bg-transparent border-b border-red-950/20 scroll-mt-36">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6">
+            <div className="relative rounded-xl overflow-hidden border border-red-900/30" style={{ paddingBottom: '56.25%', background: '#000' }}>
+              <iframe
+                src={`https://www.youtube.com/embed/${embedId2}`}
+                className="absolute inset-0 w-full h-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                title="Dark Quest Trailer 2"
+              />
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ── About + Rules ────────────────────────────────────── */}
       <section ref={sectionRef.about} id="about" className="max-w-4xl mx-auto px-4 sm:px-6 py-16 w-full scroll-mt-24 bg-transparent border-b border-red-950/20">

@@ -165,7 +165,7 @@ export default function HomePageClient({ initialSettings, initialGrid, initialRe
     reservation: useRef<HTMLElement>(null),
     prices:      useRef<HTMLElement>(null),
     levels:      useRef<HTMLElement>(null),
-    trailer:     useRef<HTMLElement>(null),
+    trailer:     useRef<HTMLDivElement>(null),
     about:       useRef<HTMLElement>(null),
   }
 

@@ -1,4 +1,4 @@
-import { supabaseAdmin } from './client'
+import { supabaseAdmin } from '../src/lib/supabase/client'
 import type { AvailabilityGrid, RoomGridRow, SlotCell, Review, AdminUser } from '@/types'
 import bcrypt from 'bcryptjs'
 

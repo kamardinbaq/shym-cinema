@@ -205,7 +205,7 @@ export async function createReview(req: {
 
   return {
     id: Number(newReview.id),
-    name: newReview.name,
+    name: newReview.name || undefined,
     stars: newReview.stars,
     body: newReview.body,
     venue: newReview.venue,

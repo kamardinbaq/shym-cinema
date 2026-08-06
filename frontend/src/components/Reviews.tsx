@@ -23,7 +23,9 @@ function StarRating({ value, onChange }: { value: number; onChange: (n: number) 
         <button key={n} type="button"
           onMouseEnter={() => setHovered(n)} onMouseLeave={() => setHovered(0)}
           onClick={() => onChange(n)}
-          className="text-2xl transition-transform hover:scale-110 active:scale-95"
+          aria-label={String(n)}
+          aria-pressed={value === n}
+          className="rating-star text-2xl transition-transform hover:scale-110 active:scale-95"
           style={{ color: n <= (hovered || value) ? '#f59e0b' : 'rgba(200,180,160,0.2)' }}>
           ★
         </button>
@@ -35,7 +37,7 @@ function StarRating({ value, onChange }: { value: number; onChange: (n: number) 
 function ReviewCard({ review, onDelete, lang }: { review: Review; onDelete?: () => void; lang: Language }) {
   const t = T[lang]
   return (
-    <div className="border border-white/15 bg-[#0e0808] rounded-xl px-4 py-4 flex flex-col gap-2 hover:border-red-900/40 transition-colors">
+    <div className="review-card px-5 py-5 flex flex-col gap-3 transition-colors">
       <div className="flex items-start justify-between gap-2">
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -53,7 +55,7 @@ function ReviewCard({ review, onDelete, lang }: { review: Review; onDelete?: () 
             {new Date(review.createdAt).toLocaleDateString('ru-RU')}
           </span>
           {onDelete && (
-            <button onClick={onDelete} className="text-bone-dark/30 hover:text-red-500 transition-colors">
+            <button onClick={onDelete} aria-label={t.deleteConfirm} className="review-delete text-bone-dark/30 hover:text-red-500 transition-colors">
               <Trash2 className="w-3.5 h-3.5" />
             </button>
           )}
@@ -105,11 +107,11 @@ export default function Reviews({ lang, venue = 'CINEMA', initialReviews }: { la
   }
 
   return (
-    <div>
+    <div className="reviews-layout">
       {/* Review form */}
-      <div className="border border-red-900/50 bg-gradient-to-br from-red-950/50 to-[#1a051f]/60 rounded-xl p-5 mb-8">
+      <div className="review-form p-5 sm:p-7">
         <p className="font-mono text-[10px] text-red-800 tracking-widest mb-4">{t.leaveReview.toUpperCase()}</p>
-        <div className="space-y-3">
+        <div className="space-y-4">
           <StarRating value={stars} onChange={setStars} />
           <input className="horror-input text-sm" placeholder={t.name}
             value={name} onChange={e => setName(e.target.value)} maxLength={100} />
@@ -129,7 +131,7 @@ export default function Reviews({ lang, venue = 'CINEMA', initialReviews }: { la
       ) : reviews.length === 0 ? (
         <p className="text-center font-mono text-xs text-bone-dark/40 tracking-widest py-10">{t.noReviews}</p>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="review-grid grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {reviews.map(r => (
             <ReviewCard key={r.id} review={r} lang={lang}
               onDelete={isAuthenticated ? () => handleDelete(r.id) : undefined} />

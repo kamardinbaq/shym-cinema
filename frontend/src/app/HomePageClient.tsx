@@ -170,6 +170,7 @@ export default function HomePageClient({ initialSettings, initialGrid, initialRe
   }
 
   const t = T[lang]
+  const prefersReducedMotion = useReducedMotion()
 
   useEffect(() => {
     settingsApi.get().then(r => setSettings(r.data.data)).catch(() => {})
@@ -186,7 +187,8 @@ export default function HomePageClient({ initialSettings, initialGrid, initialRe
 
   useEffect(() => { fetchGrid() }, [fetchGrid])
 
-  // Silent background sync via Supabase Realtime
+  // Disable realtime sync temporarily to prevent DDOS on local dev server
+  /*
   useEffect(() => {
     if (!supabasePublic) return
     const channel = supabasePublic
@@ -201,6 +203,7 @@ export default function HomePageClient({ initialSettings, initialGrid, initialRe
       supabasePublic?.removeChannel(channel)
     }
   }, [fetchGrid])
+  */
 
   // Hand the nav off to the header the moment the hero copy slides under it.
   // The top rootMargin (~header height) makes the swap happen right at the edge,
@@ -208,9 +211,10 @@ export default function HomePageClient({ initialSettings, initialGrid, initialRe
   useEffect(() => {
     const el = heroNavRef.current
     if (!el) return
+    const headerOffset = document.querySelector('.site-header')?.getBoundingClientRect().height ?? 72
     const obs = new IntersectionObserver(
-      ([entry]) => setShowStickyNav(!entry.isIntersecting),
-      { rootMargin: '-72px 0px 0px 0px', threshold: 0 }
+      ([entry]) => setShowStickyNav(!entry.isIntersecting && entry.boundingClientRect.top < headerOffset),
+      { rootMargin: `-${headerOffset}px 0px 0px 0px`, threshold: 0 }
     )
     obs.observe(el)
     return () => obs.disconnect()
@@ -232,7 +236,7 @@ export default function HomePageClient({ initialSettings, initialGrid, initialRe
   }, [])
 
   const scrollTo = (ref: React.RefObject<HTMLElement>) => {
-    ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    ref.current?.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'start' })
   }
   const scrollToReservation = () => scrollTo(sectionRef.reservation)
 
@@ -263,13 +267,13 @@ export default function HomePageClient({ initialSettings, initialGrid, initialRe
 
 
   return (
-    <div className="min-h-screen flex flex-col text-gray-100 antialiased selection:bg-red-900 selection:text-white pb-16">
+    <div className="public-site cinema-site min-h-screen flex flex-col text-gray-100 antialiased selection:bg-red-900 selection:text-white pb-24">
 
       {/* Global Background Image & Overlay */}
       {heroBgUrl && (
         <>
           <div
-            className="fixed inset-0 pointer-events-none z-[0]"
+            className="site-background fixed inset-0 pointer-events-none z-[0]"
             style={{
               backgroundImage: `url("${heroBgUrl}")`,
               backgroundSize: 'cover',
@@ -279,10 +283,7 @@ export default function HomePageClient({ initialSettings, initialGrid, initialRe
             aria-hidden
           />
           <div
-            className="fixed inset-0 pointer-events-none z-[1]"
-            style={{
-              background: `linear-gradient(to bottom, rgba(5,5,5,0.75) 0%, rgba(5,5,5,0.55) 40%, rgba(5,5,5,0.95) 100%)`
-            }}
+            className="site-background-overlay fixed inset-0 pointer-events-none z-[1]"
             aria-hidden
           />
         </>
@@ -290,19 +291,19 @@ export default function HomePageClient({ initialSettings, initialGrid, initialRe
 
       {/* ── Header ────────────────────────────────────────────── */}
       <header
-        className="sticky top-0 z-40 border-b-2 border-red-600 pt-safe"
+        className="site-header sticky top-0 z-40 pt-safe"
         style={{
           background: '#000000',
         }}
       >
         {/* Row 1 — Logo + Lang + Admin */}
-        <div className="max-w-7xl mx-auto px-3 sm:px-5 h-16 sm:h-20 flex items-center justify-between gap-2">
+        <div className="site-header__bar max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between gap-4">
           {/* Logo */}
-          <div className="flex items-center gap-3 flex-shrink-0 h-full">
+          <div className="site-brand flex items-center gap-3 flex-shrink-0 h-full">
             <img
               src="/logo.webp"
               alt="SHYM CINEMA"
-              className="h-full w-auto object-contain"
+              className="site-logo h-full w-auto object-contain"
             />
             <div className="leading-none">
               <p className="font-mono text-[9px] sm:text-[10px] text-red-600 tracking-[0.4em] mt-0.5 uppercase">Shymkent</p>
@@ -312,7 +313,7 @@ export default function HomePageClient({ initialSettings, initialGrid, initialRe
           {/* Right: lang toggle */}
           <button
             onClick={() => setLang(l => l === 'ru' ? 'kz' : 'ru')}
-            className="relative flex items-center font-mono text-[11px] tracking-widest rounded border border-white/8 bg-black/60 hover:border-red-900/40 transition-colors overflow-hidden"
+            className="language-switch relative flex items-center font-mono text-[11px] tracking-widest overflow-hidden"
             style={{ minHeight: 36 }}
             title="Сменить язык / Тілді өзгерту"
             aria-label="Сменить язык / Тілді өзгерту"
@@ -327,8 +328,8 @@ export default function HomePageClient({ initialSettings, initialGrid, initialRe
 
         {/* Row 2 — Nav buttons stick here once hero nav scrolls out of view */}
         {showStickyNav && (
-          <div className="max-w-7xl mx-auto px-3 sm:px-5 pb-2.5 animate-slide-down">
-            <div className="flex items-stretch gap-2 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+          <div className="section-dock max-w-7xl mx-auto px-4 sm:px-6 pb-3 animate-slide-down">
+            <div className="section-dock__track flex items-stretch gap-2 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
               {NAV_SECTIONS.map(s => {
                 const active = activeSection === s.key
                 return (
@@ -336,7 +337,7 @@ export default function HomePageClient({ initialSettings, initialGrid, initialRe
                     key={s.key}
                     onClick={() => scrollTo(s.ref)}
                     aria-current={active ? 'true' : undefined}
-                    className={`flex-shrink-0 flex-1 min-w-[80px] text-center font-mono text-[10px] sm:text-xs tracking-widest uppercase px-3 py-2 rounded-md border transition-all duration-200 ${
+                    className={`section-dock__item flex-shrink-0 flex-1 min-w-[80px] text-center font-mono text-[10px] sm:text-xs tracking-widest uppercase px-3 py-2 transition-all duration-200 ${
                       active
                         ? 'border-red-600/70 bg-red-950/40 text-white shadow-[0_0_14px_rgba(185,28,28,0.25)]'
                         : 'border-white/5 bg-black/30 text-gray-400 hover:border-red-900/50 hover:text-white hover:bg-red-950/20'
@@ -352,32 +353,32 @@ export default function HomePageClient({ initialSettings, initialGrid, initialRe
       </header>
 
       {/* ── Hero ──────────────────────────────────────────────── */}
-      <section className="relative min-h-[88vh] flex items-center justify-center overflow-hidden border-b border-red-950/30">
-        <div className="relative z-[2] max-w-5xl mx-auto text-center px-4 py-8 flex flex-col items-center">
+      <section className="site-hero relative flex items-center overflow-hidden">
+        <div className="site-hero__inner relative z-[2] max-w-7xl w-full mx-auto px-4 sm:px-6">
           <motion.div 
-            initial={{ opacity: 0, y: 30 }}
+            initial={prefersReducedMotion ? false : { opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="flex flex-col items-center text-center w-full"
+            className="hero-layout w-full"
           >
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 border border-red-900/40 bg-red-950/20 backdrop-blur-md rounded-md mb-5 shadow-[inset_0_0_12px_rgba(185,28,28,0.1)]">
+            <div className="hero-eyebrow inline-flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse flex-shrink-0" />
               <p className="font-mono text-[10px] sm:text-xs text-red-400 tracking-[0.25em] uppercase">{t.heroBadge}</p>
             </div>
 
             {/* Big neon text */}
-            <h1 className="drip-text text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold leading-[0.95] tracking-tight mb-5 uppercase select-none text-center">
+            <h1 className="hero-title drip-text font-extrabold uppercase select-none">
               {t.heroText}
             </h1>
 
-            <p className="font-sans text-base sm:text-lg text-gray-400 max-w-xl mx-auto leading-relaxed mb-8">
+            <p className="hero-summary font-sans text-base sm:text-lg text-gray-400 leading-relaxed">
               {t.heroSub}
             </p>
 
-            <div ref={sectionRef.trailer} id="trailer" className="w-full max-w-3xl mx-auto mb-8 scroll-mt-36">
+            <div ref={sectionRef.trailer} id="trailer" className="hero-video hero-video--primary w-full scroll-mt-36">
               {embedId ? (
-                <div className="relative rounded-xl overflow-hidden border border-red-900/30" style={{ paddingBottom: '56.25%', background: '#000' }}>
+                <div className="video-frame relative overflow-hidden" style={{ paddingBottom: '56.25%', background: '#000' }}>
                   <iframe
                     src={`https://www.youtube.com/embed/${embedId}`}
                     className="absolute inset-0 w-full h-full"
@@ -387,18 +388,18 @@ export default function HomePageClient({ initialSettings, initialGrid, initialRe
                   />
                 </div>
               ) : (
-                <div className="flex items-center justify-center border border-red-900/20 rounded-xl bg-black/40" style={{ aspectRatio: '16/9' }}>
+                <div className="video-frame flex items-center justify-center" style={{ aspectRatio: '16/9' }}>
                   <p className="font-mono text-xs text-gray-600 tracking-widest">{t.noTrailer}</p>
                 </div>
               )}
             </div>
 
             {embedId3 && (
-              <div className="w-full max-w-xs mx-auto mb-8">
-                <h2 className="drip-text text-3xl sm:text-4xl font-extrabold text-center mb-6 tracking-widest uppercase block">
+              <div className="hero-reaction w-full max-w-xs">
+                <h2 className="reaction-title drip-text text-3xl sm:text-4xl font-extrabold tracking-widest uppercase block">
                   ЭМОЦИИ ПОСЛЕ СЕАНСА
                 </h2>
-                <div className="relative rounded-xl overflow-hidden border border-red-900/30" style={{ paddingBottom: '177.78%', background: '#000' }}>
+                <div className="video-frame video-frame--portrait relative overflow-hidden" style={{ paddingBottom: '177.78%', background: '#000' }}>
                   <iframe
                     src={`https://www.youtube.com/embed/${embedId3}`}
                     className="absolute inset-0 w-full h-full"
@@ -411,17 +412,17 @@ export default function HomePageClient({ initialSettings, initialGrid, initialRe
             )}
 
             {/* Nav buttons — move to header once scrolled past */}
-            <div ref={heroNavRef} className="flex flex-col items-center gap-3 mb-8 w-full">
+            <div ref={heroNavRef} className="hero-actions flex flex-col items-start gap-4 w-full">
               {/* Big book button */}
               <button
                 onClick={() => scrollTo(sectionRef.reservation)}
-                className="btn-hero-blood w-full max-w-xs font-mono font-black tracking-[0.25em] uppercase px-10 py-4 text-base sm:text-lg mb-2"
+                className="btn-hero-blood w-full max-w-sm font-mono font-black tracking-[0.18em] uppercase px-8 py-4 text-sm sm:text-base"
               >
                 {t.nav[0]}
               </button>
 
               {/* Other 4 nav buttons */}
-              <div className="flex flex-wrap gap-2 justify-center">
+              <div className="hero-link-row flex flex-wrap gap-x-6 gap-y-3">
                 {NAV_SECTIONS.slice(1).map(s => {
                   const active = activeSection === s.key
                   return (
@@ -429,7 +430,7 @@ export default function HomePageClient({ initialSettings, initialGrid, initialRe
                       key={s.key}
                       onClick={() => scrollTo(s.ref)}
                       aria-current={active ? 'true' : undefined}
-                      className={`group relative px-5 py-2.5 border font-mono text-[11px] sm:text-xs tracking-widest uppercase rounded-md transition-all duration-200 overflow-hidden ${
+                      className={`hero-text-link group relative font-mono text-[11px] sm:text-xs tracking-widest uppercase transition-all duration-200 ${
                         active
                           ? 'border-red-600 bg-red-900/60 text-white shadow-[0_0_16px_rgba(185,28,28,0.4)]'
                           : 'border-red-700/70 bg-red-950/50 text-red-200 hover:border-red-600 hover:text-white hover:bg-red-900/60 hover:shadow-[0_0_16px_rgba(185,28,28,0.4)]'
@@ -446,13 +447,13 @@ export default function HomePageClient({ initialSettings, initialGrid, initialRe
         </div>
 
         {/* Bottom gradient line */}
-        <div className="absolute bottom-0 left-0 right-0 h-px z-[2]" style={{ background: 'linear-gradient(90deg,transparent,#8B0000,#dc143c,#8B0000,transparent)' }} />
+        <div className="hero-rule absolute bottom-0 left-0 right-0 z-[2]" />
       </section>
 
       {/* ── Reservation ───────────────────────────────────────── */}
-      <section ref={sectionRef.reservation} id="reservation" className="max-w-7xl mx-auto px-3 sm:px-5 py-16 w-full scroll-mt-36 bg-transparent">
-        <div className="flex flex-col items-center gap-3 mb-12 text-center">
-          <div className="flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/5 rounded-full font-mono text-[10px] tracking-wider uppercase text-gray-400">
+      <section ref={sectionRef.reservation} id="reservation" className="booking-section site-section max-w-7xl mx-auto px-4 sm:px-6 w-full scroll-mt-36">
+        <div className="section-intro flex flex-col gap-3">
+          <div className="section-kicker flex items-center gap-2 font-mono text-[10px] tracking-wider uppercase text-gray-400">
             <Calendar className="w-3.5 h-3.5 text-red-600" />
             {lang === 'kz' ? 'Онлайн сеанс брондау' : 'Онлайн бронирование сеансов'}
           </div>
@@ -462,9 +463,9 @@ export default function HomePageClient({ initialSettings, initialGrid, initialRe
         </div>
 
         {/* Date picker */}
-        <div className="mb-8 w-full max-w-2xl mx-auto bg-[#0a0a0a] border border-white/5 p-4 rounded-xl shadow-2xl">
+        <div className="date-panel mb-10 w-full max-w-3xl p-3 sm:p-4">
           {/* Quick chips */}
-          <div className="flex items-stretch gap-2 mb-4 overflow-x-auto pb-2" style={{ scrollbarWidth: 'none' }}>
+          <div className="quick-date-track flex items-stretch gap-2 mb-4 overflow-x-auto pb-2" style={{ scrollbarWidth: 'none' }}>
             {quickDates.map(({ date, short, num }) => {
               const active = isSameDay(date, selectedDate)
               return (
@@ -472,7 +473,7 @@ export default function HomePageClient({ initialSettings, initialGrid, initialRe
                   key={short + num}
                   onClick={() => setSelDate(date)}
                   aria-pressed={active}
-                  className={`flex-shrink-0 flex-1 min-w-[78px] px-3 py-2.5 rounded-lg border transition-all text-center ${
+                  className={`date-chip flex-shrink-0 flex-1 min-w-[78px] px-3 py-2.5 transition-all text-center ${
                     active
                       ? 'border-red-600 bg-red-950/30 shadow-[0_0_20px_rgba(220,20,60,0.2)]'
                       : 'border-white/5 bg-black hover:border-red-900/40 hover:bg-red-950/5'
@@ -489,14 +490,14 @@ export default function HomePageClient({ initialSettings, initialGrid, initialRe
           <div className="flex items-center gap-2 justify-center">
             <button
               onClick={() => setSelDate(d => subDays(d, 1))}
-              className="border border-white/5 bg-black hover:border-red-900/40 hover:text-white transition-all rounded-lg flex items-center justify-center text-gray-400"
+              className="date-arrow flex items-center justify-center text-gray-400"
               style={{ minWidth: 44, minHeight: 44 }}
               aria-label={lang === 'kz' ? 'Алдыңғы күн' : 'Предыдущий день'}
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
             <div
-              className="flex-1 text-center py-2.5 border border-red-900/30 bg-gradient-to-b from-red-950/10 to-transparent rounded-lg"
+              className="date-current flex-1 text-center py-2.5"
               style={{ maxWidth: 320 }}
             >
               <p className="font-mono text-xs sm:text-sm tracking-wider font-bold text-gray-200 uppercase">
@@ -505,7 +506,7 @@ export default function HomePageClient({ initialSettings, initialGrid, initialRe
             </div>
             <button
               onClick={() => setSelDate(d => addDays(d, 1))}
-              className="border border-white/5 bg-black hover:border-red-900/40 hover:text-white transition-all rounded-lg flex items-center justify-center text-gray-400"
+              className="date-arrow flex items-center justify-center text-gray-400"
               style={{ minWidth: 44, minHeight: 44 }}
               aria-label={lang === 'kz' ? 'Келесі күн' : 'Следующий день'}
             >
@@ -525,7 +526,7 @@ export default function HomePageClient({ initialSettings, initialGrid, initialRe
         </div>
 
         {/* Legend */}
-        <div className="grid grid-cols-3 gap-3 justify-items-center mt-10 pt-6" style={{ borderTop: '1px solid rgba(139,0,0,0.2)' }}>
+        <div className="booking-legend grid grid-cols-3 gap-3 justify-items-center mt-10 pt-6">
           <LegendDot color="bg-green-900/40 border-green-600/50 text-green-400"  label={t.legendFree} />
           <LegendDot color="bg-red-900/40 border-red-600/50 text-red-400"        label={t.legendBusy} />
           <LegendDot color="bg-neutral-900/60 border-neutral-700 text-neutral-500 border-dashed" label={t.legendPast} />
@@ -533,46 +534,46 @@ export default function HomePageClient({ initialSettings, initialGrid, initialRe
       </section>
 
       {/* ── Prices ─────────────────────────────── */}
-      <section ref={sectionRef.prices} id="prices" className="pt-10 pb-12 bg-transparent border-b border-red-950/20 scroll-mt-24">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-8 max-w-2xl mx-auto">
+      <section ref={sectionRef.prices} id="prices" className="price-section site-section scroll-mt-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="section-intro mb-10 max-w-2xl">
             <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight uppercase mb-2 text-white">
               {t.pricesTitle}
             </h2>
             <p className="text-gray-400 text-sm sm:text-base">{t.pricesSub}</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6 max-w-3xl mx-auto">
+          <div className="price-notes grid grid-cols-1 md:grid-cols-2 gap-3 mb-8 max-w-4xl">
             <motion.div 
-              initial={{ opacity: 0, x: -20 }}
+              initial={prefersReducedMotion ? false : { opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              className="p-3 rounded-xl bg-amber-950/10 border border-amber-800/30 flex items-center gap-3"
+              className="notice-panel p-4 flex items-center gap-3"
             >
               <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
               <p className="font-sans text-xs sm:text-sm text-amber-200/90 leading-snug">{t.priceNote}</p>
             </motion.div>
             
             <motion.div 
-              initial={{ opacity: 0, x: 20 }}
+              initial={prefersReducedMotion ? false : { opacity: 0, x: 20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              className="p-3 rounded-xl bg-red-950/20 border border-red-800/30 flex items-center gap-3"
+              className="notice-panel notice-panel--accent p-4 flex items-center gap-3"
             >
               <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
               <p className="font-sans text-xs sm:text-sm text-red-200/90 leading-snug font-semibold">{t.priceBirthday}</p>
             </motion.div>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 max-w-5xl mx-auto">
+          <div className="price-grid grid grid-cols-2 sm:grid-cols-3">
             {t.prices.map((p, i) => (
               <motion.div
                 key={p.count}
-                initial={{ opacity: 0, y: 15 }}
+                initial={prefersReducedMotion ? false : { opacity: 0, y: 15 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.5 }}
                 transition={{ duration: 0.4, delay: i * 0.05 }}
-                className="flex flex-col items-center justify-center gap-1.5 p-3 sm:p-4 rounded-xl border border-white/5 bg-black/40 hover:bg-red-950/20 hover:border-red-900/50 transition-all group"
+                className="price-card flex flex-col items-start justify-center gap-2 p-4 sm:p-5 transition-all group"
               >
                 <div className="flex items-baseline gap-1">
                   <span className="font-display text-2xl sm:text-3xl font-black text-white group-hover:text-red-400 transition-colors">{p.count}</span>
@@ -587,20 +588,20 @@ export default function HomePageClient({ initialSettings, initialGrid, initialRe
       </section>
 
       {/* ── Levels (card grid) ────────────────────────────────── */}
-      <section ref={sectionRef.levels} id="levels" className="pt-6 pb-8 bg-transparent border-b border-red-950/20 scroll-mt-36">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-12 max-w-2xl mx-auto">
+      <section ref={sectionRef.levels} id="levels" className="levels-section site-section scroll-mt-36">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="section-intro mb-12 max-w-2xl">
             <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight uppercase text-white mb-4">
               {t.levelsTitle}
             </h2>
             <p className="text-gray-400 text-sm sm:text-base">{t.levelsSub}</p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-red-950/20 rounded-xl overflow-hidden border border-red-950/20">
+          <div className="level-list grid grid-cols-1 md:grid-cols-2">
             {t.levels.map((lvl) => (
               <div
                 key={lvl.level}
-                className={`flex flex-col gap-1.5 px-7 py-5 bg-[#070202] ${lvl.isMax ? 'border-t-2 border-red-600' : 'border-t-2 border-transparent'}`}
+                className={`level-card flex flex-col gap-3 px-6 py-7 ${lvl.isMax ? 'level-card--max' : ''}`}
               >
                 <span className={`font-mono text-xl sm:text-2xl tracking-[0.15em] font-black uppercase ${lvl.isMax ? 'text-red-500' : 'text-red-700'}`}>
                   LEVEL {lvl.level}
@@ -618,10 +619,10 @@ export default function HomePageClient({ initialSettings, initialGrid, initialRe
       {/* ── Trailer ──────────────────────────────────────────── */}
       {embedId2 && (
         <section
-          className="pt-6 pb-10 bg-transparent border-b border-red-950/20 scroll-mt-36"
+          className="secondary-video-section site-section scroll-mt-36"
         >
           <div className="max-w-3xl mx-auto px-4 sm:px-6">
-            <div className="relative rounded-xl overflow-hidden border border-red-900/30" style={{ paddingBottom: '56.25%', background: '#000' }}>
+            <div className="video-frame relative overflow-hidden" style={{ paddingBottom: '56.25%', background: '#000' }}>
               <iframe
                 src={`https://www.youtube.com/embed/${embedId2}`}
                 className="absolute inset-0 w-full h-full"
@@ -635,15 +636,15 @@ export default function HomePageClient({ initialSettings, initialGrid, initialRe
       )}
 
       {/* ── About + Rules ─────────────────────────────────────── */}
-      <section ref={sectionRef.about} id="about" className="max-w-4xl mx-auto px-4 sm:px-6 py-16 w-full scroll-mt-24 bg-transparent border-b border-red-950/20">
-        <div className="text-center mb-10">
+      <section ref={sectionRef.about} id="about" className="about-section site-section max-w-7xl mx-auto px-4 sm:px-6 w-full scroll-mt-24">
+        <div className="about-heading section-intro mb-10">
           <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight uppercase text-white">
             {t.aboutTitle}
           </h2>
         </div>
-        <div className="border border-red-900/25 rounded-xl bg-black/40 p-6 sm:p-8 mb-12 shadow-2xl">
+        <div className="about-panel p-6 sm:p-9">
           <p className="font-sans text-base sm:text-lg text-gray-300 leading-relaxed whitespace-pre-line mb-6">{t.aboutIntro}</p>
-          <div className="border border-red-900/25 rounded-xl overflow-hidden bg-black/40">
+          <div className="feature-list overflow-hidden">
             {t.aboutFeatures.map((feature, i) => (
               <div
                 key={i}
@@ -657,12 +658,12 @@ export default function HomePageClient({ initialSettings, initialGrid, initialRe
           </div>
         </div>
 
-        <div className="text-center mb-8">
+        <div className="rules-heading section-intro mb-8">
           <h3 className="text-2xl sm:text-3xl font-bold tracking-tight uppercase text-white">
             {t.rulesTitle}
           </h3>
         </div>
-        <div className="border border-red-900/25 rounded-xl overflow-hidden bg-black/40">
+        <div className="rules-list overflow-hidden">
           {t.rules.map((rule, i) => (
             <div
               key={i}
@@ -677,8 +678,8 @@ export default function HomePageClient({ initialSettings, initialGrid, initialRe
       </section>
 
       {/* ── Reviews ───────────────────────────────────────────── */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-24 w-full bg-transparent">
-        <div className="text-center mb-12">
+      <section className="reviews-section site-section max-w-7xl mx-auto px-4 sm:px-6 w-full">
+        <div className="section-intro mb-12">
           <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight uppercase text-white">
             {t.reviewsTitle}
           </h2>
@@ -687,7 +688,7 @@ export default function HomePageClient({ initialSettings, initialGrid, initialRe
       </section>
 
       {/* ── Footer ────────────────────────────────────────────── */}
-      <footer className="py-12 px-4 text-center border-t border-red-950/40 bg-[#030303]/85">
+      <footer className="site-footer py-14 px-4 text-center">
         <div className="flex items-center justify-center gap-2 mb-6 opacity-60">
           <Moon className="w-3.5 h-3.5 text-red-800" />
           <p className="font-mono text-xs tracking-[0.3em] text-red-700 font-bold uppercase">© DARK CINEMA · SHYMKENT</p>
@@ -705,7 +706,7 @@ export default function HomePageClient({ initialSettings, initialGrid, initialRe
               href={l.href}
               target="_blank"
               rel="noopener noreferrer"
-              className="font-mono text-xs tracking-widest uppercase px-5 py-3 rounded border border-white/5 bg-black text-gray-400 hover:border-red-800/60 hover:text-white hover:bg-red-950/10 transition-all duration-200"
+              className="footer-link font-mono text-xs tracking-widest uppercase px-5 py-3 text-gray-400 transition-all duration-200"
             >
               {l.name}
             </a>
@@ -722,7 +723,7 @@ export default function HomePageClient({ initialSettings, initialGrid, initialRe
 
 function LegendDot({ color, label }: { color: string; label: string }) {
   return (
-    <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-black border border-white/5">
+    <div className="legend-item flex items-center gap-2 px-3 py-1.5">
       <div className={`w-3 h-3 rounded-sm flex-shrink-0 border ${color}`} />
       <span className="font-mono text-[11px] tracking-widest font-bold text-gray-400">{label}</span>
     </div>
@@ -733,7 +734,7 @@ function GridSkeleton() {
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 animate-pulse" aria-busy="true">
       {[0, 1, 2].map(i => (
-        <div key={i} className="bg-[#0a0a0a] border border-white/5 rounded-xl p-5 space-y-4">
+        <div key={i} className="skeleton-panel p-5 space-y-4">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-lg bg-white/5" />
             <div className="flex-1 space-y-2">
@@ -752,7 +753,7 @@ function GridSkeleton() {
 
 function EmptyState({ t }: { t: typeof T['ru'] }) {
   return (
-    <div className="flex flex-col items-center justify-center py-20 gap-4 text-center border border-dashed border-red-950/30 rounded-xl bg-black/40">
+    <div className="empty-panel flex flex-col items-center justify-center py-20 gap-4 text-center">
       <div className="drip-text text-5xl animate-pulse-soft">☠</div>
       <p className="font-mono text-sm text-white tracking-widest uppercase font-bold">{t.noSlots}</p>
       <p className="font-sans text-xs text-gray-500 max-w-xs mx-auto leading-relaxed">{t.noSlotsSub}</p>

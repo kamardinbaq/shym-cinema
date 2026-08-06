@@ -31,7 +31,7 @@ function buildWaUrl(number: string, room: string, date: string, start: string, e
 
 export default function ReservationGrid({ grid, lang, whatsappNumber, onAdminToggle }: Props) {
   return (
-    <div className="grid gap-5 sm:gap-6 lg:grid-cols-2 xl:grid-cols-3">
+    <div className="reservation-grid grid gap-5 sm:gap-6 lg:grid-cols-2 xl:grid-cols-3">
       {grid.rooms.map((room, i) => (
         <div key={room.roomId} className="animate-float-up" style={{ animationDelay: `${i * 80}ms` }}>
           <RoomCard room={room} date={grid.date} lang={lang}
@@ -50,8 +50,8 @@ function RoomCard({ room, date, lang, whatsappNumber, onAdminToggle }:
   const labels = STATUS_LABEL[lang]
   return (
     <article className={`room-card ${meta.themeClass} h-full flex flex-col`}>
-      <header className="px-4 pt-4 pb-3 flex items-center gap-3 border-b border-white/5">
-        <div className="flex items-center justify-center w-11 h-11 rounded-lg flex-shrink-0"
+      <header className="room-card__header px-5 pt-5 pb-4 flex items-center gap-3">
+        <div className="room-card__icon flex items-center justify-center w-11 h-11 flex-shrink-0"
           style={{ background: 'var(--theme-accent-dim)', border: '1px solid var(--theme-accent)' }}>
           <Icon className="w-5 h-5" style={{ color: 'var(--theme-accent)' }} />
         </div>
@@ -62,14 +62,14 @@ function RoomCard({ room, date, lang, whatsappNumber, onAdminToggle }:
           <p className="font-body text-[11px] text-bone-dark/65 mt-0.5 truncate">{meta.tagline[lang]}</p>
         </div>
       </header>
-      <div className="px-4 py-2.5 flex items-center justify-between text-[11px] font-mono text-bone-dark/70 tracking-wider border-b border-white/5">
+      <div className="room-card__meta px-5 py-3 flex items-center justify-between text-[11px] font-mono text-bone-dark/70 tracking-wider">
         <span>{room.minPeople}–{room.capacity} {lang === 'kz' ? 'адам' : 'чел.'}</span>
         <span className="flex items-center gap-1.5">
           <span className={`w-1.5 h-1.5 rounded-full ${avail > 0 ? 'bg-green-400 animate-pulse-soft' : 'bg-red-800'}`} />
           {avail > 0 ? `${avail} ${labels.AVAILABLE.toLowerCase()}` : (lang === 'kz' ? 'бос жоқ' : 'нет мест')}
         </span>
       </div>
-      <div className="p-3 grid grid-cols-2 gap-2.5 flex-1">
+      <div className="room-card__slots p-3 grid grid-cols-2 gap-2.5 flex-1">
         {room.slots.map(slot => (
           <SlotButton key={slot.timeSlotId} slot={slot} room={room} date={date}
             lang={lang} labels={labels} whatsappNumber={whatsappNumber} onAdminToggle={onAdminToggle} />
@@ -107,7 +107,7 @@ function SlotButton({ slot, room, date, lang, labels, whatsappNumber, onAdminTog
     <button
       disabled={!clickable}
       onClick={handleClick}
-      className={`${stateClass} relative rounded-xl overflow-hidden transition-all duration-200 min-h-[96px] px-2 py-3 flex flex-col items-center justify-center gap-1 ${clickable ? 'cursor-pointer' : 'cursor-not-allowed'}`}
+      className={`${stateClass} slot-button relative overflow-hidden transition-all duration-200 min-h-[104px] px-2 py-3 flex flex-col items-center justify-center gap-1 ${clickable ? 'cursor-pointer' : 'cursor-not-allowed'}`}
       style={{ touchAction: 'manipulation' }}
     >
       {isNextDay && (
@@ -120,7 +120,7 @@ function SlotButton({ slot, room, date, lang, labels, whatsappNumber, onAdminTog
       <div className="flex flex-col items-center leading-none gap-0.5">
         <span className="font-mono text-[18px] font-bold tracking-wide text-white">{slot.startTime}</span>
         <span className="font-mono text-[12px] font-bold tracking-wide text-white">до</span>
-        <span className="font-mono text-[12px] font-bold tracking-wide text-gray">{slot.endTime}</span>
+        <span className="font-mono text-[12px] font-bold tracking-wide text-gray-400">{slot.endTime}</span>
       </div>
 
       {/* Status badge */}

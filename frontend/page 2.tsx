@@ -9,8 +9,6 @@ import ReservationGrid from '@/components/ReservationGrid'
 import Reviews from '@/components/Reviews'
 import BottomNav from '@/components/BottomNav'
 import { Moon, Calendar, ChevronLeft, ChevronRight } from 'lucide-react'
-import { motion, useReducedMotion } from 'motion/react'
-import { supabasePublic } from '@/lib/supabase/client'
 
 // ── Translations ──────────────────────────────────────────────
 const T = {
@@ -31,16 +29,7 @@ const T = {
     levelsSub: 'Каждый уровень полностью меняет ваше восприятие. Выберите формат, который выдержит ваша команда.',
     aboutTitle: 'О НАС',
     rulesTitle: 'ПРАВИЛА',
-    aboutIntro: 'Ты знаешь, что такое хоррор-квест. Но забудь про банальные «БУ!» и бесконечную темноту. У нас всё иначе:',
-    aboutFeatures: [
-      'Эмоции от страха до смеха',
-      'Живые персонажи, с которыми придётся общаться',
-      'Тайны, которые откроются только тем, кто сумеет расположить ум к себе',
-      'Погружение начинается с первой минуты, и ты забудешь, что это игра',
-      'Тёмные коридоры, реальные актёры, неожиданные повороты сюжета и настоящий адреналин!',
-      'Здесь тебе предстоит решать головоломки, искать выход и бороться с собственным страхом',
-      'Ты не просто зритель - ты главный герой'
-    ],
+    description: 'Ты знаешь, что такое хоррор-квест. Но забудь про банальные «БУ!» и бесконечную темноту. У нас всё иначе: Эмоции от страха до смеха. Живые персонажи, с которыми придётся общаться. Тайны, которые откроются только тем, кто сумеет расположить ум к себе. Погружение начинается с первой минуты, и ты забудешь, что это игра готов ли проверить свои нервы на прочность? Тёмные коридоры, реальные актёры, неожиданные повороты сюжета и настоящий адреналин! Здесь тебе предстоит решать головоломки, искать выход и бороться с собственным страхом. Ты не просто зритель - ты главный герой.',
     rules: [
       'Опоздание более 10 минут — сеанс аннулируется без возврата',
       'Алкоголь и наркотики строго запрещены',
@@ -88,16 +77,7 @@ const T = {
     levelsSub: 'Әр деңгей сіздің қабылдауыңызды толықтай өзгертеді. Командаңыз шыдай алатын форматты таңдаңыз.',
     aboutTitle: 'БІЗ ТУРАЛЫ',
     rulesTitle: 'ЕРЕЖЕЛЕР',
-    aboutIntro: 'Сіз қорқынышты ізденістің не екенін білесіз. Бірақ банальные туралы ұмытыңыз " БУ!"және шексіз қараңғылық. Бізде бәрі басқаша:',
-    aboutFeatures: [
-      'Қорқыныштан күлкіге дейінгі эмоциялар',
-      'Сөйлесуге тура келетін тірі кейіпкерлер',
-      'Ақыл-ойды өзіне қарай реттей алатындарға ғана ашылатын құпиялар',
-      'Сүңгу бірінші минуттан басталады және сіз бұл ойын екенін ұмытып кетесіз',
-      'Қараңғы дәліздер, нақты актерлер, күтпеген сюжеттік бұрылыстар және нағыз адреналин!',
-      'Мұнда сіз басқатырғыштарды шешіп, шығудың жолын іздеп, өз қорқынышыңызбен күресуіңіз керек',
-      'Сіз жай көрермен емессіз-сіз басты кейіпкерсіз'
-    ],
+    description: 'Сіз қорқынышты ізденістің не екенін білесіз. Бірақ банальные туралы ұмытыңыз " БУ!"және шексіз қараңғылық. Бізде бәрі басқаша: қорқыныштан күлкіге дейінгі эмоциялар. Сөйлесуге тура келетін тірі кейіпкерлер. Ақыл-ойды өзіне қарай реттей алатындарға ғана ашылатын құпиялар. Сүңгу бірінші минуттан басталады және сіз бұл ойын екенін ұмытып кетесіз нервтеріңіздің беріктігін тексеруге дайынсыз ба? Қараңғы дәліздер, нақты актерлер, күтпеген сюжеттік бұрылыстар және нағыз адреналин! Мұнда сіз басқатырғыштарды шешіп, шығудың жолын іздеп, өз қорқынышыңызбен күресуіңіз керек. Сіз жай көрермен емессіз-сіз басты кейіпкерсіз.',
     rules: [
       '10 минуттан астам кешігу — сеанс қайтарусыз жойылады',
       'Алкоголь және есірткі заттары қатаң тыйым салынады',
@@ -137,20 +117,11 @@ function resolveHeroBg(val?: string) {
   return trimmed
 }
 
-function getYouTubeId(url?: string) {
-  if (!url) return ''
-  const trimmed = url.trim()
-  if (!trimmed) return ''
-  if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) return trimmed
-  const m = trimmed.match(/(?:youtu\.be\/|youtube\.com\/(?:.*v=|embed\/|shorts\/|live\/))([^?&/]+)/)
-  return m ? m[1] : ''
-}
-
-export default function QuestPageClient({ initialSettings, initialGrid, initialReviews }: { initialSettings: SiteSettings, initialGrid: AvailabilityGrid | null, initialReviews: any[] }) {
+export default function QuestPage() {
   const [lang, setLang]           = useState<Language>('ru')
-  const [settings, setSettings]   = useState<SiteSettings>(initialSettings)
-  const [grid, setGrid]           = useState<AvailabilityGrid | null>(initialGrid)
-  const [loading, setLoading]     = useState(initialGrid === null)
+  const [settings, setSettings]   = useState<SiteSettings>({ whatsapp_number: '87714278825', youtube_url: '', hero_bg: '' })
+  const [grid, setGrid]           = useState<AvailabilityGrid | null>(null)
+  const [loading, setLoading]     = useState(true)
   const [selectedDate, setSelDate] = useState(new Date())
   const [showStickyNav, setShowStickyNav] = useState(false)
   const [activeSection, setActiveSection] = useState('')
@@ -165,7 +136,6 @@ export default function QuestPageClient({ initialSettings, initialGrid, initialR
   }
 
   const t = T[lang]
-  const prefersReducedMotion = useReducedMotion()
 
   useEffect(() => {
     settingsApi.get().then(r => setSettings(r.data.data)).catch(() => {})
@@ -182,31 +152,26 @@ export default function QuestPageClient({ initialSettings, initialGrid, initialR
 
   useEffect(() => { fetchGrid() }, [fetchGrid])
 
-  // Disable realtime sync temporarily to prevent DDOS on local dev server
-  /*
   useEffect(() => {
-    if (!supabasePublic) return
-    const channel = supabasePublic
-      .channel('public:slot_reservations')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'slot_reservations' },
-        () => fetchGrid()
-      )
-      .subscribe()
-    return () => {
-      supabasePublic?.removeChannel(channel)
+    const sig = (g: AvailabilityGrid) =>
+      g.rooms.flatMap(r => r.slots.map(s => `${s.timeSlotId}:${s.status}`)).join(',')
+    const poll = async () => {
+      try {
+        const res = await questApi.getGrid(format(selectedDate, 'yyyy-MM-dd'))
+        const inc = res.data.data
+        setGrid(cur => (!cur || sig(cur) !== sig(inc)) ? inc : cur)
+      } catch {}
     }
-  }, [fetchGrid])
-  */
+    const id = setInterval(poll, 8000)
+    return () => clearInterval(id)
+  }, [selectedDate])
 
   useEffect(() => {
     const el = heroNavRef.current
     if (!el) return
-    const headerOffset = document.querySelector('.site-header')?.getBoundingClientRect().height ?? 72
     const obs = new IntersectionObserver(
-      ([entry]) => setShowStickyNav(!entry.isIntersecting && entry.boundingClientRect.top < headerOffset),
-      { rootMargin: `-${headerOffset}px 0px 0px 0px`, threshold: 0 }
+      ([entry]) => setShowStickyNav(!entry.isIntersecting),
+      { rootMargin: '-72px 0px 0px 0px', threshold: 0 }
     )
     obs.observe(el)
     return () => obs.disconnect()
@@ -227,12 +192,18 @@ export default function QuestPageClient({ initialSettings, initialGrid, initialR
   }, [])
 
   const scrollTo = (ref: React.RefObject<HTMLElement>) =>
-    ref.current?.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'start' })
+    ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 
   const heroBgUrl = resolveHeroBg(settings.quest_hero_bg)
-  const embedId = getYouTubeId(settings.quest_youtube_url)
-  const embedId2 = getYouTubeId(settings.quest_youtube_url_2)
-  const embedId3 = getYouTubeId(settings.quest_youtube_url_3)
+  const questYtUrl = settings.quest_youtube_url || ''
+  const embedId = (() => {
+    const m = questYtUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([^?&]+)/)
+    return m ? m[1] : ''
+  })()
+  const embedId3 = (() => {
+    const m = (settings.quest_youtube_url_3 || '').match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([^?&]+)/)
+    return m ? m[1] : ''
+  })()
 
   const quickDates = Array.from({ length: 5 }).map((_, i) => {
     const today = startOfDay(new Date())
@@ -253,36 +224,16 @@ export default function QuestPageClient({ initialSettings, initialGrid, initialR
   ]
 
   return (
-    <div className="public-site quest-site min-h-screen flex flex-col text-gray-100 antialiased selection:bg-red-900 selection:text-white pb-24">
-
-      {/* Global Background Image & Overlay */}
-      {heroBgUrl && (
-        <>
-          <div
-            className="site-background fixed inset-0 pointer-events-none z-[0]"
-            style={{
-              backgroundImage: `url("${heroBgUrl}")`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center center',
-              backgroundRepeat: 'no-repeat',
-            }}
-            aria-hidden
-          />
-          <div
-            className="site-background-overlay fixed inset-0 pointer-events-none z-[1]"
-            aria-hidden
-          />
-        </>
-      )}
+    <div className="min-h-screen flex flex-col text-gray-100 antialiased selection:bg-red-900 selection:text-white pb-16">
 
       {/* ── Header ───────────────────────────────────────────── */}
       <header
-        className="site-header sticky top-0 z-40 pt-safe"
+        className="sticky top-0 z-40 border-b-2 border-red-600 pt-safe"
         style={{ background: '#000000' }}
       >
-        <div className="site-header__bar max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between gap-4">
-          <div className="site-brand flex items-center gap-3 flex-shrink-0 h-full">
-            <img src="/logo-quest.webp" alt="DARK QUEST" className="site-logo h-full w-auto object-contain" />
+        <div className="max-w-7xl mx-auto px-3 sm:px-5 h-16 sm:h-20 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-3 flex-shrink-0 h-full">
+            <img src="/logo-quest.png" alt="DARK QUEST" className="h-full w-auto object-contain" />
             <div className="leading-none">
               <p className="font-mono text-[9px] sm:text-[10px] text-red-600 tracking-[0.4em] mt-0.5 uppercase">Shymkent</p>
             </div>
@@ -290,7 +241,7 @@ export default function QuestPageClient({ initialSettings, initialGrid, initialR
 
           <button
             onClick={() => setLang(l => l === 'ru' ? 'kz' : 'ru')}
-            className="language-switch relative flex items-center font-mono text-[11px] tracking-widest overflow-hidden"
+            className="relative flex items-center font-mono text-[11px] tracking-widest rounded border border-white/8 bg-black/60 hover:border-red-900/40 transition-colors overflow-hidden"
             style={{ minHeight: 36 }}
             aria-label="Сменить язык / Тілді өзгерту"
           >
@@ -303,8 +254,8 @@ export default function QuestPageClient({ initialSettings, initialGrid, initialR
         </div>
 
         {showStickyNav && (
-          <div className="section-dock max-w-7xl mx-auto px-4 sm:px-6 pb-3 animate-slide-down">
-            <div className="section-dock__track flex items-stretch gap-2 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+          <div className="max-w-7xl mx-auto px-3 sm:px-5 pb-2.5 animate-slide-down">
+            <div className="flex items-stretch gap-2 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
               {NAV_SECTIONS.map(s => {
                 const active = activeSection === s.key
                 return (
@@ -312,7 +263,7 @@ export default function QuestPageClient({ initialSettings, initialGrid, initialR
                     key={s.key}
                     onClick={() => scrollTo(s.ref)}
                     aria-current={active ? 'true' : undefined}
-                    className={`section-dock__item flex-shrink-0 flex-1 min-w-[80px] text-center font-mono text-[10px] sm:text-xs tracking-widest uppercase px-3 py-2 transition-all duration-200 ${
+                    className={`flex-shrink-0 flex-1 min-w-[80px] text-center font-mono text-[10px] sm:text-xs tracking-widest uppercase px-3 py-2 rounded-md border transition-all duration-200 ${
                       active
                         ? 'border-red-600/70 bg-red-950/40 text-white shadow-[0_0_14px_rgba(185,28,28,0.25)]'
                         : 'border-white/5 bg-black/30 text-gray-400 hover:border-red-900/50 hover:text-white hover:bg-red-950/20'
@@ -328,114 +279,135 @@ export default function QuestPageClient({ initialSettings, initialGrid, initialR
       </header>
 
       {/* ── Hero ─────────────────────────────────────────────── */}
-      <section className="site-hero relative flex items-center overflow-hidden">
-        <div className="site-hero__inner relative z-[2] max-w-7xl w-full mx-auto px-4 sm:px-6">
-          <motion.div 
-            initial={prefersReducedMotion ? false : { opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="hero-layout w-full"
-          >
-            <div className="hero-eyebrow inline-flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse flex-shrink-0" />
-              <p className="font-mono text-[10px] sm:text-xs text-red-400 tracking-[0.25em] uppercase">{t.heroBadge}</p>
-            </div>
+      <section className="relative min-h-[88vh] flex items-center justify-center overflow-hidden border-b border-red-950/30">
+        {heroBgUrl && (
+          <div
+            className="absolute inset-0 pointer-events-none z-[0]"
+            style={{
+              backgroundImage: `url("${heroBgUrl}")`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center center',
+              backgroundRepeat: 'no-repeat',
+            }}
+            aria-hidden
+          />
+        )}
+        <div
+          className="absolute inset-0 pointer-events-none z-[1]"
+          style={{
+            background: heroBgUrl
+              ? `linear-gradient(to bottom, rgba(5,5,5,0.55) 0%, rgba(5,5,5,0.25) 40%, rgba(5,5,5,0.80) 100%)`
+              : `
+              radial-gradient(circle at 50% 40%, rgba(153,27,27,0.18) 0%, transparent 60%),
+              radial-gradient(circle at 20% 80%, rgba(88,28,135,0.10) 0%, transparent 50%),
+              linear-gradient(to bottom, #050505 0%, transparent 30%, transparent 70%, #050505 100%)
+            `,
+          }}
+          aria-hidden
+        />
 
-            <h1 className="hero-title drip-text font-extrabold uppercase select-none">
-              {t.heroText}
-            </h1>
+        <div className="relative z-[2] max-w-5xl mx-auto text-center px-4 py-8 flex flex-col items-center">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 border border-red-900/40 bg-red-950/20 backdrop-blur-md rounded-md mb-5 shadow-[inset_0_0_12px_rgba(185,28,28,0.1)]">
+            <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse flex-shrink-0" />
+            <p className="font-mono text-[10px] sm:text-xs text-red-400 tracking-[0.25em] uppercase">{t.heroBadge}</p>
+          </div>
 
-            <p className="hero-summary font-sans text-base sm:text-lg text-gray-400 leading-relaxed">
-              {t.heroSub}
-            </p>
+          <h1 className="drip-text text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold leading-[0.95] tracking-tight mb-5 uppercase select-none text-center">
+            {t.heroText}
+          </h1>
 
-            <div ref={sectionRef.trailer} id="trailer" className="hero-video hero-video--primary w-full scroll-mt-36">
-              {embedId ? (
-                <div className="video-frame relative overflow-hidden" style={{ paddingBottom: '56.25%', background: '#000' }}>
-                  <iframe
-                    src={`https://www.youtube.com/embed/${embedId}`}
-                    className="absolute inset-0 w-full h-full"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    title="Dark Quest Trailer"
-                  />
-                </div>
-              ) : (
-                <div className="video-frame flex items-center justify-center" style={{ aspectRatio: '16/9' }}>
-                  <p className="font-mono text-xs text-gray-600 tracking-widest">{t.noTrailer}</p>
-                </div>
-              )}
-            </div>
+          <p className="font-sans text-base sm:text-lg text-gray-400 max-w-xl mx-auto leading-relaxed mb-8">
+            {t.heroSub}
+          </p>
 
-            {embedId3 && (
-              <div className="hero-reaction w-full max-w-xs">
-                <h2 className="reaction-title drip-text text-3xl sm:text-4xl font-extrabold tracking-widest uppercase block">
-                  ЭМОЦИИ ПОСЛЕ СЕАНСА
-                </h2>
-                <div className="video-frame video-frame--portrait relative overflow-hidden" style={{ paddingBottom: '177.78%', background: '#000' }}>
-                  <iframe
-                    src={`https://www.youtube.com/embed/${embedId3}`}
-                    className="absolute inset-0 w-full h-full"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    title="Dark Quest Trailer 3"
-                  />
-                </div>
+          {/* Trailer */}
+          <div ref={sectionRef.trailer} id="trailer" className="w-full max-w-3xl mx-auto mb-8">
+            {embedId ? (
+              <div className="relative rounded-xl overflow-hidden border border-red-900/30" style={{ paddingBottom: '56.25%', background: '#000' }}>
+                <iframe
+                  src={`https://www.youtube.com/embed/${embedId}`}
+                  className="absolute inset-0 w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  title="Dark Quest Trailer"
+                />
+              </div>
+            ) : (
+              <div className="flex items-center justify-center border border-red-900/20 rounded-xl bg-black/40" style={{ aspectRatio: '16/9' }}>
+                <p className="font-mono text-xs text-gray-600 tracking-widest">{t.noTrailer}</p>
               </div>
             )}
+          </div>
 
-            {/* Nav buttons */}
-            <div ref={heroNavRef} className="hero-actions flex flex-col items-start gap-4 w-full">
-              <button
-                onClick={() => scrollTo(sectionRef.schedule)}
-                className="btn-hero-blood w-full max-w-sm font-mono font-black tracking-[0.18em] uppercase px-8 py-4 text-sm sm:text-base"
-              >
-                {t.nav[0]}
-              </button>
-
-              <div className="hero-link-row flex flex-wrap gap-x-6 gap-y-3">
-                {NAV_SECTIONS.slice(1).map(s => {
-                  const active = activeSection === s.key
-                  return (
-                    <button
-                      key={s.key}
-                      onClick={() => scrollTo(s.ref)}
-                      aria-current={active ? 'true' : undefined}
-                      className={`hero-text-link group relative font-mono text-[11px] sm:text-xs tracking-widest uppercase transition-all duration-200 ${
-                        active
-                          ? 'border-red-600 bg-red-900/60 text-white shadow-[0_0_16px_rgba(185,28,28,0.4)]'
-                          : 'border-red-700/70 bg-red-950/50 text-red-200 hover:border-red-600 hover:text-white hover:bg-red-900/60 hover:shadow-[0_0_16px_rgba(185,28,28,0.4)]'
-                      }`}
-                    >
-                      <span className="relative z-10">{s.label}</span>
-                      <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-500 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-                    </button>
-                  )
-                })}
+          {/* Trailer 3 — vertical 9:16, "Эмоции после сеанса" */}
+          {embedId3 && (
+            <div className="w-full max-w-xs mx-auto mb-8">
+              <h2 className="drip-text text-3xl sm:text-4xl font-extrabold text-center mb-6 tracking-widest uppercase block">
+                ЭМОЦИИ ПОСЛЕ СЕАНСА
+              </h2>
+              <div className="relative rounded-xl overflow-hidden border border-red-900/30" style={{ paddingBottom: '177.78%', background: '#000' }}>
+                <iframe
+                  src={`https://www.youtube.com/embed/${embedId3}`}
+                  className="absolute inset-0 w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  title="Dark Quest Trailer 3"
+                />
               </div>
             </div>
-          </motion.div>
+          )}
+
+          {/* Nav buttons */}
+          <div ref={heroNavRef} className="flex flex-col items-center gap-3 mb-8 w-full">
+            <button
+              onClick={() => scrollTo(sectionRef.schedule)}
+              className="btn-hero-blood w-full max-w-xs font-mono font-black tracking-[0.25em] uppercase px-10 py-4 text-base sm:text-lg mb-2"
+            >
+              {t.nav[0]}
+            </button>
+
+            <div className="flex flex-wrap gap-2 justify-center">
+              {NAV_SECTIONS.slice(1).map(s => {
+                const active = activeSection === s.key
+                return (
+                  <button
+                    key={s.key}
+                    onClick={() => scrollTo(s.ref)}
+                    aria-current={active ? 'true' : undefined}
+                    className={`group relative px-5 py-2.5 border font-mono text-[11px] sm:text-xs tracking-widest uppercase rounded-md transition-all duration-200 overflow-hidden ${
+                      active
+                        ? 'border-red-600 bg-red-900/60 text-white shadow-[0_0_16px_rgba(185,28,28,0.4)]'
+                        : 'border-red-700/70 bg-red-950/50 text-red-200 hover:border-red-600 hover:text-white hover:bg-red-900/60 hover:shadow-[0_0_16px_rgba(185,28,28,0.4)]'
+                    }`}
+                  >
+                    <span className="relative z-10">{s.label}</span>
+                    <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-500 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                  </button>
+                )
+              })}
+            </div>
+          </div>
         </div>
 
-        <div className="hero-rule absolute bottom-0 left-0 right-0 z-[2]" />
+        <div className="absolute bottom-0 left-0 right-0 h-px z-[2]" style={{ background: 'linear-gradient(90deg,transparent,#8B0000,#dc143c,#8B0000,transparent)' }} />
       </section>
 
       {/* ── Schedule (Reservation Grid) ──────────────────────── */}
-      <section ref={sectionRef.schedule} id="schedule" className="booking-section site-section max-w-7xl mx-auto px-4 sm:px-6 w-full scroll-mt-36">
-        <div className="section-intro flex flex-col gap-3">
-          <div className="section-kicker flex items-center gap-2 font-mono text-[10px] tracking-wider uppercase text-gray-400">
+      <section ref={sectionRef.schedule} id="schedule" className="max-w-7xl mx-auto px-3 sm:px-5 py-16 w-full scroll-mt-36 bg-[#050505]">
+        <div className="flex flex-col items-center gap-2 mb-10 text-center">
+          <div className="flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/5 rounded font-mono text-[10px] tracking-[0.2em] uppercase text-gray-400">
             <Calendar className="w-3.5 h-3.5 text-red-600" />
             {lang === 'kz' ? 'Онлайн квест брондау' : 'Онлайн бронирование квеста'}
           </div>
-          <h2 className="text-3xl sm:text-5xl font-extrabold uppercase tracking-tight text-white mt-2">
+          <h2 className="drip-text text-3xl sm:text-4xl font-extrabold uppercase tracking-wider mt-1 block">
             {lang === 'kz' ? 'ОЙЫН УАҚЫТЫН ТАҢДАҢЫЗ' : 'ВЫБЕРИТЕ ВРЕМЯ ИГРЫ'}
           </h2>
         </div>
 
         {/* Date picker */}
-        <div className="date-panel mb-10 w-full max-w-3xl p-3 sm:p-4">
+        <div className="mb-8 w-full max-w-2xl mx-auto bg-[#0a0a0a] border border-white/5 p-4 rounded-xl shadow-2xl">
           {/* Quick chips */}
-          <div className="quick-date-track flex items-stretch gap-2 mb-4 overflow-x-auto pb-2" style={{ scrollbarWidth: 'none' }}>
+          <div className="flex items-stretch gap-2 mb-4 overflow-x-auto pb-2" style={{ scrollbarWidth: 'none' }}>
             {quickDates.map(({ date, short, num }) => {
               const active = isSameDay(date, selectedDate)
               return (
@@ -443,7 +415,7 @@ export default function QuestPageClient({ initialSettings, initialGrid, initialR
                   key={short + num}
                   onClick={() => setSelDate(date)}
                   aria-pressed={active}
-                  className={`date-chip flex-shrink-0 flex-1 min-w-[78px] px-3 py-2.5 transition-all text-center ${
+                  className={`flex-shrink-0 flex-1 min-w-[78px] px-3 py-2.5 rounded-lg border transition-all text-center ${
                     active
                       ? 'border-red-600 bg-red-950/30 shadow-[0_0_20px_rgba(220,20,60,0.2)]'
                       : 'border-white/5 bg-black hover:border-red-900/40 hover:bg-red-950/5'
@@ -460,14 +432,14 @@ export default function QuestPageClient({ initialSettings, initialGrid, initialR
           <div className="flex items-center gap-2 justify-center">
             <button
               onClick={() => setSelDate(d => subDays(d, 1))}
-              className="date-arrow flex items-center justify-center text-gray-400"
+              className="border border-white/5 bg-black hover:border-red-900/40 hover:text-white transition-all rounded-lg flex items-center justify-center text-gray-400"
               style={{ minWidth: 44, minHeight: 44 }}
               aria-label={lang === 'kz' ? 'Алдыңғы күн' : 'Предыдущий день'}
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
             <div
-              className="date-current flex-1 text-center py-2.5"
+              className="flex-1 text-center py-2.5 border border-red-900/30 bg-gradient-to-b from-red-950/10 to-transparent rounded-lg"
               style={{ maxWidth: 320 }}
             >
               <p className="font-mono text-xs sm:text-sm tracking-wider font-bold text-gray-200 uppercase">
@@ -476,7 +448,7 @@ export default function QuestPageClient({ initialSettings, initialGrid, initialR
             </div>
             <button
               onClick={() => setSelDate(d => addDays(d, 1))}
-              className="date-arrow flex items-center justify-center text-gray-400"
+              className="border border-white/5 bg-black hover:border-red-900/40 hover:text-white transition-all rounded-lg flex items-center justify-center text-gray-400"
               style={{ minWidth: 44, minHeight: 44 }}
               aria-label={lang === 'kz' ? 'Келесі күн' : 'Следующий день'}
             >
@@ -496,82 +468,62 @@ export default function QuestPageClient({ initialSettings, initialGrid, initialR
         </div>
 
         {/* Legend */}
-        <div className="booking-legend grid grid-cols-3 gap-3 justify-items-center mt-10 pt-6">
+        <div className="grid grid-cols-3 gap-3 justify-items-center mt-10 pt-6" style={{ borderTop: '1px solid rgba(139,0,0,0.2)' }}>
           <LegendDot color="bg-green-900/40 border-green-600/50 text-green-400"  label={lang === 'kz' ? 'БОС' : 'СВОБОДНО'} />
           <LegendDot color="bg-red-900/40 border-red-600/50 text-red-400"        label={lang === 'kz' ? 'БРОНДАЛҒАН' : 'ЗАНЯТО'} />
           <LegendDot color="bg-neutral-900/60 border-neutral-700 text-neutral-500 border-dashed" label={lang === 'kz' ? 'ӨТТІ' : 'ПРОШЁЛ'} />
         </div>
       </section>
 
-      {/* ── Prices ─────────────────────────────── */}
-      <section ref={sectionRef.prices} id="prices" className="price-section site-section scroll-mt-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="section-intro mb-10 max-w-2xl">
-            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight uppercase mb-2 text-white">
+      {/* ── Prices ───────────────────────────────────────────── */}
+      <section ref={sectionRef.prices} id="prices" className="pt-6 pb-10 bg-[#050505] border-b border-red-950/20 scroll-mt-36">
+        <div className="max-w-sm mx-auto px-4 sm:px-6">
+          <div className="mb-3 p-3 rounded-lg bg-amber-950/10 border border-amber-800/20 text-center">
+            <p className="font-mono text-xs text-amber-400/80 tracking-wider leading-relaxed">{t.priceNote}</p>
+          </div>
+
+          <p className="text-center font-mono font-black text-base sm:text-lg text-red-500 tracking-wider mb-5 uppercase">
+            {t.priceBirthday}
+          </p>
+
+          <div className="text-center mb-6">
+            <h2 className="drip-text text-3xl sm:text-4xl font-extrabold tracking-widest uppercase block mt-2">
               {t.pricesTitle}
             </h2>
-            <p className="text-gray-400 text-sm sm:text-base">{t.pricesSub}</p>
+            <p className="text-gray-400 mt-3 text-xs">{t.pricesSub}</p>
           </div>
 
-          <div className="price-notes grid grid-cols-1 md:grid-cols-2 gap-3 mb-8 max-w-4xl">
-            <motion.div 
-              initial={prefersReducedMotion ? false : { opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              className="notice-panel p-4 flex items-center gap-3"
-            >
-              <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-              <p className="font-sans text-xs sm:text-sm text-amber-200/90 leading-snug">{t.priceNote}</p>
-            </motion.div>
-            
-            <motion.div 
-              initial={prefersReducedMotion ? false : { opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              className="notice-panel notice-panel--accent p-4 flex items-center gap-3"
-            >
-              <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-              <p className="font-sans text-xs sm:text-sm text-red-200/90 leading-snug font-semibold">{t.priceBirthday}</p>
-            </motion.div>
-          </div>
-
-          <div className="price-grid grid grid-cols-2 sm:grid-cols-3">
+          <div className="border border-red-950/30 rounded-xl overflow-hidden bg-black/60">
             {t.prices.map((p, i) => (
-              <motion.div
+              <div
                 key={p.label}
-                initial={prefersReducedMotion ? false : { opacity: 0, y: 15 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.5 }}
-                transition={{ duration: 0.4, delay: i * 0.05 }}
-                className="price-card flex flex-col items-start justify-center gap-2 p-4 sm:p-5 transition-all group"
+                className="flex items-center gap-3 px-4 py-2.5 hover:bg-red-950/10 transition-colors"
+                style={{ borderBottom: i < t.prices.length - 1 ? '1px solid rgba(139,0,0,0.12)' : 'none' }}
               >
-                <div className="flex items-baseline gap-1">
-                  <span className="font-display text-2xl sm:text-3xl font-black text-white group-hover:text-red-400 transition-colors">{p.label}</span>
-                  <span className="font-mono text-[10px] text-gray-500 tracking-wider uppercase">{t.people}</span>
-                </div>
-                <div className="w-6 h-px bg-red-900/30 my-0.5 group-hover:bg-red-600/50 transition-colors" />
-                <span className="font-mono text-sm sm:text-base font-bold text-gray-300 group-hover:text-white transition-colors">{p.price.toLocaleString('ru-RU')} ₸</span>
-              </motion.div>
+                <span className="w-10 h-6 rounded-full bg-red-950/60 border border-red-900/50 text-red-400 font-mono text-xs font-black flex items-center justify-center flex-shrink-0 px-1">
+                  {p.label}
+                </span>
+                <span className="font-mono text-xs text-gray-400 tracking-widest flex-1">{t.people}</span>
+                <span className="font-mono text-sm font-black text-white tracking-wide">{p.price.toLocaleString('ru-RU')} ₸</span>
+              </div>
             ))}
           </div>
+
         </div>
       </section>
 
       {/* ── Levels ───────────────────────────────────────────── */}
-      <section ref={sectionRef.levels} id="levels" className="levels-section site-section scroll-mt-36">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="section-intro mb-12 max-w-2xl">
-            <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight uppercase text-white mb-4">
-              {t.levelsTitle}
-            </h2>
-            <p className="text-gray-400 text-sm sm:text-base">{t.levelsSub}</p>
-          </div>
+      <section ref={sectionRef.levels} id="levels" className="pt-6 pb-8 bg-[#050505] border-b border-red-950/20 scroll-mt-36">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6">
+          <h2 className="drip-text text-3xl sm:text-4xl font-extrabold tracking-widest uppercase text-center mb-8">
+            {t.levelsTitle}
+          </h2>
 
-          <div className="level-list grid grid-cols-1 md:grid-cols-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-red-950/20 rounded-xl overflow-hidden border border-red-950/20">
             {t.levels.map((lvl) => (
               <div
                 key={lvl.level}
-                className={`level-card flex flex-col gap-3 px-6 py-7 ${lvl.isMax ? 'level-card--max' : ''}`}
+                className={`flex flex-col gap-1.5 px-5 py-5 bg-[#070202] ${lvl.isMax ? 'border-t-2 border-red-600' : 'border-t-2 border-transparent'}`}
               >
                 <span className={`font-mono text-xl sm:text-2xl tracking-[0.15em] font-black uppercase ${lvl.isMax ? 'text-red-500' : 'text-red-700'}`}>
                   LEVEL {lvl.level}
@@ -586,52 +538,19 @@ export default function QuestPageClient({ initialSettings, initialGrid, initialR
         </div>
       </section>
 
-      {/* ── Trailer ──────────────────────────────────────────── */}
-      {embedId2 && (
-        <section className="secondary-video-section site-section scroll-mt-36">
-          <div className="max-w-3xl mx-auto px-4 sm:px-6">
-            <div className="video-frame relative overflow-hidden" style={{ paddingBottom: '56.25%', background: '#000' }}>
-              <iframe
-                src={`https://www.youtube.com/embed/${embedId2}`}
-                className="absolute inset-0 w-full h-full"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                title="Dark Quest Trailer 2"
-              />
-            </div>
-          </div>
-        </section>
-      )}
-
       {/* ── About + Rules ────────────────────────────────────── */}
-      <section ref={sectionRef.about} id="about" className="about-section site-section max-w-7xl mx-auto px-4 sm:px-6 w-full scroll-mt-24">
-        <div className="about-heading section-intro mb-10">
-          <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight uppercase text-white">
-            {t.aboutTitle}
-          </h2>
-        </div>
-        <div className="about-panel p-6 sm:p-9">
-          <p className="font-sans text-base sm:text-lg text-gray-300 leading-relaxed whitespace-pre-line mb-6">{t.aboutIntro}</p>
-          <div className="feature-list overflow-hidden">
-            {t.aboutFeatures.map((feature, i) => (
-              <div
-                key={i}
-                className="flex items-start gap-3 px-4 py-3"
-                style={{ borderBottom: i < t.aboutFeatures.length - 1 ? '1px solid rgba(139,0,0,0.12)' : 'none' }}
-              >
-                <span className="drip-text text-xs mt-0.5 flex-shrink-0">▸</span>
-                <p className="font-sans text-sm sm:text-base text-gray-300 leading-relaxed">{feature}</p>
-              </div>
-            ))}
-          </div>
+      <section ref={sectionRef.about} id="about" className="max-w-3xl mx-auto px-3 sm:px-5 pt-10 pb-5 w-full scroll-mt-36 bg-[#050505]">
+        <h2 className="drip-text text-3xl sm:text-4xl font-extrabold text-center mb-6 tracking-widest uppercase block">
+          {t.aboutTitle}
+        </h2>
+        <div className="border border-white/8 bg-black/40 rounded-xl px-5 py-4 mb-6">
+          <p className="font-sans text-sm text-gray-300 leading-relaxed">{t.description}</p>
         </div>
 
-        <div className="rules-heading section-intro mb-8">
-          <h3 className="text-2xl sm:text-3xl font-bold tracking-tight uppercase text-white">
-            {t.rulesTitle}
-          </h3>
-        </div>
-        <div className="rules-list overflow-hidden">
+        <h3 className="drip-text text-xl sm:text-2xl font-extrabold text-center mb-4 tracking-widest uppercase block">
+          {t.rulesTitle}
+        </h3>
+        <div className="border border-red-900/25 rounded-xl overflow-hidden bg-black/40">
           {t.rules.map((rule, i) => (
             <div
               key={i}
@@ -646,17 +565,15 @@ export default function QuestPageClient({ initialSettings, initialGrid, initialR
       </section>
 
       {/* ── Reviews ─────────────────────────────────────────── */}
-      <section className="reviews-section site-section max-w-7xl mx-auto px-4 sm:px-6 w-full">
-        <div className="section-intro mb-12">
-          <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight uppercase text-white">
-            {lang === 'kz' ? 'ПІКІРЛЕР' : 'ОТЗЫВЫ'}
-          </h2>
-        </div>
-        <Reviews lang={lang} venue="QUEST" initialReviews={initialReviews} />
+      <section className="max-w-5xl mx-auto px-3 sm:px-5 py-16 w-full bg-[#050505]">
+        <h2 className="drip-text text-3xl sm:text-4xl font-extrabold text-center mb-8 tracking-widest uppercase block">
+          {lang === 'kz' ? 'ПІКІРЛЕР' : 'ОТЗЫВЫ'}
+        </h2>
+        <Reviews lang={lang} venue="QUEST" />
       </section>
 
       {/* ── Footer ───────────────────────────────────────────── */}
-      <footer className="site-footer py-14 px-4 text-center">
+      <footer className="py-12 px-4 text-center border-t border-red-950/40 bg-[#030303]/85">
         <div className="flex items-center justify-center gap-2 mb-6 opacity-60">
           <Moon className="w-3.5 h-3.5 text-red-800" />
           <p className="font-mono text-xs tracking-[0.3em] text-red-700 font-bold uppercase">© DARK QUEST · SHYMKENT</p>
@@ -674,7 +591,7 @@ export default function QuestPageClient({ initialSettings, initialGrid, initialR
               href={l.href}
               target="_blank"
               rel="noopener noreferrer"
-              className="footer-link font-mono text-xs tracking-widest uppercase px-5 py-3 text-gray-400 transition-all duration-200"
+              className="font-mono text-xs tracking-widest uppercase px-5 py-3 rounded border border-white/5 bg-black text-gray-400 hover:border-red-800/60 hover:text-white hover:bg-red-950/10 transition-all duration-200"
             >
               {l.name}
             </a>
@@ -691,7 +608,7 @@ export default function QuestPageClient({ initialSettings, initialGrid, initialR
 
 function LegendDot({ color, label }: { color: string; label: string }) {
   return (
-    <div className="legend-item flex items-center gap-2 px-3 py-1.5">
+    <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-black border border-white/5">
       <div className={`w-3 h-3 rounded-sm flex-shrink-0 border ${color}`} />
       <span className="font-mono text-[11px] tracking-widest font-bold text-gray-400">{label}</span>
     </div>
@@ -702,7 +619,7 @@ function GridSkeleton() {
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 animate-pulse" aria-busy="true">
       {[0, 1, 2].map(i => (
-        <div key={i} className="skeleton-panel p-5 space-y-4">
+        <div key={i} className="bg-[#0a0a0a] border border-white/5 rounded-xl p-5 space-y-4">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-lg bg-white/5" />
             <div className="flex-1 space-y-2">
@@ -721,7 +638,7 @@ function GridSkeleton() {
 
 function EmptyState({ t }: { t: typeof T['ru'] }) {
   return (
-    <div className="empty-panel flex flex-col items-center justify-center py-20 gap-4 text-center">
+    <div className="flex flex-col items-center justify-center py-20 gap-4 text-center border border-dashed border-red-950/30 rounded-xl bg-black/40">
       <div className="drip-text text-5xl animate-pulse-soft">☠</div>
       <p className="font-mono text-sm text-white tracking-widest uppercase font-bold">НЕТ СЕАНСОВ</p>
       <p className="font-sans text-xs text-gray-500 max-w-xs mx-auto leading-relaxed">На выбранную дату сеансы не запланированы. Попробуйте другой день.</p>

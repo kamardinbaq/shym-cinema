@@ -1,5 +1,6 @@
 import { supabaseAdmin } from './client'
 import type { AvailabilityGrid, RoomGridRow, SlotCell, Review, AdminUser } from '@/types'
+import bcrypt from 'bcryptjs'
 
 const CINEMA_DAY_START = '13:00'
 const QUEST_DAY_START  = '11:00'
@@ -298,8 +299,7 @@ export async function createAdmin(username: string, password: string): Promise<A
     throw new Error(`Username already taken: ${username}`)
   }
 
-  const bcrypt = await import('bcryptjs')
-  const hashedPassword = await bcrypt.default.hash(password, 10)
+  const hashedPassword = await bcrypt.hash(password, 10)
 
   const { data, error } = await supabase
     .from('admins')

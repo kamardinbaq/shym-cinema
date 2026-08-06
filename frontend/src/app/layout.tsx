@@ -16,7 +16,7 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
-  themeColor: '#000000',
+  themeColor: '#070506',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -28,15 +28,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           position="top-center"
           toastOptions={{
             style: {
-              background: '#161616',
-              color: '#e8dcc8',
-              border: '1px solid rgba(139,0,0,0.4)',
-              fontFamily: "'Raleway', sans-serif",
+              background: '#150b0e',
+              color: '#f1ebe6',
+              border: '1px solid rgba(197,43,64,0.32)',
+              borderRadius: '8px',
+              fontFamily: "'Manrope', sans-serif",
               fontSize: '0.9rem',
               maxWidth: '90vw',
             },
-            success: { iconTheme: { primary: '#4ade80', secondary: '#161616' } },
-            error:   { iconTheme: { primary: '#dc143c', secondary: '#161616' } },
+            success: { iconTheme: { primary: '#56b47c', secondary: '#150b0e' } },
+            error:   { iconTheme: { primary: '#c52b40', secondary: '#150b0e' } },
           }}
         />
       </body>

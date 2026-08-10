@@ -218,11 +218,11 @@ export default function QuestPage() {
   })
 
   const NAV_SECTIONS = [
+    { key: 'schedule', label: t.nav[0], ref: sectionRef.schedule },
+    { key: 'prices',   label: t.nav[1], ref: sectionRef.prices },
+    { key: 'levels',   label: t.nav[2], ref: sectionRef.levels },
     { key: 'trailer',  label: t.nav[3], ref: sectionRef.trailer as React.RefObject<HTMLElement> },
     { key: 'about',    label: t.nav[4], ref: sectionRef.about },
-    { key: 'levels',   label: t.nav[2], ref: sectionRef.levels },
-    { key: 'prices',   label: t.nav[1], ref: sectionRef.prices },
-    { key: 'schedule', label: t.nav[0], ref: sectionRef.schedule },
   ]
 
   return (
@@ -399,95 +399,6 @@ export default function QuestPage() {
         <div className="absolute bottom-0 left-0 right-0 h-px z-[2]" style={{ background: 'linear-gradient(90deg,transparent,#8B0000,#dc143c,#8B0000,transparent)' }} />
       </section>
 
-      {/* ── About + Rules ────────────────────────────────────── */}
-      <section ref={sectionRef.about} id="about" className="max-w-3xl mx-auto px-3 sm:px-5 pt-10 pb-5 w-full scroll-mt-36 bg-[#050505]">
-        <h2 className="drip-text text-3xl sm:text-4xl font-extrabold text-center mb-6 tracking-widest uppercase block">
-          {t.aboutTitle}
-        </h2>
-        <div className="border border-white/8 bg-black/40 rounded-xl px-5 py-4 mb-6">
-          <p className="font-sans text-sm text-gray-300 leading-relaxed">{t.description}</p>
-        </div>
-
-        <h3 className="drip-text text-xl sm:text-2xl font-extrabold text-center mb-4 tracking-widest uppercase block">
-          {t.rulesTitle}
-        </h3>
-        <div className="border border-red-900/25 rounded-xl overflow-hidden bg-black/40">
-          {t.rules.map((rule, i) => (
-            <div
-              key={i}
-              className="flex items-start gap-3 px-4 py-2.5"
-              style={{ borderBottom: i < t.rules.length - 1 ? '1px solid rgba(139,0,0,0.12)' : 'none' }}
-            >
-              <span className="drip-text text-xs mt-0.5 flex-shrink-0">▸</span>
-              <p className="font-sans text-xs text-gray-300 leading-relaxed">{rule}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── Levels ───────────────────────────────────────────── */}
-      <section ref={sectionRef.levels} id="levels" className="pt-6 pb-8 bg-[#050505] border-b border-red-950/20 scroll-mt-36">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6">
-          <h2 className="drip-text text-3xl sm:text-4xl font-extrabold tracking-widest uppercase text-center mb-8">
-            {t.levelsTitle}
-          </h2>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-red-950/20 rounded-xl overflow-hidden border border-red-950/20">
-            {t.levels.map((lvl) => (
-              <div
-                key={lvl.level}
-                className={`flex flex-col gap-1.5 px-5 py-5 bg-[#070202] ${lvl.isMax ? 'border-t-2 border-red-600' : 'border-t-2 border-transparent'}`}
-              >
-                <span className={`font-mono text-xl sm:text-2xl tracking-[0.15em] font-black uppercase ${lvl.isMax ? 'text-red-500' : 'text-red-700'}`}>
-                  LEVEL {lvl.level}
-                </span>
-                <p className="text-white text-sm font-semibold leading-snug">{lvl.title}</p>
-                {lvl.desc && (
-                  <p className="text-gray-500 text-xs leading-snug">({lvl.desc})</p>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Prices ───────────────────────────────────────────── */}
-      <section ref={sectionRef.prices} id="prices" className="pt-6 pb-10 bg-[#050505] border-b border-red-950/20 scroll-mt-36">
-        <div className="max-w-sm mx-auto px-4 sm:px-6">
-          <div className="mb-3 p-3 rounded-lg bg-amber-950/10 border border-amber-800/20 text-center">
-            <p className="font-mono text-xs text-amber-400/80 tracking-wider leading-relaxed">{t.priceNote}</p>
-          </div>
-
-          <p className="text-center font-mono font-black text-base sm:text-lg text-red-500 tracking-wider mb-5 uppercase">
-            {t.priceBirthday}
-          </p>
-
-          <div className="text-center mb-6">
-            <h2 className="drip-text text-3xl sm:text-4xl font-extrabold tracking-widest uppercase block mt-2">
-              {t.pricesTitle}
-            </h2>
-            <p className="text-gray-400 mt-3 text-xs">{t.pricesSub}</p>
-          </div>
-
-          <div className="border border-red-950/30 rounded-xl overflow-hidden bg-black/60">
-            {t.prices.map((p, i) => (
-              <div
-                key={p.label}
-                className="flex items-center gap-3 px-4 py-2.5 hover:bg-red-950/10 transition-colors"
-                style={{ borderBottom: i < t.prices.length - 1 ? '1px solid rgba(139,0,0,0.12)' : 'none' }}
-              >
-                <span className="w-10 h-6 rounded-full bg-red-950/60 border border-red-900/50 text-red-400 font-mono text-xs font-black flex items-center justify-center flex-shrink-0 px-1">
-                  {p.label}
-                </span>
-                <span className="font-mono text-xs text-gray-400 tracking-widest flex-1">{t.people}</span>
-                <span className="font-mono text-sm font-black text-white tracking-wide">{p.price.toLocaleString('ru-RU')} ₸</span>
-              </div>
-            ))}
-          </div>
-
-        </div>
-      </section>
-
       {/* ── Schedule (Reservation Grid) ──────────────────────── */}
       <section ref={sectionRef.schedule} id="schedule" className="max-w-7xl mx-auto px-3 sm:px-5 py-16 w-full scroll-mt-36 bg-[#050505]">
         <div className="flex flex-col items-center gap-2 mb-10 text-center">
@@ -568,6 +479,95 @@ export default function QuestPage() {
           <LegendDot color="bg-green-900/40 border-green-600/50 text-green-400"  label={lang === 'kz' ? 'БОС' : 'СВОБОДНО'} />
           <LegendDot color="bg-red-900/40 border-red-600/50 text-red-400"        label={lang === 'kz' ? 'БРОНДАЛҒАН' : 'ЗАНЯТО'} />
           <LegendDot color="bg-neutral-900/60 border-neutral-700 text-neutral-500 border-dashed" label={lang === 'kz' ? 'ӨТТІ' : 'ПРОШЁЛ'} />
+        </div>
+      </section>
+
+      {/* ── Prices ───────────────────────────────────────────── */}
+      <section ref={sectionRef.prices} id="prices" className="pt-6 pb-10 bg-[#050505] border-b border-red-950/20 scroll-mt-36">
+        <div className="max-w-sm mx-auto px-4 sm:px-6">
+          <div className="mb-3 p-3 rounded-lg bg-amber-950/10 border border-amber-800/20 text-center">
+            <p className="font-mono text-xs text-amber-400/80 tracking-wider leading-relaxed">{t.priceNote}</p>
+          </div>
+
+          <p className="text-center font-mono font-black text-base sm:text-lg text-red-500 tracking-wider mb-5 uppercase">
+            {t.priceBirthday}
+          </p>
+
+          <div className="text-center mb-6">
+            <h2 className="drip-text text-3xl sm:text-4xl font-extrabold tracking-widest uppercase block mt-2">
+              {t.pricesTitle}
+            </h2>
+            <p className="text-gray-400 mt-3 text-xs">{t.pricesSub}</p>
+          </div>
+
+          <div className="border border-red-950/30 rounded-xl overflow-hidden bg-black/60">
+            {t.prices.map((p, i) => (
+              <div
+                key={p.label}
+                className="flex items-center gap-3 px-4 py-2.5 hover:bg-red-950/10 transition-colors"
+                style={{ borderBottom: i < t.prices.length - 1 ? '1px solid rgba(139,0,0,0.12)' : 'none' }}
+              >
+                <span className="w-10 h-6 rounded-full bg-red-950/60 border border-red-900/50 text-red-400 font-mono text-xs font-black flex items-center justify-center flex-shrink-0 px-1">
+                  {p.label}
+                </span>
+                <span className="font-mono text-xs text-gray-400 tracking-widest flex-1">{t.people}</span>
+                <span className="font-mono text-sm font-black text-white tracking-wide">{p.price.toLocaleString('ru-RU')} ₸</span>
+              </div>
+            ))}
+          </div>
+
+        </div>
+      </section>
+
+      {/* ── Levels ───────────────────────────────────────────── */}
+      <section ref={sectionRef.levels} id="levels" className="pt-6 pb-8 bg-[#050505] border-b border-red-950/20 scroll-mt-36">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6">
+          <h2 className="drip-text text-3xl sm:text-4xl font-extrabold tracking-widest uppercase text-center mb-8">
+            {t.levelsTitle}
+          </h2>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-red-950/20 rounded-xl overflow-hidden border border-red-950/20">
+            {t.levels.map((lvl) => (
+              <div
+                key={lvl.level}
+                className={`flex flex-col gap-1.5 px-5 py-5 bg-[#070202] ${lvl.isMax ? 'border-t-2 border-red-600' : 'border-t-2 border-transparent'}`}
+              >
+                <span className={`font-mono text-xl sm:text-2xl tracking-[0.15em] font-black uppercase ${lvl.isMax ? 'text-red-500' : 'text-red-700'}`}>
+                  LEVEL {lvl.level}
+                </span>
+                <p className="text-white text-sm font-semibold leading-snug">{lvl.title}</p>
+                {lvl.desc && (
+                  <p className="text-gray-500 text-xs leading-snug">({lvl.desc})</p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── About + Rules ────────────────────────────────────── */}
+      <section ref={sectionRef.about} id="about" className="max-w-3xl mx-auto px-3 sm:px-5 pt-10 pb-5 w-full scroll-mt-36 bg-[#050505]">
+        <h2 className="drip-text text-3xl sm:text-4xl font-extrabold text-center mb-6 tracking-widest uppercase block">
+          {t.aboutTitle}
+        </h2>
+        <div className="border border-white/8 bg-black/40 rounded-xl px-5 py-4 mb-6">
+          <p className="font-sans text-sm text-gray-300 leading-relaxed">{t.description}</p>
+        </div>
+
+        <h3 className="drip-text text-xl sm:text-2xl font-extrabold text-center mb-4 tracking-widest uppercase block">
+          {t.rulesTitle}
+        </h3>
+        <div className="border border-red-900/25 rounded-xl overflow-hidden bg-black/40">
+          {t.rules.map((rule, i) => (
+            <div
+              key={i}
+              className="flex items-start gap-3 px-4 py-2.5"
+              style={{ borderBottom: i < t.rules.length - 1 ? '1px solid rgba(139,0,0,0.12)' : 'none' }}
+            >
+              <span className="drip-text text-xs mt-0.5 flex-shrink-0">▸</span>
+              <p className="font-sans text-xs text-gray-300 leading-relaxed">{rule}</p>
+            </div>
+          ))}
         </div>
       </section>
 

@@ -113,7 +113,7 @@ const T = {
 function resolveHeroBg(heroBg: string | undefined): string | null {
   if (!heroBg || !heroBg.trim()) return null
   const trimmed = heroBg.trim()
-  if (/^\d+$/.test(trimmed)) return `/backgrounds/${trimmed}.jpg`
+  if (/^\d+$/.test(trimmed)) return `/backgrounds/${trimmed}.webp`
   const m = trimmed.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([^?&]+)/)
   if (m) return `https://img.youtube.com/vi/${m[1]}/maxresdefault.jpg`
   return trimmed
@@ -218,11 +218,11 @@ export default function QuestPage() {
   })
 
   const NAV_SECTIONS = [
-    { key: 'schedule', label: t.nav[0], ref: sectionRef.schedule },
-    { key: 'prices',   label: t.nav[1], ref: sectionRef.prices },
-    { key: 'levels',   label: t.nav[2], ref: sectionRef.levels },
     { key: 'trailer',  label: t.nav[3], ref: sectionRef.trailer as React.RefObject<HTMLElement> },
     { key: 'about',    label: t.nav[4], ref: sectionRef.about },
+    { key: 'levels',   label: t.nav[2], ref: sectionRef.levels },
+    { key: 'prices',   label: t.nav[1], ref: sectionRef.prices },
+    { key: 'schedule', label: t.nav[0], ref: sectionRef.schedule },
   ]
 
   return (
@@ -235,7 +235,7 @@ export default function QuestPage() {
       >
         <div className="max-w-7xl mx-auto px-3 sm:px-5 h-16 sm:h-20 flex items-center justify-between gap-2">
           <div className="flex items-center gap-3 flex-shrink-0 h-full">
-            <img src="/logo-quest.png" alt="DARK QUEST" className="h-full w-auto object-contain" />
+            <img src="/logo-quest.webp" alt="DARK QUEST" className="h-full w-auto object-contain" />
             <div className="leading-none">
               <p className="font-mono text-[9px] sm:text-[10px] text-red-600 tracking-[0.4em] mt-0.5 uppercase">Shymkent</p>
             </div>
@@ -281,19 +281,24 @@ export default function QuestPage() {
       </header>
 
       {/* ── Hero ─────────────────────────────────────────────── */}
+      {/* ── Fixed background image — stays behind all content ── */}
+      {heroBgUrl && (
+        <div
+          className="pointer-events-none"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 0,
+            backgroundImage: `url("${heroBgUrl}")`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center center',
+            backgroundRepeat: 'no-repeat',
+          }}
+          aria-hidden
+        />
+      )}
+
       <section className="relative min-h-[88vh] flex items-center justify-center overflow-hidden border-b border-red-950/30">
-        {heroBgUrl && (
-          <div
-            className="absolute inset-0 pointer-events-none z-[0]"
-            style={{
-              backgroundImage: `url("${heroBgUrl}")`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center center',
-              backgroundRepeat: 'no-repeat',
-            }}
-            aria-hidden
-          />
-        )}
         <div
           className="absolute inset-0 pointer-events-none z-[1]"
           style={{
@@ -369,7 +374,7 @@ export default function QuestPage() {
             </button>
 
             <div className="flex flex-wrap gap-2 justify-center">
-              {NAV_SECTIONS.slice(1).map(s => {
+              {NAV_SECTIONS.filter(s => s.key !== 'schedule').map(s => {
                 const active = activeSection === s.key
                 return (
                   <button

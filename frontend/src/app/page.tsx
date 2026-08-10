@@ -137,7 +137,7 @@ function getYouTubeId(url: string) {
 function resolveHeroBg(heroBg: string | undefined): string | null {
   if (!heroBg || !heroBg.trim()) return null
   const trimmed = heroBg.trim()
-  if (/^\d+$/.test(trimmed)) return `/backgrounds/${trimmed}.jpg`
+  if (/^\d+$/.test(trimmed)) return `/backgrounds/${trimmed}.webp`
   const ytId = getYouTubeId(trimmed)
   if (ytId) return `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`
   return trimmed
@@ -240,11 +240,11 @@ export default function HomePage() {
   }, [t.today, t.tomorrow])
 
   const NAV_SECTIONS = [
-    { key: 'reservation', label: t.nav[0], ref: sectionRef.reservation },
-    { key: 'prices',      label: t.nav[1], ref: sectionRef.prices },
+    { key: 'about',       label: t.nav[4], ref: sectionRef.about },
     { key: 'levels',      label: t.nav[2], ref: sectionRef.levels },
     { key: 'trailer',     label: t.nav[3], ref: sectionRef.trailer },
-    { key: 'about',       label: t.nav[4], ref: sectionRef.about },
+    { key: 'prices',      label: t.nav[1], ref: sectionRef.prices },
+    { key: 'reservation', label: t.nav[0], ref: sectionRef.reservation },
   ]
 
   const embedId  = getYouTubeId(settings.youtube_url)
@@ -268,7 +268,7 @@ export default function HomePage() {
           {/* Logo */}
           <div className="flex items-center gap-3 flex-shrink-0 h-full">
             <img
-              src="/logo.png"
+              src="/logo.webp"
               alt="SHYM CINEMA"
               className="h-full w-auto object-contain"
             />
@@ -320,20 +320,24 @@ export default function HomePage() {
       </header>
 
       {/* ── Hero ──────────────────────────────────────────────── */}
+      {/* ── Fixed background image — stays behind all content ── */}
+      {heroBgUrl && (
+        <div
+          className="pointer-events-none"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 0,
+            backgroundImage: `url("${heroBgUrl}")`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center center',
+            backgroundRepeat: 'no-repeat',
+          }}
+          aria-hidden
+        />
+      )}
+
       <section className="relative min-h-[88vh] flex items-center justify-center overflow-hidden border-b border-red-950/30">
-        {/* Background image — scoped to hero only */}
-        {heroBgUrl && (
-          <div
-            className="absolute inset-0 pointer-events-none z-[0]"
-            style={{
-              backgroundImage: `url("${heroBgUrl}")`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center center',
-              backgroundRepeat: 'no-repeat',
-            }}
-            aria-hidden
-          />
-        )}
 
         {/* Backdrop overlay */}
         <div
@@ -413,9 +417,9 @@ export default function HomePage() {
               {t.nav[0]}
             </button>
 
-            {/* Other 4 nav buttons */}
+            {/* Other nav buttons (excluding reservation) */}
             <div className="flex flex-wrap gap-2 justify-center">
-              {NAV_SECTIONS.slice(1).map(s => {
+              {NAV_SECTIONS.filter(s => s.key !== 'reservation').map(s => {
                 const active = activeSection === s.key
                 return (
                   <button

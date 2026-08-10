@@ -174,7 +174,7 @@ export async function getAllReviews(venue: string = 'CINEMA'): Promise<Review[]>
 
   return reviews.map((r: any) => ({
     id: Number(r.id),
-    name: r.name,
+    name: r.name || undefined,
     stars: r.stars,
     body: r.body,
     venue: r.venue,
@@ -205,7 +205,7 @@ export async function createReview(req: {
 
   return {
     id: Number(newReview.id),
-    name: newReview.name,
+    name: newReview.name || undefined,
     stars: newReview.stars,
     body: newReview.body,
     venue: newReview.venue,

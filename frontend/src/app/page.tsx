@@ -9,17 +9,15 @@ export default async function Page() {
   console.log('Server Component Page: fetching data...')
   
   try {
-    const settingsPromise = getSettings()
-    const gridPromise = getAvailabilityGrid(today, 'CINEMA')
-    const reviewsPromise = getAllReviews('CINEMA')
+    const settingsPromise = getSettings().catch((e) => { console.error('Settings error:', e); return {} })
+    const gridPromise = getAvailabilityGrid(today, 'CINEMA').catch((e) => { console.error('Grid error:', e); return null })
+    const reviewsPromise = getAllReviews('CINEMA').catch((e) => { console.error('Reviews error:', e); return [] })
     
-    console.log('Promises created')
     const [settings, initialGrid, initialReviews] = await Promise.all([
       settingsPromise,
-      gridPromise.catch((e) => { console.error('Grid error:', e); return null }),
-      reviewsPromise.catch((e) => { console.error('Reviews error:', e); return [] })
+      gridPromise,
+      reviewsPromise
     ])
-    console.log('Promises resolved')
 
     return (
       <HomePageClient 
@@ -30,6 +28,12 @@ export default async function Page() {
     )
   } catch (error) {
     console.error('Error in Page Component:', error)
-    return <div>Error loading page</div>
+    return (
+      <HomePageClient 
+        initialSettings={{} as any} 
+        initialGrid={null} 
+        initialReviews={[]} 
+      />
+    )
   }
 }

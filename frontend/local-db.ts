@@ -193,7 +193,7 @@ export async function createReview(req: {
 
   const newReview = {
     id: Date.now(),
-    name: req.name || null,
+    name: req.name || undefined,
     stars: req.stars,
     body: req.body,
     venue,

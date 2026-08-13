@@ -481,6 +481,7 @@ function SettingsTab() {
               onChange={e => isCinema ? setHeroBg(e.target.value) : setQHeroBg(e.target.value)}/>
             {(() => { const bg = isCinema ? heroBg : qHeroBg; return bg && bg.startsWith('http') && (
               <div className="relative border border-red-900/30 rounded-lg overflow-hidden bg-black h-32">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={bg} alt="preview" className="w-full h-full object-cover"/>
               </div>
             )})()}

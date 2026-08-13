@@ -300,6 +300,7 @@ export default function HomePageClient({ initialSettings, initialGrid, initialRe
         <div className="site-header__bar max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between gap-4">
           {/* Logo */}
           <div className="site-brand flex items-center gap-3 flex-shrink-0 h-full">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/logo.webp"
               alt="SHYM CINEMA"

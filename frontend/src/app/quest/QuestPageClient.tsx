@@ -282,7 +282,8 @@ export default function QuestPageClient({ initialSettings, initialGrid, initialR
       >
         <div className="site-header__bar max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between gap-4">
           <div className="site-brand flex items-center gap-3 flex-shrink-0 h-full">
-            <img src="/logo-quest.webp" alt="DARK QUEST" className="site-logo h-full w-auto object-contain" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-quest.webp" alt="DARK QUEST" className="site-logo h-full w-auto object-contain" />
             <div className="leading-none">
               <p className="font-mono text-[9px] sm:text-[10px] text-red-600 tracking-[0.4em] mt-0.5 uppercase">Shymkent</p>
             </div>

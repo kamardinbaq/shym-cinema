@@ -86,6 +86,7 @@ export default function Reviews({ lang, venue = 'CINEMA', initialReviews }: { la
     if (initialReviews === undefined) {
       load()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [venue, initialReviews])
 
   const handleSubmit = async () => {

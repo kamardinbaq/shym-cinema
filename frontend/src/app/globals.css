@@ -177,19 +177,20 @@ a:focus-visible {
 }
 
 .site-background {
-  opacity: 0.16;
-  filter: grayscale(0.38) saturate(0.8) contrast(1.16);
+  opacity: 0.45;
+  filter: saturate(0.95) contrast(1.08);
   transform: scale(1.02);
+  transition: opacity 0.3s ease;
 }
 
 .site-background-overlay {
   background:
-    linear-gradient(180deg, rgba(7, 5, 6, 0.5) 0%, rgba(31, 7, 12, 0.76) 46%, #070506 92%);
+    linear-gradient(180deg, rgba(7, 5, 6, 0.35) 0%, rgba(22, 5, 9, 0.52) 42%, rgba(7, 5, 6, 0.88) 95%);
 }
 
 .quest-site .site-background-overlay {
   background:
-    linear-gradient(180deg, rgba(7, 5, 6, 0.38) 0%, rgba(49, 8, 16, 0.68) 48%, #070506 92%);
+    linear-gradient(180deg, rgba(7, 5, 6, 0.30) 0%, rgba(32, 6, 12, 0.48) 42%, rgba(7, 5, 6, 0.88) 95%);
 }
 
 .site-header {
@@ -303,14 +304,14 @@ a:focus-visible {
 
 .hero-layout {
   display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(28rem, 1.1fr);
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.95fr);
   grid-template-areas:
     'eyebrow media'
     'title media'
     'summary media'
     'actions reaction';
   align-items: center;
-  column-gap: clamp(3rem, 7vw, 7rem);
+  column-gap: clamp(2rem, 3.5vw, 4.5rem);
   row-gap: 0;
 }
 
@@ -350,19 +351,21 @@ a:focus-visible {
 .hero-title {
   grid-area: title;
   justify-self: start;
-  max-width: 11ch;
+  max-width: 12ch;
   margin: 0;
   color: var(--bone);
-  font-size: clamp(3rem, 5.25vw, 5.75rem);
+  font-size: clamp(2.25rem, 3.8vw, 5.25rem);
   line-height: 0.98;
-  letter-spacing: -0.065em;
+  letter-spacing: -0.05em;
   text-align: left;
   text-wrap: balance;
+  overflow-wrap: break-word;
+  word-break: normal;
 }
 
 .quest-site .hero-title {
-  max-width: 12ch;
-  font-size: clamp(2.65rem, 4.7vw, 5.15rem);
+  max-width: 13ch;
+  font-size: clamp(2.1rem, 3.5vw, 4.75rem);
 }
 
 .hero-title::after {
@@ -391,18 +394,20 @@ a:focus-visible {
   justify-self: stretch;
   margin: 0;
   position: relative;
-  z-index: 1;
+  z-index: 2;
+  width: 100%;
 }
 
 .hero-video::before {
   content: '';
   position: absolute;
   z-index: -1;
-  top: -28px;
-  right: 34px;
-  bottom: 28px;
-  left: -28px;
+  top: -16px;
+  right: 16px;
+  bottom: 16px;
+  left: -16px;
   border: 1px solid rgba(197, 43, 64, 0.24);
+  pointer-events: none;
 }
 
 .video-frame {
@@ -423,11 +428,15 @@ a:focus-visible {
 .hero-reaction {
   grid-area: reaction;
   align-self: start;
-  justify-self: end;
-  width: min(100%, 205px) !important;
-  margin: 26px 0 0;
+  justify-self: center;
+  width: min(100%, 200px) !important;
+  margin: 28px auto 0;
   position: relative;
   z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
 
 .reaction-title {
@@ -435,11 +444,12 @@ a:focus-visible {
   margin: 0 0 10px;
   color: #c8bcb7;
   font-family: var(--font-mono);
-  font-size: 0.72rem !important;
+  font-size: 0.75rem !important;
   font-weight: 600;
   line-height: 1.5;
-  letter-spacing: 0.12em;
-  text-align: left;
+  letter-spacing: 0.14em;
+  text-align: center;
+  width: 100%;
 }
 
 .hero-actions {
@@ -1264,12 +1274,12 @@ a:focus-visible {
   }
 
   .hero-layout {
-    grid-template-columns: minmax(0, 1fr) minmax(22rem, 0.9fr);
-    column-gap: 2.5rem;
+    grid-template-columns: minmax(0, 1.1fr) minmax(18rem, 0.9fr);
+    column-gap: 2rem;
   }
 
-  .hero-title { font-size: clamp(2.75rem, 5.9vw, 4.6rem); }
-  .quest-site .hero-title { font-size: clamp(2.45rem, 5.25vw, 4.1rem); }
+  .hero-title { font-size: clamp(2.2rem, 4.2vw, 3.6rem); }
+  .quest-site .hero-title { font-size: clamp(2.05rem, 3.8vw, 3.3rem); }
 
   .about-section {
     column-gap: 2.5rem;
@@ -1304,7 +1314,7 @@ a:focus-visible {
   .hero-title,
   .quest-site .hero-title {
     max-width: 13ch;
-    font-size: clamp(2.75rem, 9vw, 5.2rem);
+    font-size: clamp(2.5rem, 8vw, 4.5rem);
   }
 
   .hero-summary {
@@ -1316,15 +1326,17 @@ a:focus-visible {
   }
 
   .hero-video::before {
-    top: -20px;
-    right: 24px;
-    bottom: 22px;
-    left: -18px;
+    top: -14px;
+    right: 14px;
+    bottom: 14px;
+    left: -14px;
   }
 
   .hero-reaction {
-    width: min(58vw, 180px) !important;
-    margin-top: 32px;
+    width: min(58vw, 190px) !important;
+    margin: 28px auto 0;
+    justify-self: center;
+    align-self: center;
   }
 
   .about-section {

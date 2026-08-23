@@ -370,8 +370,8 @@ export default function QuestPageClient({ initialSettings, initialGrid, initialR
 
             {embedId3 && (
               <div className="hero-reaction w-full max-w-xs">
-                <h2 className="reaction-title drip-text text-3xl sm:text-4xl font-extrabold tracking-widest uppercase block">
-                  ЭМОЦИИ ПОСЛЕ СЕАНСА
+                <h2 className="reaction-title drip-text font-extrabold tracking-widest uppercase block text-center">
+                  {lang === 'kz' ? 'СЕАНСТАН КЕЙІНГІ ЭМОЦИЯЛАР' : 'ЭМОЦИИ ПОСЛЕ СЕАНСА'}
                 </h2>
                 <div className="video-frame video-frame--portrait relative overflow-hidden" style={{ paddingBottom: '177.78%', background: '#000' }}>
                   <iframe

@@ -405,18 +405,20 @@ export default function QuestPageClient({ initialSettings, initialGrid, initialR
               </div>
 
               {embedId3 && (
-                <div className="hero-reaction w-full max-w-xs flex flex-col items-center">
-                  <h2 className="reaction-title drip-text font-extrabold tracking-widest uppercase block text-center">
+                <div className="hero-reaction w-full flex flex-col items-center">
+                  <h2 className="reaction-title drip-text font-extrabold uppercase block text-center">
                     {lang === 'kz' ? 'СЕАНСТАН КЕЙІНГІ ЭМОЦИЯЛАР' : 'ЭМОЦИИ ПОСЛЕ СЕАНСА'}
                   </h2>
-                  <div className="video-frame video-frame--portrait relative overflow-hidden w-full" style={{ paddingBottom: '177.78%', background: '#000' }}>
-                    <iframe
-                      src={`https://www.youtube.com/embed/${embedId3}`}
-                      className="absolute inset-0 w-full h-full"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                      title="Dark Quest Trailer 3"
-                    />
+                  <div className="reaction-video-wrapper w-full">
+                    <div className="video-frame video-frame--portrait relative overflow-hidden w-full" style={{ paddingBottom: '177.78%', background: '#000' }}>
+                      <iframe
+                        src={`https://www.youtube.com/embed/${embedId3}`}
+                        className="absolute inset-0 w-full h-full"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        title="Dark Quest Trailer 3"
+                      />
+                    </div>
                   </div>
                 </div>
               )}

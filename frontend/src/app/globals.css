@@ -404,8 +404,9 @@ a:focus-visible {
 }
 
 .hero-reaction {
-  width: min(100%, 180px) !important;
-  margin: 0 auto;
+  width: 100%;
+  max-width: 32rem;
+  margin: 10px auto 0;
   position: relative;
   z-index: 3;
   display: flex;
@@ -416,15 +417,21 @@ a:focus-visible {
 
 .reaction-title {
   display: block;
-  margin: 0 0 10px;
-  color: #c8bcb7;
-  font-family: var(--font-mono);
-  font-size: 0.75rem !important;
-  font-weight: 600;
-  line-height: 1.5;
-  letter-spacing: 0.14em;
+  margin: 0 0 14px;
+  color: var(--bone);
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 2.35vw, 2.25rem) !important;
+  font-weight: 800;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
   text-align: center;
   width: 100%;
+  text-wrap: balance;
+}
+
+.reaction-video-wrapper {
+  width: min(100%, 185px);
+  margin: 0 auto;
 }
 
 .hero-actions {
@@ -1300,8 +1307,16 @@ a:focus-visible {
   }
 
   .hero-reaction {
-    width: min(58vw, 190px) !important;
+    width: 100%;
     margin: 0 auto;
+  }
+
+  .reaction-title {
+    font-size: clamp(1.25rem, 5vw, 1.75rem) !important;
+  }
+
+  .reaction-video-wrapper {
+    width: min(58vw, 185px);
   }
 
   .about-section {

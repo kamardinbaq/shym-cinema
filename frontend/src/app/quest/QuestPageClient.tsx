@@ -329,7 +329,7 @@ export default function QuestPageClient({ initialSettings, initialGrid, initialR
       </header>
 
       {/* ── Hero ─────────────────────────────────────────────── */}
-      <section className="site-hero relative flex items-center overflow-hidden">
+      <section className="site-hero relative flex items-center">
         <div className="site-hero__inner relative z-[2] max-w-7xl w-full mx-auto px-4 sm:px-6">
           <motion.div 
             initial={prefersReducedMotion ? false : { opacity: 0, y: 30 }}
@@ -337,83 +337,89 @@ export default function QuestPageClient({ initialSettings, initialGrid, initialR
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="hero-layout w-full"
           >
-            <div className="hero-eyebrow inline-flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse flex-shrink-0" />
-              <p className="font-mono text-[10px] sm:text-xs text-red-400 tracking-[0.25em] uppercase">{t.heroBadge}</p>
+            {/* Left Column: Content & Actions */}
+            <div className="hero-content flex flex-col items-start w-full">
+              <div className="hero-eyebrow inline-flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse flex-shrink-0" />
+                <p className="font-mono text-[10px] sm:text-xs text-red-400 tracking-[0.25em] uppercase">{t.heroBadge}</p>
+              </div>
+
+              <h1 className="hero-title drip-text font-extrabold uppercase select-none">
+                {t.heroText}
+              </h1>
+
+              <p className="hero-summary font-sans text-base sm:text-lg text-gray-400 leading-relaxed">
+                {t.heroSub}
+              </p>
+
+              {/* Nav buttons */}
+              <div ref={heroNavRef} className="hero-actions flex flex-col items-start gap-4 w-full">
+                <button
+                  onClick={() => scrollTo(sectionRef.schedule)}
+                  className="btn-hero-blood w-full max-w-sm font-mono font-black tracking-[0.18em] uppercase px-8 py-4 text-sm sm:text-base"
+                >
+                  {t.nav[0]}
+                </button>
+
+                <div className="hero-link-row flex flex-wrap gap-x-6 gap-y-3">
+                  {NAV_SECTIONS.slice(1).map(s => {
+                    const active = activeSection === s.key
+                    return (
+                      <button
+                        key={s.key}
+                        onClick={() => scrollTo(s.ref)}
+                        aria-current={active ? 'true' : undefined}
+                        className={`hero-text-link group relative font-mono text-[11px] sm:text-xs tracking-widest uppercase transition-all duration-200 ${
+                          active
+                            ? 'border-red-600 bg-red-900/60 text-white shadow-[0_0_16px_rgba(185,28,28,0.4)]'
+                            : 'border-red-700/70 bg-red-950/50 text-red-200 hover:border-red-600 hover:text-white hover:bg-red-900/60 hover:shadow-[0_0_16px_rgba(185,28,28,0.4)]'
+                        }`}
+                      >
+                        <span className="relative z-10">{s.label}</span>
+                        <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-500 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
             </div>
 
-            <h1 className="hero-title drip-text font-extrabold uppercase select-none">
-              {t.heroText}
-            </h1>
+            {/* Right Column: Media (1st Trailer + 2nd Trailer) */}
+            <div className="hero-media-column flex flex-col items-center w-full">
+              <div ref={sectionRef.trailer} id="trailer" className="hero-video hero-video--primary w-full scroll-mt-36">
+                {embedId ? (
+                  <div className="video-frame relative overflow-hidden" style={{ paddingBottom: '56.25%', background: '#000' }}>
+                    <iframe
+                      src={`https://www.youtube.com/embed/${embedId}`}
+                      className="absolute inset-0 w-full h-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      title="Dark Quest Trailer"
+                    />
+                  </div>
+                ) : (
+                  <div className="video-frame flex items-center justify-center" style={{ aspectRatio: '16/9' }}>
+                    <p className="font-mono text-xs text-gray-600 tracking-widest">{t.noTrailer}</p>
+                  </div>
+                )}
+              </div>
 
-            <p className="hero-summary font-sans text-base sm:text-lg text-gray-400 leading-relaxed">
-              {t.heroSub}
-            </p>
-
-            <div ref={sectionRef.trailer} id="trailer" className="hero-video hero-video--primary w-full scroll-mt-36">
-              {embedId ? (
-                <div className="video-frame relative overflow-hidden" style={{ paddingBottom: '56.25%', background: '#000' }}>
-                  <iframe
-                    src={`https://www.youtube.com/embed/${embedId}`}
-                    className="absolute inset-0 w-full h-full"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    title="Dark Quest Trailer"
-                  />
-                </div>
-              ) : (
-                <div className="video-frame flex items-center justify-center" style={{ aspectRatio: '16/9' }}>
-                  <p className="font-mono text-xs text-gray-600 tracking-widest">{t.noTrailer}</p>
+              {embedId3 && (
+                <div className="hero-reaction w-full max-w-xs flex flex-col items-center">
+                  <h2 className="reaction-title drip-text font-extrabold tracking-widest uppercase block text-center">
+                    {lang === 'kz' ? 'СЕАНСТАН КЕЙІНГІ ЭМОЦИЯЛАР' : 'ЭМОЦИИ ПОСЛЕ СЕАНСА'}
+                  </h2>
+                  <div className="video-frame video-frame--portrait relative overflow-hidden w-full" style={{ paddingBottom: '177.78%', background: '#000' }}>
+                    <iframe
+                      src={`https://www.youtube.com/embed/${embedId3}`}
+                      className="absolute inset-0 w-full h-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      title="Dark Quest Trailer 3"
+                    />
+                  </div>
                 </div>
               )}
-            </div>
-
-            {embedId3 && (
-              <div className="hero-reaction w-full max-w-xs">
-                <h2 className="reaction-title drip-text font-extrabold tracking-widest uppercase block text-center">
-                  {lang === 'kz' ? 'СЕАНСТАН КЕЙІНГІ ЭМОЦИЯЛАР' : 'ЭМОЦИИ ПОСЛЕ СЕАНСА'}
-                </h2>
-                <div className="video-frame video-frame--portrait relative overflow-hidden" style={{ paddingBottom: '177.78%', background: '#000' }}>
-                  <iframe
-                    src={`https://www.youtube.com/embed/${embedId3}`}
-                    className="absolute inset-0 w-full h-full"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    title="Dark Quest Trailer 3"
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* Nav buttons */}
-            <div ref={heroNavRef} className="hero-actions flex flex-col items-start gap-4 w-full">
-              <button
-                onClick={() => scrollTo(sectionRef.schedule)}
-                className="btn-hero-blood w-full max-w-sm font-mono font-black tracking-[0.18em] uppercase px-8 py-4 text-sm sm:text-base"
-              >
-                {t.nav[0]}
-              </button>
-
-              <div className="hero-link-row flex flex-wrap gap-x-6 gap-y-3">
-                {NAV_SECTIONS.slice(1).map(s => {
-                  const active = activeSection === s.key
-                  return (
-                    <button
-                      key={s.key}
-                      onClick={() => scrollTo(s.ref)}
-                      aria-current={active ? 'true' : undefined}
-                      className={`hero-text-link group relative font-mono text-[11px] sm:text-xs tracking-widest uppercase transition-all duration-200 ${
-                        active
-                          ? 'border-red-600 bg-red-900/60 text-white shadow-[0_0_16px_rgba(185,28,28,0.4)]'
-                          : 'border-red-700/70 bg-red-950/50 text-red-200 hover:border-red-600 hover:text-white hover:bg-red-900/60 hover:shadow-[0_0_16px_rgba(185,28,28,0.4)]'
-                      }`}
-                    >
-                      <span className="relative z-10">{s.label}</span>
-                      <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-500 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-                    </button>
-                  )
-                })}
-              </div>
             </div>
           </motion.div>
         </div>
